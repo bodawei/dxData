@@ -1,0 +1,30 @@
+{
+    "name": "dxData",
+    "version": "0.9.0",
+    "description": "Software and tools related to the dxData system for client/server data exchange",
+    "readme": "Software and tools related to the dxData system for client/server data exchange",
+    "copyright": "Copyright (c) 2012, 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "phantomjs": "~1.9.7-4",
+        "karma": "~0.12.16",
+        "karma-jasmine": "~0.1.5",
+        "karma-firefox-launcher": "~0.1.3",
+        "karma-safari-launcher": "~0.1.1",
+        "karma-opera-launcher": "~0.1.0",
+        "karma-phantomjs-launcher": "~0.1.2",
+        "karma-ie-launcher": "~0.1.5",
+        "karma-chrome-launcher": "~0.1.3",
+        "karma-coverage": "~0.2.1",
+        "karma-junit-reporter": "~0.2.2",
+        "grunt-karma": "0.9.0",
+        "grunt-cli": "^0.1.x",
+        "underscore": "1.7.0",
+        "jquery": "2.1.1",
+        "backbone": "1.1.2"
+    },
+    "repository" : {
+        "type": "git",
+	"url": "https://github.com/delphix/dxData"
+    }
+}

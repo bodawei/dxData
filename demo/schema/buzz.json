@@ -1,0 +1,31 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "root": "/webapi/buzz",
+    "description": "A message sent from one user to the entire universe.",
+    "name": "Buzz",
+    "extends": {
+        "$ref": "/delphix-persistent-object.json"
+    },
+    "properties": {
+        "text": {
+            "description": "The message being sent",
+            "type": "string",
+            "required": true
+        }
+    },
+    "create": {
+        "payload": {
+            "type": "object",
+            "$ref": "/buzz.json"
+        },
+        "return": {
+            "type": "string",
+            "format": "objectReference"
+        }
+    },
+    "read": {},
+    "list": {},
+    "update": {},
+    "delete": {}
+}

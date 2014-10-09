@@ -1,0 +1,17 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "description": "Super schema for all typed schemas with a reference property.",
+    "extends": {
+        "$ref": "/delphix-typed-object.json"
+    },
+    "name": "PersistentObject",
+        "properties": {
+            "reference": {
+                "description": "Object reference",
+                "format": "objectReference",
+                "referenceTo": "/delphix-persistent-object.json",
+                "type": "string"
+        }
+    }
+}

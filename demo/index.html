@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Copyright (c) 2014 by Delphix. All rights reserved.
+-->
+<html>
+<head>
+    <title>Buzzr</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="css/buzzr.css" type="text/css" charset="utf-8">
+
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/underscore/underscore.js"></script>
+    <script src="node_modules/backbone/backbone.js"></script>
+    <script src="gen/dxCoreData/dxBasics.js"></script>
+    <script src="gen/dxCoreData/layer1/js/schema.js"></script>
+    <script src="gen/dxCoreData/layer2/js/model.js"></script>
+    <script src="gen/dxCoreData/layer2/js/collection.js"></script>
+    <script src="gen/dxCoreData/layer2/js/cache.js"></script>
+    <script src="gen/dxCoreData/layer2/js/filter.js"></script>
+    <script src="gen/dxCoreData/layer2/js/creationListener.js"></script>
+    <script src="gen/dxCoreData/layer3/js/api.js"></script>
+    <script src="gen/dxCoreData/layer3/js/notification.js"></script>
+    <script src="gen/dxCoreData/layer3/js/util.js"></script>
+    <script src="gen/allSchemas.js"></script>
+    <script src="js/BuzzListView.js"></script>
+    <script src="js/BuzzInputView.js"></script>
+    <script src="js/CurrentUserView.js"></script>
+    <script src="js/startup.js"></script>
+</head>
+<body>
+    <div class="sun"></div>
+    <div class="grass"></div>
+    <div class="buzzr-box">
+        <div class="heading"><img src="image/bumble-bee-by-kamc-191898.png">Buzzr — <span class="sid-buzzr-user-box"></span></div>
+        <div class="sid-buzzr-input-box input-row"></div>
+        <div class="sid-buzzr-contents">
+            <div class="sid-buzzr-list-box buzzr-list"></div>
+        </div>
+        <div class="footer"></div>
+    </div>
+</body>
+</html>

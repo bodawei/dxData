@@ -1,0 +1,16 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "ErrorResult",
+    "description": "Result of a failed API call.",
+    "extends": {
+        "$ref": "/delphix-call-result.json"
+    },
+    "properties": {
+        "error": {
+            "type": "object",
+            "description": "Specifics of the error that occurred during API call execution.",
+            "$ref": "/delphix-api-error.json"
+        }
+    }
+}

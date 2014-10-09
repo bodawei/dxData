@@ -1,0 +1,14 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "description": "Super schema for all other schemas",
+    "name": "TypedObject",
+    "properties": {
+        "type": {
+            "description": "Object type",
+            "format": "type",
+            "required": true,
+            "type": "string"
+        }
+    }
+}

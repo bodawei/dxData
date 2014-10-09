@@ -1,0 +1,19 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "CallResult",
+    "description": "Result of an API call.",
+    "extends": {
+        "$ref": "/delphix-typed-object.json"
+    },
+    "properties": {
+        "status": {
+            "type": "string",
+            "description": "Indicates whether an error occurred during the call.",
+            "enum": [
+                "OK",
+                "ERROR"
+            ]
+        }
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "Notification",
+    "description": "Base type for all notification types.",
+    "root": "/webapi/notification",
+    "cliVisibility": [],
+    "extends": {
+        "$ref": "/delphix-typed-object.json"
+    },
+    "list": {
+        "description": "Returns a list of pending notifications for the current session.",
+        "parameters": {
+            "channel": {
+                "type": "string",
+                "description": "Client-specific ID to specify an independent channel."
+            },
+            "timeout": {
+                "type": "string",
+                "description": "Timeout, in milliseconds, to wait for one or more responses."
+            },
+            "max": {
+                "type": "string",
+                "description": "Maximum number of entries to reutrn at once."
+            }
+        },
+        "return": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "$ref": "/delphix-notification.json"
+            }
+        }
+    }
+}

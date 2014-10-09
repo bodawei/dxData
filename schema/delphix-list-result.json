@@ -1,0 +1,19 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "ListResult",
+    "description": "Result of a successful API call returning a list.",
+    "extends": {
+        "$ref": "/delphix-ok-result.json"
+    },
+    "properties": {
+        "total": {
+            "type": "integer",
+            "description": "The number of items in the entire result set, regardless of the requested page size. For some operations, this value is null."
+        },
+        "overflow": {
+            "type": "boolean",
+            "description": "True if the total number of matching items is too large to be calculated."
+        }
+    }
+}

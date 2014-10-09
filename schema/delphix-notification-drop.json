@@ -1,0 +1,15 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "NotificationDrop",
+    "description": "An object to track dropped notifications.",
+    "extends": {
+        "$ref": "/delphix-notification.json"
+    },
+    "properties": {
+        "dropCount": {
+            "description": "The number of notifications which were dropped since the last notifications were pulled. If this is greater than zero, you may want to refresh your view of the data to ensure everything is up to date.",
+            "type": "integer"
+        }
+    }
+}

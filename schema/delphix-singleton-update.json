@@ -1,0 +1,16 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "description": "An event indicating an update to a singleton object on the system.",
+    "extends": {
+        "$ref": "/delphix-notification.json"
+    },
+    "name": "SingletonUpdate",
+    "properties": {
+        "objectType": {
+            "description": "Type of target object.",
+            "format": "type",
+            "type": "string"
+        }
+    }
+}

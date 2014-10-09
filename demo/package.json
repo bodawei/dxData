@@ -1,0 +1,22 @@
+{
+    "name": "dxDataDemo",
+    "version": "0.9.0",
+    "description": "A application demonstrating using the principles of dxData",
+    "readme": "A application demonstrating using the principles of dxData",
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "grunt-cli": "^0.1.x",
+        "grunt-contrib-concat": "^0.5.x",
+        "grunt-shell": "^1.1.x",
+        "grunt-contrib-copy": "^0.6.x",
+        "grunt-contrib-clean": "^0.6.x",
+        "underscore": "1.7.0",
+        "jquery": "2.1.1",
+        "backbone": "1.1.2"
+    },
+    "repository" : {
+        "type": "git",
+	"url": "https://github.com/delphix/dxData"
+    }
+}

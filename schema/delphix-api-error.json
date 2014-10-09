@@ -1,0 +1,30 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "APIError",
+    "description": "Description of an error encountered during an API call.",
+    "extends": {
+        "$ref": "/delphix-typed-object.json"
+    },
+    "properties": {
+        "details": {
+            "type": [
+                "object",
+                "string"
+            ],
+            "description": "For validation errors, a map of fields to APIError objects. For all other errors, a string with further details of the error."
+        },
+        "action": {
+            "type": "string",
+            "description": "Action to be taken by the user, if any, to fix the underlying problem."
+        },
+        "id": {
+            "type": "string",
+            "description": "A stable identifier for the class of error encountered."
+        },
+        "commandOutput": {
+            "type": "string",
+            "description": "Extra output, often from a script or other external process, that may give more insight into the cause of this error."
+        }
+    }
+}

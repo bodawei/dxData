@@ -1,0 +1,19 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "OKResult",
+    "description": "Result of a successful API call.",
+    "extends": {
+        "$ref": "/delphix-call-result.json"
+    },
+    "properties": {
+        "result": {
+            "type": [
+                "object",
+                "array",
+                "string"
+            ],
+            "description": "Result of the operation. This will be specific to the API being invoked."
+        }
+    }
+}

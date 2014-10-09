@@ -1,0 +1,31 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "name": "ObjectNotification",
+    "description": "An event indicating a change to an object on the system.",
+    "extends": {
+        "$ref": "/delphix-notification.json"
+    },
+    "properties": {
+        "object": {
+            "type": "string",
+            "description": "Target object reference.",
+            "format": "objectReference",
+            "referenceTo": "/delphix-persistent-object.json"
+        },
+        "objectType": {
+            "type": "string",
+            "description": "Type of target object.",
+            "format": "type"
+        },
+        "eventType": {
+            "type": "string",
+            "enum": [
+                "CREATE",
+                "UPDATE",
+                "DELETE"
+            ],
+            "description": "Type of operation on the object."
+        }
+    }
+}

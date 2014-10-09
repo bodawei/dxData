@@ -1,0 +1,28 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "root": "/webapi/user",
+    "description": "A user account.",
+    "name": "User",
+    "extends": {
+        "$ref": "/delphix-persistent-object.json"
+    },
+    "properties": {
+        "name": {
+            "description": "The name of the user",
+            "type": "string",
+            "update": "optional"
+        }
+    },
+    "read": {},
+    "list": {},
+    "update": {},
+    "rootOperations": {
+        "currentUser": {
+            "return": {
+                "type": "object",
+                "$ref": "/user.json"
+            }
+        }
+    }
+}

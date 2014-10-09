@@ -1,0 +1,126 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ */
+
+/*global dx, beforeEach, expect, it, describe, jasmine */
+
+"use strict";
+
+describe("level2 creation listener", function() {
+    var context = {};
+    beforeEach(function() {
+        var schemaType = {
+            root: "/someURL",
+            name: "Type",
+            list: {}
+        };
+        var schemas = dx.core.data._prepareSchemas({r: schemaType});
+        dx.core.data._initCache(context);
+        dx.core.data._initFilters(context);
+        dx.core.data._generateModelConstructors(schemas, context);
+        dx.core.data._generateCollectionConstructors(schemas, context);
+    });
+
+    it("invokes the callback on notifications", function() {
+        context._filters.Type = function(collection, model, handler) {
+            handler(context._filters.INCLUDE);
+        };
+        var models = [];
+        var creationListener = new dx.core.data.CreationListener({
+            typeName: "Type",
+            callback: function(model) {
+                models.push(model);
+            },
+            disposeCallback: function() {},
+            context: context
+        });
+        var model1 = {};
+        var model2 = {};
+        creationListener._dxAddOrRemove(model1);
+        creationListener._dxAddOrRemove(model2);
+        expect(models).toEqual([model1, model2]);
+    });
+
+    it("supports undefined queryParameters", function() {
+        context._filters.Type = function() {};
+        var creationListener = new dx.core.data.CreationListener({
+            typeName: "Type",
+            callback: function() {},
+            disposeCallback: function() {},
+            context: context
+        });
+        expect(creationListener.getQueryParameters()).toBeUndefined();
+    });
+
+    it("supports defined queryParameters", function() {
+        context._filters.Type = function() {};
+        var creationListener = new dx.core.data.CreationListener({
+            typeName: "Type",
+            queryParams: {
+                user: "USER-2"
+            },
+            callback: function() {},
+            disposeCallback: function() {},
+            context: context
+        });
+        expect(creationListener.getQueryParameters()).toEqual({
+            user: "USER-2"
+        });
+    });
+
+    it("does not invokes the callback on notifications when the filter excludes the model", function() {
+        context._filters.Type = function(collection, model, handler) {
+            handler(context._filters.EXCLUDE);
+        };
+        var callbackSpy = jasmine.createSpy("callback");
+        var creationListener = new dx.core.data.CreationListener({
+            typeName: "Type",
+            callback: callbackSpy,
+            disposeCallback: function() {},
+            context: context
+        });
+        var model1 = {};
+        creationListener._dxAddOrRemove(model1);
+        expect(callbackSpy).not.toHaveBeenCalled();
+    });
+
+    it("blows up if the filter is UNKNOWN", function() {
+        context._filters.Type = function(collection, model, handler) {
+            handler(context._filters.UNKNOWN);
+        };
+        var creationListener = new dx.core.data.CreationListener({
+            typeName: "Type",
+            callback: function() {},
+            disposeCallback: function() {},
+            context: context
+        });
+        expect(function() {
+            creationListener._dxAddOrRemove({});
+        }).toDxFail("UNKNOWN filter result not supported by creation listeners");
+    });
+
+    it("marks self as no longer in use on disposal", function() {
+        context._filters.Type = function() {};
+        var creationListener = new dx.core.data.CreationListener({
+            typeName: "Type",
+            callback: function() {},
+            context: context
+        });
+        creationListener.dispose();
+        expect(creationListener.inUse).toBe(false);
+    });
+});

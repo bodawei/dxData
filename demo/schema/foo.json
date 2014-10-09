@@ -1,0 +1,65 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "root": "/webapi/foo",
+    "description": "Parsing Example",
+    "name": "Foo",
+    "extends": {
+        "$ref": "/delphix-persistent-object.json"
+    },
+    "properties": {
+        "bar": {
+            "description": "The traditional bar type",
+            "type": "integer",
+            "default": 5
+        }
+    },
+    "create": {},
+    "read": {},
+    "list": {},
+    "update": {},
+    "delete": {},
+    "operations": {
+        "opWithPayload": {
+            "description": "An operation with a payload and a really long description which we want to have wrapped around a lot",
+            "payload": {
+                "$ref": "/delphix-typed-object.json"
+            }
+        },
+        "opWithParameters": {
+            "description": "An operation with a parameters",
+            "parameters": {
+                "bar": {
+                    "type": "integer"
+                }
+            }
+        },
+        "opWithoutPayload": {
+            "description": "A boring operation with no payload, really",
+            "payload": {}
+        },
+        "opWithoutParameters": {
+            "description": "A boring operation with no parameters, really",
+            "parameters": {}
+        },
+        "opWithoutAnything": {
+            "description": "A boring operation with nothing"
+        }
+    },
+    "rootOperations": {
+        "rootOpWithPayload": {
+            "description": "An operation with a payload and a really long description which we want to have wrapped around a lot",
+            "payload": {
+                "$ref": "/delphix-typed-object.json"
+            }
+        },
+        "rootOpWithParameters": {
+            "description": "An operation with a parameters",
+            "parameters": {
+                "bar": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
