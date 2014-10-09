@@ -15,7 +15,7 @@ To this end, there is also a demo application included as part of this repositor
 involved here, and uses dxCoreData on the client side.  A client developer can see that with no special effort on their part, they can get reactive data
 showing up in their application.
 
-## Layout of th directory
+## Layout of the directory
 * demo         : Contains a demo application
 * Gruntfile.js : The build file for the contents of this directory
 * LISCENSE     : The usual license for this software
