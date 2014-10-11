@@ -653,11 +653,6 @@ function buildHandlersForCollectionSchema(schema) {
  * If 'keepCollections' is specified, then existing collections will be emptied instead of being completely discarded.
  */
 function setObjects(newObjects, keepCollections) {
-    // Comment out the following if-block when doing leak testing
-    if (keepCollections)
-        dx.core.data._cache.empty();
-    else
-        dx.core.data._cache.reset();
     objects = {};
 
     createObjects(newObjects, true);

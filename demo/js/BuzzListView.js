@@ -30,6 +30,17 @@ var BuzzListView = Backbone.View.extend({
         self.collection = buzzrData.getServerCollection('Buzz');
         self.collection.$$list();
         self.collection.on('add remove reset', self.render.bind(self));
+        self.collection.comparator = function(left, right) {
+            var a = left.get('when');
+            var b = right.get('when');
+            if (a > b) {
+                return 1;
+            } else if (b > a) {
+                return -1;
+            } else {
+                return 0;
+            }
+        };
     },
     
     render: function() {
@@ -38,14 +49,16 @@ var BuzzListView = Backbone.View.extend({
         self.$el.empty();
         var rowNum = 0;
         self.collection.each(function (buzz) {
-            var domElements = self.buzzTemplate({
-                'messageText' : buzz.get('text'),
+            var domElements = $(self.buzzTemplate({
                 'row': 'row' + (rowNum %2)
-            });
+            }));
+            var buzzView = new BuzzView(buzz);
+            domElements.append(buzzView.$el);
             self.$el.append(domElements);
             rowNum ++;
         })
     },
 
-    buzzTemplate: _.template('<div class="row <%= row %>"><%= messageText %></div>'),
+    buzzTemplate: _.template('<div class="row <%= row %>">' +
+    '</div>'),
 });

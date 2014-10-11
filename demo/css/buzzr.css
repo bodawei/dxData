@@ -67,10 +67,9 @@ body {
 }
 
 .heading img {
-    margin-left: 5px;
+    margin-top: 4px;
+    margin-left: 8px;
     margin-right: 5px;
-    width: 30px;
-    height: 30px;
 }
 
 .sid-buzzr-contents {
@@ -80,6 +79,16 @@ body {
 
 .input-row {
     height: 33px;
+}
+
+.buzz-time {
+    font-size: 10px;
+    text-align: right;
+}
+
+.buzz-writer {
+    font-size: 10px;
+    text-align: left;
 }
 
 .row {
@@ -92,9 +101,20 @@ body {
     background-color: #333300;
     color: white;
 }
+
+.row1 .buzz-writer,
+.row1 .buzz-time {
+    color: #888888;
+}
+
 .row0 {
     background-color: #FFFF50;
     color: black;
+}
+
+.row0 .buzz-writer,
+.row0 .buzz-time {
+    color: #888888;
 }
 
 .name-input {

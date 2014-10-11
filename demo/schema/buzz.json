@@ -9,8 +9,21 @@
     },
     "properties": {
         "text": {
-            "description": "The message being sent",
+            "description": "The message being sent.",
             "type": "string",
+            "required": true
+        },
+        "when": {
+            "description": "The date that the message was sent.",
+            "type": "string",
+            "format": "date",
+            "required": true
+        },
+        "who": {
+            "description": "The user that sent the buzz",
+            "type": "string",
+            "format": "objectReference",
+             "referenceTo": "/user.json",
             "required": true
         }
     },

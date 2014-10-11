@@ -18,17 +18,19 @@
 import Cookie
 import threading
 from schemaTypes import User
+from schemaTypes import Session
 
 # Extremely coarse grained lock
 sessionLock = threading.Lock();
 
-class Session:
+class SessionData:
     """
     A simple object representing a single session
     """
     sessionId = 0
     queue = []
     user = None
+    clientSession = None
     
     def __init__(self, sessionId):
         self.sessionId = sessionId;
@@ -61,21 +63,27 @@ class SimpleSessionManager():
             sessionId = int(sessionCookie.value)
 
         if not sessionId in self.sessions:
-            sessionLock.acquire();
-            sessionId = self.nextSession
-            self.nextSession = self.nextSession + 1
-            sessionLock.release()
-            newSession = Session(sessionId);
+            return None
+        else:
+            return self.sessions[sessionId]
 
-            userObject = User()
-            userObject.name = "Nameless Person"
-            storage.add(userObject);
-            newSession.user = userObject
-            self.sessions[sessionId] = newSession
+    def createSession(self, storage):
+        sessionLock.acquire();
+        sessionId = self.nextSession
+        self.nextSession = self.nextSession + 1
+        sessionLock.release()
+        newSession = SessionData(sessionId);
 
-        chosenSession = self.sessions[sessionId]
+        userObject = User()
+        userObject.name = "YourName"
+        clientSession = Session()
+        clientSession.sessionId = sessionId
+        newSession.user = userObject
+        newSession.clientSession = clientSession
+        self.sessions[sessionId] = newSession
+        storage.add(userObject);
 
-        return chosenSession
+        return newSession
 
     def queueNotification(self, notification):
         sessionLock.acquire();

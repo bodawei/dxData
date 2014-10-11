@@ -95,7 +95,7 @@ dx.core.data.setupDataSystem = function(schemas, queryParamAnnotations, context)
         _.extend(settings, {
             context: context
         });
-        var creationListener = new dx.core.data.CreationListener(settings);
+        var creationListener = new context.CreationListener(settings);
         context._modelSubscribersStore.add(creationListener);
         return creationListener;
     }
@@ -113,12 +113,12 @@ dx.core.data.setupDataSystem = function(schemas, queryParamAnnotations, context)
     function getServerSingleton(typeName, successError) {
         successError = successError || {};
         var model = context._cache.getCachedSingleton(typeName, {
-                update: !dx.core.data.notification.isStarted(),
+                update: !context.notification.isStarted(),
                 success: successError.success,
                 error: successError.error
             });
 
-        if (!dx.core.data.notification.isStarted()) {
+        if (!context.notification.isStarted()) {
             model._dxIsReady = false;   // if someone sets a ready handler, don't let it fire until new data is back
         }
 
@@ -141,7 +141,7 @@ dx.core.data.setupDataSystem = function(schemas, queryParamAnnotations, context)
         var model = context._cache.getCachedModel(reference, typeName,
             { suppressDefaultErrorHandler: suppressDefaultErrorHandler });
 
-        if (!dx.core.data.notification.isStarted()) {
+        if (!context.notification.isStarted()) {
             model._dxIsReady = false;   // if someone sets a ready handler, don't let it fire until new data is back
             model._dxFetch({ suppressDefaultErrorHandler: suppressDefaultErrorHandler });
         }
@@ -153,7 +153,7 @@ dx.core.data.setupDataSystem = function(schemas, queryParamAnnotations, context)
      * Gets a server model and returns a jQuery Promise.
      * This promise is resolved with the model if/when the model's ready' event is triggered.
      * It is rejected if/when the model's 'error' event is triggered.
-     * For a description of the parameters see dx.core.data.getServerModel()
+     * For a description of the parameters see context.getServerModel()
      */
     function getServerModelPromise(reference, typeName, successError) {
         var deferred = new $.Deferred();
@@ -166,7 +166,7 @@ dx.core.data.setupDataSystem = function(schemas, queryParamAnnotations, context)
      * Gets a server singleton and returns a jQuery Promise.
      * This promise is resolved with the singleton if/when the model's ready' event is triggered.
      * It is rejected if/when the singleton's 'error' event is triggered.
-     * For a description of the parameters see dx.core.data.getServerSingleton()
+     * For a description of the parameters see context.getServerSingleton()
      */
     function getServerSingletonPromise(typeName, successError) {
         var deferred = new $.Deferred();

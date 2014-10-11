@@ -18,8 +18,10 @@
 
 from schemaTypes import rootedTypeMapping
 from schemaTypes import rootMapping
-from schemaTypes import ListResult
-from schemaTypes import OKResult
+from returnValues import makeOKResult
+from returnValues import makeListResult
+from returnValues import makeBadUrl
+from returnValues import makeBadMethod
 import string
 import importlib
 import re
@@ -32,38 +34,8 @@ def doSchemaObjectOperation(context, path, httpMode, payload):
         if result is not None:
             return processRequest(context, rootMapping[key], httpMode, payload, result.group(2), result.group(4))
 
-    return BadURL()
+    return makeBadUrl()
 
-
-def BadURL():
-    return {
-        'code': 404,
-        'obj': None
-    }
-
-def badMethod():
-    return {
-        'code': 405,
-        'obj': None
-    }
-
-def ListResultInfo(listOfData):
-    result = ListResult()
-    result.status = 'OK'
-    result.result = listOfData
-    return {
-        'code': 200,
-        'obj': result
-    }
-
-def ObjResultInfo(obj):
-    result = OKResult()
-    result.status = 'OK'
-    result.result = obj
-    return {
-        'code': 200,
-        'obj': result
-    }
 
 def isReference(reference):
     index = reference.find('-')
@@ -81,7 +53,7 @@ def processRequest(context, details, httpMode, payload, reference, operation):
         elif httpMode is 'POST':
             return doCreate(context, details, payload);
         else:
-            return badMethod()
+            return makeBadMethod()
     elif operation is not None:
         return doObjectOperation(context, details, reference, operation, payload);
     elif not isReference(reference):
@@ -109,30 +81,30 @@ def makeObject(jsonData):
 def doList(context, details):
     """ """
     results = context['storage'].getAll(details['name'])
-    return ListResultInfo(results)
+    return makeListResult(results)
 
 def doCreate(context, details, payload):
     """ """
     obj = makeObject(payload)           # needed
     result = context['storage'].add(obj);
-    return ObjResultInfo(result.reference)
+    return makeOKResult(result.reference)
 
 def doRead(context, details, reference):
     """ """
     obj = context['storage'].get(details['name'], reference)
-    return ObjResultInfo(obj)
+    return makeOKResult(obj)
 
 def doUpdate(context, details, reference, payload):
     """ """
     obj = context['storage'].get(details['name'], reference)
     obj.fromJson(payload)
     context['storage'].update(obj)
-    return ObjResultInfo(None)
+    return makeOKResult(None)
 
 def doDelete(context, details, reference, payload):
     """ """
     context['storage'].delete(details['name'], reference)
-    return ObjResultInfo(None)
+    return makeOKResult(None)
 
 def doObjectOperation(context, details, reference, operation, payload):
     """ """
@@ -145,9 +117,9 @@ def doObjectOperation(context, details, reference, operation, payload):
         else:
             param = None
         result = func(context, param)
-        return ObjResultInfo(result);
+        return makeOKResult(result);
     except AttributeError:
-        return BadURL()
+        return makeBadUrl()
 
 def doRootOperation(context, details, operation, payload):
     """ """
@@ -159,7 +131,7 @@ def doRootOperation(context, details, operation, payload):
         else:
             param = None
         result = func(context, param)
-        return ObjResultInfo(result);
+        return makeOKResult(result);
     except AttributeError:
         return BadURL()
 

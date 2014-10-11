@@ -1,0 +1,18 @@
+{
+    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+    "license": "Apache-2.0",
+    "root": "/webapi/session",
+    "description": "A session object.",
+    "name": "Session",
+    "singleton": true,
+    "extends": {
+        "$ref": "/delphix-typed-object.json"
+    },
+    "properties": {
+        "sessionId": {
+            "description": "The id of the session",
+            "type": "number"
+        }
+    },
+    "read": {}
+}

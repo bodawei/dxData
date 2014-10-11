@@ -22,16 +22,36 @@
 
 var buzzrData = {};
 
+(function() {
+
+var hasSession = false;
+var docReady = false;
+
 // Start up the data system
 dx.core.data.setupDataSystem(ALL_SCHEMAS, undefined, buzzrData);
-buzzrData.notification.start();
 
-// As soon as we are ready, construct and insert the views.
+var session = buzzrData.getServerSingleton("Session");
+session.once('ready', function() {
+    hasSession = true;
+    buzzrData.notification.start();
+    startup();
+});
+
 $('document').ready(function() {
+    docReady = true;
+    startup();
+});
+
+function startup() {
+    if (!hasSession || !docReady) {
+        return;
+    }
     var currentUser = new CurrentUserView();
     var inputView = new BuzzInputView();
     var listView = new BuzzListView();
     $('.sid-buzzr-user-box').append(currentUser.$el);
     $('.sid-buzzr-input-box').append(inputView.$el);
     $('.sid-buzzr-list-box').append(listView.$el);
-})
+}
+
+})();

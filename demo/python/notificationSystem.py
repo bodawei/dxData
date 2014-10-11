@@ -18,6 +18,7 @@
 
 from schemaTypes import ObjectNotification
 from schemaTypes import ListResult
+from returnValues import makeListResult
 from time import *
 
 #
@@ -56,7 +57,4 @@ class NotificationSystem():
         while len(queue) is 0 and time() < finishTime:
             sleep(0.05)
             queue = session.getNotifications()
-        result = ListResult()
-        result.status = 'OK'
-        result.result = queue
-        return result
+        return makeListResult(queue)

@@ -24,6 +24,9 @@ from simpleStorage import SimpleStorage
 from notificationSystem import NotificationSystem
 from schemaObjectManager import doSchemaObjectOperation
 from schemaObjectManager import rootedTypeForType
+from returnValues import makeOKResult
+from returnValues import makeNotAuthorized
+from returnValues import makeInternalServer
 import json
 import string
 
@@ -35,37 +38,40 @@ class Handler(SimpleHTTPRequestHandler):
     def _doHandle(self, httpOperation):
         """Respond to a GET request."""
         try:
-            session = sessionManager.getSessionFromHttpHeaders(self.headers, storage)
-            payload = None
-            length = self.headers.getheader('content-length')
-            if length is not None:
-                intLength = int(length)
-                if intLength > 0:
-                    payload = self.rfile.read(intLength)
-
-            # special case notifications
-            if self.path.startswith('/webapi/notification') and httpOperation is 'GET':
-                result =  {
-                    'code': 200,
-                    'obj': notificationSys.getListResult(session)
-                }
+            if self.path.startswith('/webapi/session') and httpOperation is 'GET':
+                session = sessionManager.getSessionFromHttpHeaders(self.headers, storage)
+                if session is None:
+                    session = sessionManager.createSession(storage)
+                result =  makeOKResult(session.clientSession)
             else:
-                if payload is not None and len(payload) > 0:
-                    try:
-                        payload = json.loads(payload)
-                    except ValueError:
-                        payload = None
-                context = {
-                    "storage": storage,
-                    "session": session
-                }
-                result = doSchemaObjectOperation(context, self.path, httpOperation, payload)
+                session = sessionManager.getSessionFromHttpHeaders(self.headers, storage)
+                if session is None:
+                    result =  makeNotAuthorized(session.clientSession)
+                else:
+                    payload = None
+                    length = self.headers.getheader('content-length')
+                    if length is not None:
+                        intLength = int(length)
+                        if intLength > 0:
+                            payload = self.rfile.read(intLength)
+
+                    # special case notifications
+                    if self.path.startswith('/webapi/notification') and httpOperation is 'GET':
+                        result = notificationSys.getListResult(session)
+                    else:
+                        if payload is not None and len(payload) > 0:
+                            try:
+                                payload = json.loads(payload)
+                            except ValueError:
+                                payload = None
+                        context = {
+                            "storage": storage,
+                            "session": session
+                        }
+                        result = doSchemaObjectOperation(context, self.path, httpOperation, payload)
         except BaseException as e:
             print("EXCEPTION DURING REQUEST HANDLING: " + str(e))
-            result = {
-                'code': 500,
-                'obj': None
-            }
+            result = makeInternalServer()
         
         self.send_response(result['code'])
         session.writeSessionHeader(self)

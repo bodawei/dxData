@@ -26,6 +26,11 @@
 var BuzzInputView = Backbone.View.extend({
     initialize: function() {
         var self = this;
+
+        var promise = buzzrData.rootOps.User.$currentUser();
+        promise.done(function(okResult) {
+            self.user = okResult.get('result');
+        });
         self.render();
     },
     
@@ -46,10 +51,16 @@ var BuzzInputView = Backbone.View.extend({
     },
     
     sendBuzz: function() {
+        var self = this;
+
         var input = $('.sid-buzz-input').val();
         
         var buzz = buzzrData.newClientModel('Buzz');
         buzz.set('text', input);
+        buzz.set('when', new Date());
+        if  (self.user) {
+            buzz.set('who', self.user.get("reference"));
+        }
         buzzrData.rootOps.Buzz.$$create(buzz, {
             success: function() {
                 $('.sid-buzz-input').val("");
