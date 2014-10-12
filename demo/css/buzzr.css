@@ -33,7 +33,7 @@ body {
     left: 50%;
     top: 5%;
     bottom: 5%;
-    background-color: white;
+    background-color: #FFFFC0;
     border-radius: 20px;
     transform: translateX(-50%);
     border-width: 1px;
@@ -75,10 +75,6 @@ body {
 .sid-buzzr-contents {
     overflow-x: hidden;
     overflow-y: scroll;
-}
-
-.input-row {
-    height: 33px;
 }
 
 .buzz-time {
