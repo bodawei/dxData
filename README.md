@@ -18,7 +18,7 @@ showing up in their application.
 ## Layout of the directory
 * demo         : Contains a demo application
 * Gruntfile.js : The build file for the contents of this directory
-* LISCENSE     : The usual license for this software
+* LICENSE      : The usual license for this software
 * package.json : a nodejs/npm file that tells npm what it needs to install to use this
 * README.md    : This file
 * schema       : Basic JSON schemas for data types needed for using the dxData system
@@ -63,7 +63,7 @@ dxData is, like all such projects, a result of the ideas and contributions of ma
 * Dan Kimmel
 * David Burrowes
 * Eric Schrock
-* Henrik Mattesson
+* Henrik Mattsson
 * Henry Rodrick
 * Prateek Sharma
 * You?
