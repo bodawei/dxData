@@ -2,9 +2,9 @@
 ## What is it
 dxData is a system for communicating data between a client and a server.  It involves several key ideas:
 * Reactivity: Changes in server data are reflected immediately on the client without an app developer needing to do special work.
-* Unidirectionality: The data "source of truth" is to be found on the server. Changes to that data go through the server (the client doesn't try to outhink the server)
+* Unidirectionality: The data "source of truth" is to be found on the server. Changes to that data go through the server (the client doesn't try to out-think the server)
 * Common types: The data and operations communicated between client and server are defined in a language neutral form that assures that both
-the client and the server code is always in lockstep agreement, preventing code from inadvertantly diverging, and helping to support the previous
+the client and the server code is always in lockstep agreement, preventing code from inadvertently diverging, and helping to support the previous
 two principles.
 
 In this repository is a JavaScript library (dxCoreData) which provides the client side of this interaction pattern, and a base set of schemas (definitions of common data types).
