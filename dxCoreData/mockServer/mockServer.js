@@ -13,14 +13,14 @@
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, _, delphixSchema */
+/*global dx, $, _, delphixSchema, jasmine */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.test.mockServer");
+dx.namespace('dx.test.mockServer');
 
 /*
  * This provides an interface to a mock server to be used for testing purposes. When installed, this replaces the
@@ -39,24 +39,21 @@ dx.namespace("dx.test.mockServer");
  * each declaration:
  *
  *      setObjects()
- *      setStandardOperations()
- *      setObjectOperations()
- *      setRootOperations()
+ *      addStandardOperations()
+ *      addRootOperations()
+ *      addObjectOperations()
  *      setResources()
  *
  * When used in integration context, the following should be used instead:
  *
- *      updateStandardOperations()
- *      updateObjectOperations()
- *      updateRootOperations()
  *      createObjects()
  *      deleteObjects()
  *      updateObjects()
  */
 (function () {
-var INLINE_REF = "/{ref}/";
-var TRAILING_REF = "/{ref}";
-var MOCK_SERVER_RESPONSE_TYPE = "MockServerResponse";
+var INLINE_REF = '/{ref}/';
+var TRAILING_REF = '/{ref}';
+var MOCK_SERVER_RESPONSE_TYPE = 'MockServerResponse';
 
 // data and operations provided by the client
 var objects = {};
@@ -71,8 +68,8 @@ var rootOpHandlers = {};
 var objectOpHandlers = {};
 var objectHandlers = {};  // object Read Update and Delete handlers
 
-var objectOperationRegex = "(^.*)/([^/]+)/([^/]+)$";
-var objectRegEx = "(^.*)/([^/]+)$";
+var objectOperationRegex = '(^.*)/([^/]+)/([^/]+)$';
+var objectRegEx = '(^.*)/([^/]+)$';
 var START_REF = 1000;
 var nextReference = START_REF; // Start high to avoid conflict with common test IDs
 var pendingCallbacks = [];
@@ -89,15 +86,15 @@ var browserMode = false;
  */
 function runSuccessCallback(config, callback, data, textStatus, xhr) {
     if (dx.test.mockServer.debug) {
-        dx.debug("Call successful. " + config.url, config);
+        dx.debug('Call successful. ' + config.url, config);
     }
     if (callback) {
         if (dx.test.mockServer.debug) {
-            dx.debug("Queueing result. " + config.url + " " + JSON.stringify(data), data, config);
+            dx.debug('Queueing result. ' + config.url + ' ' + JSON.stringify(data), data, config);
         }
         var docall = function() {
             if (dx.test.mockServer.debug) {
-                dx.debug("Sending result.  " + config.url + " " + JSON.stringify(data), data, config);
+                dx.debug('Sending result.  ' + config.url + ' ' + JSON.stringify(data), data, config);
             }
             callback(data, textStatus, xhr);
         };
@@ -108,15 +105,15 @@ function runSuccessCallback(config, callback, data, textStatus, xhr) {
 
 function runErrorCallback(config, callback, xhr, textStatus) {
     if (dx.test.mockServer.debug) {
-        dx.debug("Call failed. " + config.url, xhr, config);
+        dx.debug('Call failed. ' + config.url, xhr, config);
     }
     if (callback) {
         if (dx.test.mockServer.debug) {
-            dx.debug("Queueing error result." + JSON.stringify(xhr), xhr, config);
+            dx.debug('Queueing error result.' + JSON.stringify(xhr), xhr, config);
         }
         var docall = function() {
             if (dx.test.mockServer.debug) {
-                dx.debug("Delivering result: " + JSON.stringify(xhr) + " for " + config.url, xhr, config);
+                dx.debug('Delivering result: ' + JSON.stringify(xhr) + ' for ' + config.url, xhr, config);
             }
             callback(xhr, textStatus);
         };
@@ -142,28 +139,28 @@ function runOrScheduleCallback(config, callback) {
 
 function makeOkResult(result) {
     return {
-      type: "OKResult",
+      type: 'OKResult',
       result: result
     };
 }
 
 function makeListResult(result) {
     return {
-      type: "ListResult",
+      type: 'ListResult',
       result: result
     };
 }
 
 function makeObjectMissingResult(type, ref, operation) {
     return {
-        "type":"ErrorResult",
-        "status":"ERROR",
-        "error": {
-            "type":"APIError",
-            "details":"Could not find the object " + type + "/" + ref + " when doing a " + operation + " operation.",
-            "action":"Check your test",
-            "id":"object.missing",
-            "commandOutput":null
+        'type':'ErrorResult',
+        'status':'ERROR',
+        'error': {
+            'type':'APIError',
+            'details':'Could not find the object ' + type + '/' + ref + ' when doing a ' + operation + ' operation.',
+            'action':'Check your test',
+            'id':'object.missing',
+            'commandOutput':null
         }
     };
 }
@@ -183,12 +180,12 @@ function MockXhr(statusCode, statusText, responseText) {
 }
 
 MockXhr.prototype.getResponseHeader = function(header) {
-    if (header.toLowerCase() === "content-type") {
+    if (header.toLowerCase() === 'content-type') {
         try {
             JSON.parse(this.responseText);  // see if we can parse it as JSON
-            return "application/json";
+            return 'application/json';
         } catch (e) {
-            return "text/plain";
+            return 'text/plain';
         }
     }
 };
@@ -207,11 +204,11 @@ MockXhr.prototype.getResponseHeader = function(header) {
  *
  * Simple example: mocking an ErrorResult:
  *
- *           dx.test.mockServer.setRootOperations({
+ *           dx.test.mockServer.addRootOperations({
  *              SomeSchemaType: {
  *                  someRootOperation: function(options) {
  *                      return dx.test.mockServer.makeMockServerResponse({
- *                          type: "ErrorResult"
+ *                          type: 'ErrorResult'
  *                      });
  *                  }
  *              }
@@ -219,23 +216,23 @@ MockXhr.prototype.getResponseHeader = function(header) {
  *
  * Example: customizing xhr fields:
  *
- *          dx.test.mockServer.setRootOperations({
+ *          dx.test.mockServer.addRootOperations({
  *              SomeSchemaType: {
  *                  someRootOperation: function(options) {
  *                      return dx.test.mockServer.makeMockServerResponse({
- *                          type: "ErrorResult"
+ *                          type: 'ErrorResult'
  *                      }, {
  *                          status: 500,
- *                          statusText: "Internal Server Error",
- *                          responseText: "Something bad happened!"
+ *                          statusText: 'Internal Server Error',
+ *                          responseText: 'Something bad happened!'
  *                      },
- *                      "You Lose");
+ *                      'You Lose');
  *                  }
  *              }
  *          });
  */
 function publicMakeMockServerResponse(data, xhrProperties, statusText) {
-    var xhr = makeMockXhr(200, "", "");
+    var xhr = makeMockXhr(200, '', '');
     _.extend(xhr, xhrProperties || {});
 
     return {
@@ -269,7 +266,7 @@ function mockServerAjaxHandler(config) {
     callCount++;
 
     if (dx.test.mockServer.debug) {
-        dx.debug("Received call:   " + config.url + " (" + config.type + ")", config);
+        dx.debug('Received call:   ' + config.url + ' (' + config.type + ')', config);
     }
 
     /*
@@ -279,35 +276,51 @@ function mockServerAjaxHandler(config) {
     if (config.beforeSend) {
         config.beforeSend({
             setRequestHeader: function(hdr, value) {
-                if (hdr == "X-HTTP-Method-Override" && value == "DELETE") {
-                    config.type = "DELETE";
+                if (hdr == 'X-HTTP-Method-Override' && value == 'DELETE') {
+                    config.type = 'DELETE';
                 }
             }
         });
     }
 
     var isList = false;
-    var operationType = config.type ? config.type.toUpperCase() : "GET";
-    var path = operationType + ":" + config.url;
+    var operationType = config.type ? config.type.toUpperCase() : 'GET';
+    var path = operationType + ':' + config.url;
 
     if (_.isString(config.data)) {
         config.data = JSON.parse(config.data);
     }
 
     var ooMatch = new RegExp(objectOperationRegex).exec(path);
-    var ooPath = "";
-    var ooObjectRef = "";
+    var ooPath = '';
+    var ooObjectRef = '';
     if (ooMatch !== null) {
         ooPath = ooMatch[1] + INLINE_REF + ooMatch[3];
         ooObjectRef = ooMatch[2];
     }
 
     var objectMatch = new RegExp(objectRegEx).exec(path);
-    var objectPath = "";
-    var objectObjectRef = "";
+    var objectPath = '';
+    var objectObjectRef = '';
     if (objectMatch !== null) {
         objectPath = objectMatch[1] + TRAILING_REF;
         objectObjectRef = objectMatch[2];
+    }
+
+    function handleResultObj(result) {
+        if (result && result.type === MOCK_SERVER_RESPONSE_TYPE) {
+            var status = result.xhr.status;
+            if (status >= 200 && status < 300 || status === 304) {
+                runSuccessCallback(config, config.success, result.data, result.statusText, result.xhr);
+            } else {
+                runErrorCallback(config, config.error, result.xhr, result.statusText);
+            }
+        } else {
+            // If we get this far, we have to have handled the request successfully
+            result = dx.core.util.deepClone(result);
+            var okResult = isList ? makeListResult(result) : makeOkResult(result);
+            runSuccessCallback(config, config.success, okResult, 'success', makeMockXhr(200, 'OK', okResult));
+        }
     }
 
     function runAjax() {
@@ -324,20 +337,20 @@ function mockServerAjaxHandler(config) {
                 }
             } else if (objectHandlers[objectPath]) {
                 result = objectHandlers[objectPath](objectObjectRef, config);
-            } else if (operationType === "GET" && resources[config.url]) {
+            } else if (operationType === 'GET' && resources[config.url]) {
                 var data = resources[config.url];
-                if (config.dataType == "script") {
+                if (config.dataType == 'script') {
                     // Script files are expected to be loaded by jQuery
                     try {
                         $.globalEval(data);
                     } catch (e) {
                         runErrorCallback(config, config.error,
-                            makeMockXhr(500, e, e.toString()), "error");
+                            makeMockXhr(500, e, e.toString()), 'error');
                         return;
                     }
                 }
-                runSuccessCallback(config, config.success, data, "success",
-                    makeMockXhr(200, "OK", resources[config.url]));
+                runSuccessCallback(config, config.success, data, 'success',
+                    makeMockXhr(200, 'OK', resources[config.url]));
                 return;
             } else if (browserMode) {
                 /*
@@ -346,21 +359,24 @@ function mockServerAjaxHandler(config) {
                  * its behavior can be overridden for unit tests.
                  */
                 return dx.test.mockServer.jQueryAjax(config);
+            } else if (operationType === 'GET' && !resources[config.url]) {
+                throw new InternalHttpError('Tried to get a resource that doesn\'t exist (' + config.url + ')',
+                    404, 'Not found');
             } else {
                 /*
                  * Logically, this is a 404 situation.  But, also in theory this really shouldn't ever happen.  An
                  * exception makes it clearer that the developer has done something very unok
                  */
-                dx.fail("The requested resource is not available: " + path);
+                dx.fail('The requested resource is not available: ' + path);
             }
         } catch (err) {
             if (err instanceof InternalHttpError) {
                 runErrorCallback(config, config.error, makeMockXhr(err.statusCode, err.error, err.responseText),
-                    "error");
+                    'error');
                 // Try to mimic the whole ajax behavior on errors.
-                if (config.statusCode && config.statusCode["404"]) {
+                if (config.statusCode && config.statusCode['404']) {
                     runErrorCallback(config, config.statusCode[err.statusCode],
-                        makeMockXhr(err.statusCode, err.error, err.responseText), "error");
+                        makeMockXhr(err.statusCode, err.error, err.responseText), 'error');
                 }
                 return;
             } else {
@@ -368,18 +384,13 @@ function mockServerAjaxHandler(config) {
             }
         }
 
-        if (result && result.type === MOCK_SERVER_RESPONSE_TYPE) {
-            var status = result.xhr.status;
-            if (status >= 200 && status < 300 || status === 304) {
-                runSuccessCallback(config, config.success, result.data, result.statusText, result.xhr);
-            } else {
-                runErrorCallback(config, config.error, result.xhr, result.statusText);
-            }
+        // Result is a promise
+        if (!dx.core.util.isNone(result) && _.isFunction(result.done)) {
+            result.done(function(res) {
+                handleResultObj(res);
+            });
         } else {
-            // If we get this far, we have to have handled the request successfully
-            result = dx.core.util.deepClone(result);
-            var okResult = isList ? makeListResult(result) : makeOkResult(result);
-            runSuccessCallback(config, config.success, okResult, "success", makeMockXhr(200, "OK", okResult));
+            handleResultObj(result);
         }
     }
 
@@ -389,7 +400,7 @@ function mockServerAjaxHandler(config) {
      * can't get the result and return it later, we need to actually defer execution. Therefore this needs to be
      * managed at the mock server level.
      */
-    if (browserMode && (path == "GET:" + delphixSchema["/delphix-notification.json"].root)) {
+    if (browserMode && (path == 'GET:' + delphixSchema['/delphix-notification.json'].root)) {
         /*
          * This behavior, silently ignoring notification calls if one is outstanding, is a bit suspect, but is
          * required when loading mock infrastructure when the app is already loaded. In this case the notification
@@ -434,14 +445,14 @@ function buildRootOperationHandlers(schema) {
 
     if (schema.rootOperations) {
         _.each(schema.rootOperations, function (operationInfo, operationName) {
-            var httpMethod = "payload" in operationInfo ? "POST" : "GET";
-            rootOpHandlers[httpMethod + ":" + schema.root + "/" + operationName] = function(payload) {
+            var httpMethod = 'payload' in operationInfo ? 'POST' : 'GET';
+            rootOpHandlers[httpMethod + ':' + schema.root + '/' + operationName] = function(payload) {
                 if (rootOperations[name] && rootOperations[name][operationName]) {
                     var userFunction = rootOperations[name][operationName];
                     return userFunction(payload);
                 } else {
-                    dx.fail("Test called " + schema.root + "/" + operationName +
-                        ", but no such operation registered.");
+                    dx.fail('Test called ' + schema.root + '/' + operationName +
+                        ', but no such operation registered.');
                 }
             };
         });
@@ -452,7 +463,7 @@ function buildHandlersForSingletonSchema(schema) {
     var name = schema.name;
 
     if (schema.read) {
-        staticHandlers["GET:" + schema.root] = function() {
+        staticHandlers['GET:' + schema.root] = function() {
             if (standardOperations[name] && standardOperations[name].read) {
                 var userFunction = standardOperations[name].read;
                 return userFunction();
@@ -467,7 +478,7 @@ function buildHandlersForSingletonSchema(schema) {
      * as there is with ordinary objects
      */
     if (schema.update || schema.create) {
-        staticHandlers["POST:" + schema.root] = function(config) {
+        staticHandlers['POST:' + schema.root] = function(config) {
             var userProvidedHandlers = standardOperations[name] || {};
 
             if (schema.create) {
@@ -499,7 +510,7 @@ function buildHandlersForCollectionSchema(schema) {
 
     // list - return the current list of objects
     if (schema.list) {
-        staticHandlers["GET:" + schema.root] = function(config) {
+        staticHandlers['GET:' + schema.root] = function(config) {
             if (standardOperations[name] && standardOperations[name].list) {
                 var userFunction = standardOperations[name].list;
                 return userFunction(config);
@@ -511,7 +522,7 @@ function buildHandlersForCollectionSchema(schema) {
                 }
 
                 // Object notifications are special in that they automatically disappear once read
-                if (name == "Notification") {
+                if (name == 'Notification') {
                     var orig = result;
                     result = result.slice(0);
                     orig.length = 0;
@@ -523,7 +534,7 @@ function buildHandlersForCollectionSchema(schema) {
 
     // create - add the object to the collection and return a reference
     if (schema.create) {
-        staticHandlers["POST:" + schema.root] = function(config) {
+        staticHandlers['POST:' + schema.root] = function(config) {
             if (standardOperations[name] && standardOperations[name].create) {
                 var userFunction = standardOperations[name].create;
                 return userFunction(config);
@@ -531,11 +542,11 @@ function buildHandlersForCollectionSchema(schema) {
                 var data = config.data;
 
                 if (data.type !== name) {
-                    dx.fail("MockServer: You are trying to create a " + name + " but received a payload of type " +
-                        data.type + ". Please use updateStandardOperations() to roll your own $$create() logic.");
+                    dx.fail('MockServer: You are trying to create a ' + name + ' but received a payload of type ' +
+                        data.type + '. Please use addStandardOperations() to roll your own $$create() logic.');
                 }
 
-                data.reference = name.toUpperCase() + "-" + (nextReference++);
+                data.reference = name.toUpperCase() + '-' + (nextReference++);
                 data.type = name;
 
                 var objectsToCreate = {};
@@ -550,11 +561,11 @@ function buildHandlersForCollectionSchema(schema) {
 
     // read - find the target object and return it
     if (schema.read) {
-        objectHandlers["GET:" + schema.root + TRAILING_REF] = function(ref) {
+        objectHandlers['GET:' + schema.root + TRAILING_REF] = function(ref) {
             var result = _.find(getCollection(name), function(o) { return o.reference == ref; });
             if (result === undefined) {
-                throw new InternalHttpError("Tried to get an object that doesn't exist (" + ref + ")",
-                    404, "Not found", makeObjectMissingResult(name, ref, "read"));
+                throw new InternalHttpError('Tried to get an object that doesn\'t exist (' + ref + ')',
+                    404, 'Not found', makeObjectMissingResult(name, ref, 'read'));
             }
 
             if (standardOperations[name] && standardOperations[name].read) {
@@ -568,7 +579,7 @@ function buildHandlersForCollectionSchema(schema) {
 
     // update - find the target object and overlay new properties
     if (schema.update) {
-        objectHandlers["POST:" + schema.root  + TRAILING_REF] = function(ref, config) {
+        objectHandlers['POST:' + schema.root  + TRAILING_REF] = function(ref, config) {
             var existing = _.find(getCollection(name), function(o) { return o.reference == ref; });
             if (existing) {
                 if (standardOperations[name] && standardOperations[name].update) {
@@ -583,8 +594,8 @@ function buildHandlersForCollectionSchema(schema) {
                     updateObjects([config.data]);
                 }
             } else {
-                throw new InternalHttpError("Tried to update an object that doesn't exist (" + ref + ")",
-                    404, "Not found", makeObjectMissingResult(name, ref, "update"));
+                throw new InternalHttpError('Tried to update an object that doesn\'t exist (' + ref + ')',
+                    404, 'Not found', makeObjectMissingResult(name, ref, 'update'));
             }
 
             return null;
@@ -592,19 +603,19 @@ function buildHandlersForCollectionSchema(schema) {
     }
 
     // delete - remove the object from the collection
-    if (schema["delete"]) {
-        objectHandlers["DELETE:" + schema.root + TRAILING_REF] = function(ref) {
+    if (schema['delete']) {
+        objectHandlers['DELETE:' + schema.root + TRAILING_REF] = function(ref, payload) {
             var existing = objectExistsInType(ref, name);
             if (existing) {
-                if (standardOperations[name] && standardOperations[name]["delete"]) {
-                    var userFunction = standardOperations[name]["delete"];
-                    return userFunction(ref);
+                if (standardOperations[name] && standardOperations[name]['delete']) {
+                    var userFunction = standardOperations[name]['delete'];
+                    return userFunction(ref, payload);
                 } else {
                     deleteObjects([ref]);
                 }
             } else {
-                throw new InternalHttpError("Tried to delete an object that doesn't exist (" + ref + ")",
-                    404, "Not found", makeObjectMissingResult(name, ref, "delete"));
+                throw new InternalHttpError('Tried to delete an object that doesn\'t exist (' + ref + ')',
+                    404, 'Not found', makeObjectMissingResult(name, ref, 'delete'));
             }
 
             return null;
@@ -615,8 +626,8 @@ function buildHandlersForCollectionSchema(schema) {
 
     if (schema.operations) {
         _.each(schema.operations, function (operationInfo, operationName) {
-            var httpMethod = "payload" in operationInfo ? "POST" : "GET";
-            objectOpHandlers[httpMethod + ":" + schema.root +
+            var httpMethod = 'payload' in operationInfo ? 'POST' : 'GET';
+            objectOpHandlers[httpMethod + ':' + schema.root +
                              INLINE_REF + operationName] = function(objectRef, payload) {
                 if (objectOperations[name] && objectOperations[name][operationName]) {
                     var existing = objectExistsInType(objectRef, name);
@@ -624,12 +635,12 @@ function buildHandlersForCollectionSchema(schema) {
                         var userFunction = objectOperations[name][operationName];
                         return userFunction(objectRef, payload);
                     } else {
-                        throw new InternalHttpError("Tried to call with an object that doesn't exist (" +
-                            objectRef + ")", 404, "Not found", makeObjectMissingResult(name, objectRef, operationName));
+                        throw new InternalHttpError('Tried to call with an object that doesn\'t exist (' +
+                            objectRef + ')', 404, 'Not found', makeObjectMissingResult(name, objectRef, operationName));
                     }
                 } else {
-                    dx.fail("Test called " + schema.root + "/" + objectRef + "/" +
-                        operationName + ", but no such operation registered.");
+                    dx.fail('Test called ' + schema.root + '/' + objectRef + '/' +
+                        operationName + ', but no such operation registered.');
                 }
             };
         });
@@ -649,10 +660,8 @@ function buildHandlersForCollectionSchema(schema) {
  *        } ],
  *        schemaSingletonType : { ... properties ... }
  *    }
- *
- * If 'keepCollections' is specified, then existing collections will be emptied instead of being completely discarded.
  */
-function setObjects(newObjects, keepCollections) {
+function setObjects(newObjects) {
     objects = {};
 
     createObjects(newObjects, true);
@@ -697,17 +706,30 @@ function getAjaxCallCount() {
  * equivalent of delivering HTTP responses to the client.  We need these callbacks to be executed asynchronously to
  * preserve proper execution semantics. But async tests are a pain to write, so we adopt a hybrid where tests can call
  * this to explicitly finish the psuedo-async interaction. We wait until there are no pending calls, in case a callback
- * itself initiates a request, unless respondUntilEmpty is set.
+ * itself initiates a request, unless respondUntilEmpty is set. If maxResponseCount it set, only maxReponseCount will
+ * be processed.
  */
-function respond(onlyRespondOnce) {
+function respond(onlyRespondOnce, maxResponseCount) {
     var executeCallback = function(cb) {
         cb();
     };
 
+    var remainingResponses = maxResponseCount;
+    var currentCallbacks;
     do {
-        var currentCallbacks = pendingCallbacks;
-        pendingCallbacks = [];
-        _.each(currentCallbacks, executeCallback);
+        if (maxResponseCount) {
+            var responsesToProcess = Math.min(pendingCallbacks.length, remainingResponses);
+            remainingResponses -= responsesToProcess;
+            currentCallbacks = pendingCallbacks.splice(0, responsesToProcess);
+            _.each(currentCallbacks, executeCallback);
+            if (remainingResponses === 0) {
+                break;
+            }
+        } else {
+            currentCallbacks = pendingCallbacks;
+            pendingCallbacks = [];
+            _.each(currentCallbacks, executeCallback);
+        }
     } while (!onlyRespondOnce && pendingCallbacks.length);
 }
 
@@ -719,10 +741,8 @@ function respondOnlyToCurrent() {
     respond(true);
 }
 
-/**
- * Sets the "standard (CRUD) object operations" that can be invoked by model-generator generated objects.
- *
- * This does not check that the input parameters are valid, in order to improve performance.
+/*
+ * Sets the 'standard (CRUD) object operations' that can be on the mock server.
  *
  * The parameter is a hash of the following form:
  *    {
@@ -739,16 +759,30 @@ function respondOnlyToCurrent() {
  * You may override any of the standard operations that are supported for a given type. MockServer already provides
  * default implementations of these handlers, but overriding these may be useful in certain cases, such as testing
  * various failure scenarious as well as being able to spy on these operations.
+ * Any operations defined in the parameter will replace their equivalents already installed in the mock server, if any.
+ * This does not check that the input parameters are valid, in order to improve performance.
  */
-function setStandardOperations(operationHash) {
-    standardOperations = {};
-    updateStandardOperations(operationHash);
+function addStandardOperations(operationHash) {
+    _.each(operationHash, function(ops, type) {
+        standardOperations[type] = standardOperations[type] || {};
+        _.extend(standardOperations[type], ops);
+    });
 }
 
-/**
- * Sets the "root operations" that can be invoked by model-generator generated objects.
- *
- * This does not check that the input parameters are valid, in order to improve performance.
+/*
+ * Create and return a Jasmine spy that is added for the specified standard operation for the specified type.
+ */
+function spyOnStandardOperation(typeName, operationName) {
+    var spy = jasmine.createSpy(typeName + '.' + operationName + 'Spy');
+
+    standardOperations[typeName] = standardOperations[typeName] || {};
+    standardOperations[typeName][operationName] = spy;
+
+    return spy;
+}
+
+/*
+ * Sets the 'root operations' that can be on the mock server.
  *
  * The parameter is a hash of the following form:
  *    {
@@ -761,16 +795,30 @@ function setStandardOperations(operationHash) {
  *        },
  *        ...
  *    }
+ * If any of the operations already exist in the server, they will be replaced with the value in the params.
+ * This does not check that the input parameters are valid, in order to improve performance.
  */
-function setRootOperations(operationHash) {
-    rootOperations = {};
-    updateRootOperations(operationHash);
+function addRootOperations(operationHash) {
+    _.each(operationHash, function(ops, type) {
+        rootOperations[type] = rootOperations[type] || {};
+        _.extend(rootOperations[type], ops);
+    });
 }
 
-/**
- * Sets the "object operations" that can be invoked by model-generator generated objects.
- *
- * This does not check that the input parameters are valid, in order to improve performance.
+/*
+ * Create and return a Jasmine spy that is added for the specified root operation for the specified type.
+ */
+function spyOnRootOperation(typeName, operationName) {
+    var spy = jasmine.createSpy(typeName + '.' + operationName + 'Spy');
+
+    rootOperations[typeName] = rootOperations[typeName] || {};
+    rootOperations[typeName][operationName] = spy;
+
+    return spy;
+}
+
+/*
+ * Adds one or more 'object operations' that can be on the mock server.
  *
  * The parameter is a hash of the following form:
  *    {
@@ -780,10 +828,27 @@ function setRootOperations(operationHash) {
  *        },
  *        ...
  *    }
+ *
+ * If any of the operations already exist in the server, they will be replaced with the value in the params.
+ * This does not check that the input parameters are valid, in order to improve performance.
  */
-function setObjectOperations(operationHash) {
-    objectOperations = {};
-    updateObjectOperations(operationHash);
+function addObjectOperations(operationHash) {
+    _.each(operationHash, function(ops, type) {
+        objectOperations[type] = objectOperations[type] || {};
+        _.extend(objectOperations[type], ops);
+    });
+}
+
+/*
+ * Create and return a Jasmine spy that is added for the specified object operation for the specified type.
+ */
+function spyOnObjectOperation(typeName, operationName) {
+    var spy = jasmine.createSpy(typeName + '.' + operationName + 'Spy');
+
+    objectOperations[typeName] = objectOperations[typeName] || {};
+    objectOperations[typeName][operationName] = spy;
+
+    return spy;
 }
 
 /**
@@ -793,7 +858,7 @@ function setObjectOperations(operationHash) {
  *
  * For example, this might be called with:
  * {
- *     "/test/template/basic.hjs": "<div id=basicTest></div>"
+ *     '/test/template/basic.hjs': '<div id=basicTest></div>'
  * }
  *
  * This does not check that the input parameters are valid, in order to improve performance.
@@ -824,18 +889,17 @@ function publicGetSingleton(typeName) {
 }
 
 /**
- * Reset all the "user" provided data in this mock server. Delete all objects, root operations and object operations.
- * If 'keepCollections' is set, then existing collections are emptied instead of being replaced completely.
+ * Reset all the 'user' provided data in this mock server. Delete all objects, root operations and object operations.
  */
-function reset(keepCollections) {
+function reset() {
     nextReference = START_REF;
     callCount = 0;
     pendingCallbacks = [];
-    setObjects({}, keepCollections);
+    setObjects({});
     setResources({});
-    setStandardOperations({});
-    setRootOperations({});
-    setObjectOperations({});
+    standardOperations = {};
+    rootOperations = {};
+    objectOperations = {};
 }
 
 /*
@@ -891,14 +955,14 @@ function createObjects(newObjects, skipNotifications) {
                 if (!o.type)
                     o.type = typeName;
 
-                if (o.type !== "ObjectNotification" && o.type !== "SingletonUpdate" && o.type !== "NotificationDrop") {
+                if (o.type !== 'ObjectNotification' && o.type !== 'SingletonUpdate' && o.type !== 'NotificationDrop') {
                     if (!o.reference)
-                        o.reference = o.type.toUpperCase() + "-" + (nextReference++);
+                        o.reference = o.type.toUpperCase() + '-' + (nextReference++);
 
                     if (!skipNotifications) {
                         notifications.push({
-                            type: "ObjectNotification",
-                            eventType: "CREATE",
+                            type: 'ObjectNotification',
+                            eventType: 'CREATE',
                             objectType: o.type,
                             object: o.reference
                         });
@@ -913,7 +977,7 @@ function createObjects(newObjects, skipNotifications) {
 
             if (!skipNotifications) {
                 notifications.push({
-                    type: "SingletonUpdate",
+                    type: 'SingletonUpdate',
                     objectType: typeName
                 });
             }
@@ -954,8 +1018,8 @@ function deleteObjects(objectsToDelete) {
 
         _.each(toDelete, function(o) {
             notifications.push({
-                type: "ObjectNotification",
-                eventType: "DELETE",
+                type: 'ObjectNotification',
+                eventType: 'DELETE',
                 objectType: type,
                 object: o.reference
             });
@@ -976,10 +1040,10 @@ function updateObject(dst, src) {
         } else if (_.isObject(propval)) {
             var schema = dx.core.data.parsedSchemas[dst.type];
             if (_.isUndefined(schema)) {
-                dx.fail("Attempting to update object with a type that doesn't exist in the schema: " + dst.type);
+                dx.fail('Attempting to update object with a type that doesn\'t exist in the schema: ' + dst.type);
             }
             if (_.isUndefined(schema.properties[propname])) {
-                dx.fail("Attempting to update an invalid property named " + propname + " on object of type " +
+                dx.fail('Attempting to update an invalid property named ' + propname + ' on object of type ' +
                     dst.type);
             }
 
@@ -1008,7 +1072,7 @@ function updateObject(dst, src) {
  * an array of partial objects:
  *
  * [
- *      { reference: "ref", property: value, ... },
+ *      { reference: 'ref', property: value, ... },
  *      ...
  * ]
  *
@@ -1026,14 +1090,14 @@ function updateObjects(objectsToUpdate) {
         updateObject(tgt, o);
         if (tgt.reference) {
             notifications.push({
-                type: "ObjectNotification",
-                eventType: "UPDATE",
+                type: 'ObjectNotification',
+                eventType: 'UPDATE',
                 objectType: tgt.type,
                 object: tgt.reference
             });
         } else {
             notifications.push({
-                type: "SingletonUpdate",
+                type: 'SingletonUpdate',
                 objectType: tgt.type
             });
 
@@ -1041,41 +1105,6 @@ function updateObjects(objectsToUpdate) {
     });
 
     postNotifications(notifications);
-}
-
-/*
- * Update the set of standard (CRUD) operations. This is used in integration context to override the functionality
- * provided by the default mock implementation. The format of the 'standardOperations' argument is the same as for
- * setStandardOperations().
- */
-function updateStandardOperations(operations) {
-    _.each(operations, function(ops, type) {
-        standardOperations[type] = standardOperations[type] || {};
-        _.extend(standardOperations[type], ops);
-    });
-}
-
-/*
- * Update the set of root operations. This is used in integration context to augment the functionality provided by the
- * default mock implementation. The format of the 'rootOperations' argument is the same as for setRootOperations().
- */
-function updateRootOperations(operations) {
-    _.each(operations, function(ops, type) {
-        rootOperations[type] = rootOperations[type] || {};
-        _.extend(rootOperations[type], ops);
-    });
-}
-
-/*
- * Update the set of per-object operations. As with updateRootOperations(), this is used in integration context
- * to override the default mock behavior. THe format of the 'objectOperations' argument is the same as for
- * setObjectOperations().
- */
-function updateObjectOperations(operations) {
-    _.each(operations, function(ops, type) {
-        objectOperations[type] = objectOperations[type] || {};
-        _.extend(objectOperations[type], ops);
-    });
 }
 
 var jQueryAjax = $.ajax;
@@ -1090,8 +1119,8 @@ function startMockServer() {
     // Hack to get around a problem for testing
     dx.core.browser.getWindowLocation = function() {
         return {
-            origin: "",
-            hash: ""
+            origin: '',
+            hash: ''
         };
     };
 }
@@ -1112,9 +1141,9 @@ _.each(delphixSchema, function(schema, schemaKey) {
         if (!schema.name) {
             // don't modify the original schema
             schema = dx.core.util.deepClone(schema);
-            schema.name = schemaKey.replace(/\.json$/, "").
-                replace(/-/g, "_").
-                replace(/\//g, "");
+            schema.name = schemaKey.replace(/\.json$/, '').
+                replace(/-/g, '_').
+                replace(/\//g, '');
         }
 
         if (schema.singleton) {
@@ -1131,9 +1160,12 @@ _.extend(dx.test.mockServer, {
     stop: stopMockServer,
     setObjects: setObjects,
     setResources: setResources,
-    setStandardOperations: setStandardOperations,
-    setRootOperations: setRootOperations,
-    setObjectOperations: setObjectOperations,
+    addStandardOperations: addStandardOperations,
+    spyOnStandardOperation: spyOnStandardOperation,
+    addRootOperations: addRootOperations,
+    spyOnRootOperation: spyOnRootOperation,
+    addObjectOperations: addObjectOperations,
+    spyOnObjectOperation: spyOnObjectOperation,
     reset: reset,
     respond: respond,
     respondOnlyToCurrent: respondOnlyToCurrent,
@@ -1146,9 +1178,6 @@ _.extend(dx.test.mockServer, {
     createObjects: createObjects,
     deleteObjects: deleteObjects,
     updateObjects: updateObjects,
-    updateStandardOperations: updateStandardOperations,
-    updateRootOperations: updateRootOperations,
-    updateObjectOperations: updateObjectOperations,
     makeMockServerResponse: publicMakeMockServerResponse,
     jQueryAjax: jQueryAjax
 });

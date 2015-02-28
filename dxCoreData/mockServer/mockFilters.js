@@ -18,9 +18,9 @@
 
 /*global dx, _ */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.test.mockServer._filters");
+dx.namespace('dx.test.mockServer._filters');
 
 /*
  * Defines a set of filter helper functions for delphix schema root types to be used by the Mock Server.
@@ -43,24 +43,24 @@ dx.namespace("dx.test.mockServer._filters");
  */
 (function() {
 
-var DATE_PROPS = ["fromDate", "startDate", "toDate", "endDate"];
+var DATE_PROPS = ['fromDate', 'startDate', 'toDate', 'endDate'];
 
 function missingObject(type, reference) {
-    dx.fail("The " + type + " (" + reference + ") does not exist in the mock server and is needed to filter your " +
-            "$$list operation.");
+    dx.fail('The ' + type + ' (' + reference + ') does not exist in the mock server and is needed to filter your ' +
+            '$$list operation.');
 }
 
 // Parse the 'mapsTo' property for the query parameter and follow the data mapping chain
 function followDataMapping(object, mapsTo, parsedSchemas) {
-    var parts = mapsTo.split(".");
+    var parts = mapsTo.split('.');
 
     // We know the last part will be property to compare. Anything before that will be a chain of object dereferencing
     var finalAttrName = parts.pop();
 
     var currObj = object;
     _.each(parts, function(part) {
-        if (part.charAt(0) !== "$") {
-            dx.fail("Can only chain object references.");
+        if (part.charAt(0) !== '$') {
+            dx.fail('Can only chain object references.');
         }
 
         part = part.substr(1);
@@ -84,7 +84,7 @@ function followDataMapping(object, mapsTo, parsedSchemas) {
 function checkSimpleProp(qParamVal, qParamName, objectSchema, object, parsedSchemas) {
     var mapsTo = objectSchema.list.parameters[qParamName].mapsTo;
     if (!mapsTo) {
-        dx.fail("No mapsTo property found for query parameter " + qParamName + ".");
+        dx.fail('No mapsTo property found for query parameter ' + qParamName + '.');
     }
 
     var pair = followDataMapping(object, mapsTo, parsedSchemas);
@@ -100,17 +100,17 @@ function checkSimpleProp(qParamVal, qParamName, objectSchema, object, parsedSche
 function checkDateProp(qParamVal, qParamName, objectSchema, object, parsedSchemas) {
     var mapsTo = objectSchema.list.parameters[qParamName].mapsTo;
     if (!mapsTo) {
-        dx.fail("No mapsTo property found for query parameter " + qParamName);
+        dx.fail('No mapsTo property found for query parameter ' + qParamName);
     }
 
     if (!_.contains(DATE_PROPS, qParamName)) {
-        dx.fail("Expected a date related query parameter (" + DATE_PROPS.join(", ") + ") but found: " + qParamName);
+        dx.fail('Expected a date related query parameter (' + DATE_PROPS.join(', ') + ') but found: ' + qParamName);
     }
 
     var inequalityType = objectSchema.list.parameters[qParamName].inequalityType;
 
     if (_.isUndefined(inequalityType)) {
-        dx.fail("Date property '" + qParamName + "' missing 'inequalityType' schema property");
+        dx.fail('Date property "' + qParamName + '" missing "inequalityType" schema property');
     }
 
     var pair = followDataMapping(object, mapsTo, parsedSchemas);
@@ -132,7 +132,7 @@ function checkDateProp(qParamVal, qParamName, objectSchema, object, parsedSchema
         return false;
     }
 
-    if (_.contains(["fromDate", "startDate"], qParamName)) {
+    if (_.contains(['fromDate', 'startDate'], qParamName)) {
         if (objAttrVal.getTime() < qParamVal.getTime()) {
             return false;
         }
@@ -152,7 +152,7 @@ function checkDateProp(qParamVal, qParamName, objectSchema, object, parsedSchema
 /*
  * Helper to determine if a mock server object should be included given it's index and paging parameters.
  * Note that this assumes not specifying a page size implicitly sets it to a particular size (generally 25),
- * while specifying 0 means "all".
+ * while specifying 0 means 'all'.
  */
 function checkPageSize(qParams, objectIndex, collectionLength) {
     var start, end, pageSize, pageOffset;
@@ -165,7 +165,7 @@ function checkPageSize(qParams, objectIndex, collectionLength) {
     pageOffset = qParams.pageOffset || 0; // No pageOffset gives you the first page (page 0)
 
     if (pageSize < 0) {
-        dx.fail("pageSize must be a positive integer");
+        dx.fail('pageSize must be a positive integer');
     }
 
     if (pageOffset >= 0) {
@@ -189,7 +189,7 @@ function checkProps(qParamNamesToCheck, qParams, object, objectSchema, parsedSch
             return true;
         }
 
-        var dateParams = ["fromDate", "startDate", "toDate", "endDate"];
+        var dateParams = ['fromDate', 'startDate', 'toDate', 'endDate'];
         var qParamVal = qParams[qParamName];
 
         if (_.contains(dateParams, qParamName)) {
@@ -241,15 +241,15 @@ function makeUberFilter(type) {
  * Wraps an individual filter function to take care of logic around paging.
  */
 function maybeAddPagingToFilter(type, filterFunc) {
-    var supportsPaging = "pageSize" in dx.core.data.parsedSchemas[type].list.parameters;
+    var supportsPaging = 'pageSize' in dx.core.data.parsedSchemas[type].list.parameters;
 
     return function wrappedFilter(collection, qParams) {
         var pagingParams,
             result = collection;
 
         // Separate paging parameters from other parameters
-        pagingParams = _.pick(qParams, "pageSize", "pageOffset");
-        qParams = _.omit(qParams, "pageSize", "pageOffset");
+        pagingParams = _.pick(qParams, 'pageSize', 'pageOffset');
+        qParams = _.omit(qParams, 'pageSize', 'pageOffset');
 
         result = filterFunc(collection, qParams);
 
