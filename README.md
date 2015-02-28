@@ -83,6 +83,6 @@ dxData is, like all such projects, a result of the ideas and contributions of ma
  limitations under the License.
 ```
 
-Copyright (c) 2014 by Delphix. All rights reserved.
+Copyright (c) 2014, 2015 by Delphix. All rights reserved.
 
 
