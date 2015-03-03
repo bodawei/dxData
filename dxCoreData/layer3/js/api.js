@@ -50,7 +50,7 @@ dx.namespace("dx.core.data");
  *                                     screen. This is mainly useful if you have an operation error handler which,
  *                                     after examining the ErrorResult model, you still wish to show it to the user.
  */
-dx.core.data.setupDataSystem = function(schemas, queryParamAnnotations, context) {
+dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations) {
     /*
      * Returns a new client model.
      *

@@ -28,7 +28,7 @@ var hasSession = false;
 var docReady = false;
 
 // Start up the data system
-dx.core.data.setupDataSystem(ALL_SCHEMAS, undefined, buzzrData);
+dx.core.data.setupDataSystem(ALL_SCHEMAS, buzzrData);
 
 var session = buzzrData.getServerSingleton("Session");
 session.once('ready', function() {
