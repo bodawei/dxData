@@ -1,22 +1,8 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, _, delphixSchema, jasmine */
+/*global dx, $, _, delphixSchema */
 
 'use strict';
 
@@ -33,30 +19,83 @@ dx.namespace('dx.test.mockServer');
  * providing asynchronous semantics within tests. In integration context, responses are delivered asynchronously as
  * they would be from a real server.
  *
- * Once this file is loaded, it overrides $.ajax() functionality permanently.
+ * $.ajax() is overriden as soon as start() is called, and is restored when stop() is called.
  *
- * The following methods are provided to configure server side state in unit context, described in more detail above
- * each declaration:
- *
- *      setObjects()
- *      addStandardOperations()
- *      addRootOperations()
- *      addObjectOperations()
- *      setResources()
- *
- * When used in integration context, the following should be used instead:
- *
+ * Functions:
  *      createObjects()
- *      deleteObjects()
  *      updateObjects()
+ *      deleteObjects()
+ *
+ * These three routines add, update and delete objects and singletons in the mock server, respectively. By default,
+ * each also creates the appropriate Notification objects (e.g. object creation notifications) for non-singleton
+ * objects, though this can be overridden with a second argument.  The first argument to each can be either an object
+ * or an array.
+ *
+ * When it is an object, it must have this structure:
+ *    {
+ *        TypeName : [ {
+ *            { ... properties ... },
+ *            { ... properties ... },
+ *            ...
+ *        } ],
+ *        TypeName : { ... properties ... },
+ *        ...
+ *    }
+ * Each of the "{ ... properties ... }" in the above description is a collection of properties for a particular
+ * object instance as defined by the corresponding schema (but it need not be all the properties).
+ * TypeName is either a singleton type name, or the name of a type that has a root property or a type descended from
+ * a type with a root property.
+ * If the individual objects do not have a type property, one will be added using the TypeName value.
+ *
+ * When it is an array, then it must have this structure:
+ *    [{ ... properties ... }, { ... properties ... }, ...]
+ *
+ * There are some special cases for each of the three functions. In particular:
+ *  - createObjects() will automatically add a generated reference property if the object type allows it and one isn't
+ *                    provided in the "{ ... properties ... }" declaration
+ *  - updateObjects() requires that there be a reference property in each object declaration.
+ *  - deleteObjects() Requires a reference property. It can also accept an array of raw object references rather than
+ *                    a whole object definition when the argument is an array.
+ *
+ * Note that these do not do full validation of the values passed in, so if dx.core.data calls fail reporting that
+ * invalid properties were received, you should check your object definitions.
+ *
+ * More functions:
+ *      addStandardOpHandlers()
+ *      addStandardOpHandler()
+ *      addRootOpHandlers()
+ *      addRootOpHandler()
+ *      addObjectOpHandlers()
+ *      addObjectOpHandler()
+ *
+ * These are used to set up handlers for Standard Operations (list, read, create, update, delete), root operations and
+ * object operations as defined by the schemas. The plural forms all take arguments in this form:
+ *    {
+ *        RootTypeName : {
+ *            opName: function() {},
+ *            ...
+ *        },
+ *        ...
+ *    }
+ * After the operation handler has been installed, any call to that operation on the mock server will invoke the
+ * handler.  Note that if a handler already exists in the server, a second addFooOperation call will replace the first.
+ * The singular forms all take arguments in this form:
+ *    addFooOperation(RootTypeName, operationName, function() {});
+ * These operate identically, but are terser if you have just a single operation to register.
+ *
+ * More functions:
+ *      addResources()
+ *
+ * This is just used to register values that should be returned when a particular URL is GET'ed from the server.
  */
-(function () {
+(function() {
 var INLINE_REF = '/{ref}/';
 var TRAILING_REF = '/{ref}';
 var MOCK_SERVER_RESPONSE_TYPE = 'MockServerResponse';
 
 // data and operations provided by the client
 var objects = {};
+var singletons = {};
 var standardOperations = {};
 var rootOperations = {};
 var objectOperations = {};
@@ -76,6 +115,8 @@ var pendingCallbacks = [];
 var callCount = 0;
 var pendingNotificationCallback;
 var browserMode = false;
+var schemasByName = {};
+var STANDARD_OPERATONS = ['list', 'read', 'create', 'update', 'delete'];
 
 /*
  * Wrappers to invoke a callback synchronously or asynchronously. If the caller explicitly requests sync behavior, then
@@ -204,7 +245,7 @@ MockXhr.prototype.getResponseHeader = function(header) {
  *
  * Simple example: mocking an ErrorResult:
  *
- *           dx.test.mockServer.addRootOperations({
+ *           dx.test.mockServer.addRootOpHandlers({
  *              SomeSchemaType: {
  *                  someRootOperation: function(options) {
  *                      return dx.test.mockServer.makeMockServerResponse({
@@ -216,7 +257,7 @@ MockXhr.prototype.getResponseHeader = function(header) {
  *
  * Example: customizing xhr fields:
  *
- *          dx.test.mockServer.addRootOperations({
+ *          dx.test.mockServer.addRootOpHandlers({
  *              SomeSchemaType: {
  *                  someRootOperation: function(options) {
  *                      return dx.test.mockServer.makeMockServerResponse({
@@ -259,7 +300,7 @@ InternalHttpError.prototype.constructor = InternalHttpError;
  * Checks whether an object with the specified reference, exists in the specified type of collection
  */
 function objectExistsInType(objectRef, typeName) {
-    return _.find(getCollection(typeName), function(o) { return o.reference == objectRef; }) ? true : false;
+    return _.find(getCollection(typeName), function(o) { return o.reference === objectRef; }) ? true : false;
 }
 
 function mockServerAjaxHandler(config) {
@@ -276,7 +317,7 @@ function mockServerAjaxHandler(config) {
     if (config.beforeSend) {
         config.beforeSend({
             setRequestHeader: function(hdr, value) {
-                if (hdr == 'X-HTTP-Method-Override' && value == 'DELETE') {
+                if (hdr === 'X-HTTP-Method-Override' && value === 'DELETE') {
                     config.type = 'DELETE';
                 }
             }
@@ -339,7 +380,7 @@ function mockServerAjaxHandler(config) {
                 result = objectHandlers[objectPath](objectObjectRef, config);
             } else if (operationType === 'GET' && resources[config.url]) {
                 var data = resources[config.url];
-                if (config.dataType == 'script') {
+                if (config.dataType === 'script') {
                     // Script files are expected to be loaded by jQuery
                     try {
                         $.globalEval(data);
@@ -400,7 +441,7 @@ function mockServerAjaxHandler(config) {
      * can't get the result and return it later, we need to actually defer execution. Therefore this needs to be
      * managed at the mock server level.
      */
-    if (browserMode && (path == 'GET:' + delphixSchema['/delphix-notification.json'].root)) {
+    if (browserMode && (path === 'GET:' + delphixSchema['/delphix-notification.json'].root)) {
         /*
          * This behavior, silently ignoring notification calls if one is outstanding, is a bit suspect, but is
          * required when loading mock infrastructure when the app is already loaded. In this case the notification
@@ -422,18 +463,61 @@ function mockServerAjaxHandler(config) {
     }
 }
 
+/*
+ * Returns the object with the specified reference, or undefined if no such object. If a type is specified, this may
+ * use a faster algorithm to look up the object.
+ */
+function getObject(objectRef, type) {
+    if (type) {
+        return _.find(objects[type], function(obj) { return obj.reference === objectRef; });
+    } else {
+        var matchedObject;
+        _.find(objects, function(singletonOrCollection) {
+            if (_.isArray(singletonOrCollection)) {
+                matchedObject = _.find(singletonOrCollection, function(anObject) {
+                    return anObject.reference === objectRef;
+                });
+                return (matchedObject !== undefined);
+            } else {
+                if (singletonOrCollection.reference === objectRef) {
+                    matchedObject = singletonOrCollection;
+                    return true;
+                }
+                return false;
+            }
+        });
+        return matchedObject;
+    }
+}
+
+function isSingleton(typeName) {
+    var schema = schemasByName[typeName];
+    return (schema && schema.singleton);
+}
+
 // Convenience function to get (or create) a singleton object
 function getSingleton(typeName) {
-    if (!objects[typeName]) {
-        objects[typeName] = {
+    var schema = schemasByName[typeName];
+    if (!schema || !schema.singleton) {
+        dx.fail(typeName + ' is not a singleton type.');
+    }
+
+    if (!singletons[typeName]) {
+        singletons[typeName] = {
             type: typeName
         };
     }
-    return objects[typeName];
+
+    return singletons[typeName];
 }
 
 // Convenience function to get (or create) a collection of objects
 function getCollection(typeName) {
+    var schema = schemasByName[typeName];
+    if (schema.singleton) {
+        dx.fail(typeName + ' is not a root collection type.');
+    }
+
     if (!objects[typeName]) {
         objects[typeName] = [];
     }
@@ -444,7 +528,7 @@ function buildRootOperationHandlers(schema) {
     var name = schema.name;
 
     if (schema.rootOperations) {
-        _.each(schema.rootOperations, function (operationInfo, operationName) {
+        _.each(schema.rootOperations, function(operationInfo, operationName) {
             var httpMethod = 'payload' in operationInfo ? 'POST' : 'GET';
             rootOpHandlers[httpMethod + ':' + schema.root + '/' + operationName] = function(payload) {
                 if (rootOperations[name] && rootOperations[name][operationName]) {
@@ -522,7 +606,7 @@ function buildHandlersForCollectionSchema(schema) {
                 }
 
                 // Object notifications are special in that they automatically disappear once read
-                if (name == 'Notification') {
+                if (name === 'Notification') {
                     var orig = result;
                     result = result.slice(0);
                     orig.length = 0;
@@ -543,7 +627,7 @@ function buildHandlersForCollectionSchema(schema) {
 
                 if (data.type !== name) {
                     dx.fail('MockServer: You are trying to create a ' + name + ' but received a payload of type ' +
-                        data.type + '. Please use addStandardOperations() to roll your own $$create() logic.');
+                        data.type + '. Please use addStandardOpHandlers() to roll your own $$create() logic.');
                 }
 
                 data.reference = name.toUpperCase() + '-' + (nextReference++);
@@ -562,7 +646,7 @@ function buildHandlersForCollectionSchema(schema) {
     // read - find the target object and return it
     if (schema.read) {
         objectHandlers['GET:' + schema.root + TRAILING_REF] = function(ref) {
-            var result = _.find(getCollection(name), function(o) { return o.reference == ref; });
+            var result = _.find(getCollection(name), function(o) { return o.reference === ref; });
             if (result === undefined) {
                 throw new InternalHttpError('Tried to get an object that doesn\'t exist (' + ref + ')',
                     404, 'Not found', makeObjectMissingResult(name, ref, 'read'));
@@ -580,7 +664,7 @@ function buildHandlersForCollectionSchema(schema) {
     // update - find the target object and overlay new properties
     if (schema.update) {
         objectHandlers['POST:' + schema.root  + TRAILING_REF] = function(ref, config) {
-            var existing = _.find(getCollection(name), function(o) { return o.reference == ref; });
+            var existing = _.find(getCollection(name), function(o) { return o.reference === ref; });
             if (existing) {
                 if (standardOperations[name] && standardOperations[name].update) {
                     var userFunction = standardOperations[name].update;
@@ -603,12 +687,12 @@ function buildHandlersForCollectionSchema(schema) {
     }
 
     // delete - remove the object from the collection
-    if (schema['delete']) {
+    if (schema.delete) {
         objectHandlers['DELETE:' + schema.root + TRAILING_REF] = function(ref, payload) {
             var existing = objectExistsInType(ref, name);
             if (existing) {
-                if (standardOperations[name] && standardOperations[name]['delete']) {
-                    var userFunction = standardOperations[name]['delete'];
+                if (standardOperations[name] && standardOperations[name].delete) {
+                    var userFunction = standardOperations[name].delete;
                     return userFunction(ref, payload);
                 } else {
                     deleteObjects([ref]);
@@ -625,7 +709,7 @@ function buildHandlersForCollectionSchema(schema) {
     buildRootOperationHandlers(schema);
 
     if (schema.operations) {
-        _.each(schema.operations, function (operationInfo, operationName) {
+        _.each(schema.operations, function(operationInfo, operationName) {
             var httpMethod = 'payload' in operationInfo ? 'POST' : 'GET';
             objectOpHandlers[httpMethod + ':' + schema.root +
                              INLINE_REF + operationName] = function(objectRef, payload) {
@@ -647,61 +731,443 @@ function buildHandlersForCollectionSchema(schema) {
     }
 }
 
-/**
- * Sets set of objects in the mock server. When called with a parameter, the parameter is used to set the objects that
- * this mock server has available to operate on.  Note that this will add a type and reference to each object if it
- * doesn't already have one.
+/*
+ * Creates a set of objects in the mock server that can be accessed and manipulated by other operations on the mock
+ * server.
  *
- * The parameter is expected to be a hash of the following form:
- *    {
- *        schemaCollectionType : [ {
- *            { ... properties ... },
- *            { ... properties ... }
- *        } ],
- *        schemaSingletonType : { ... properties ... }
- *    }
+ * The parameters for this are discussed in the header comment to this file.
+ *
+ * Note:
+ *   * In all cases, if the object type allows for a reference property, and that is not included in the object
+ *     structure, then this will automatically add one.
+ *   * If the object type has a reference, then a corresponding CREATE notification object will be automatically created
+ *     unless skipNotifications is true.
+ *   * You can "create" a singleton with this call. In that case, it will simply behave the same as an update.
  */
-function setObjects(newObjects) {
-    objects = {};
-
-    createObjects(newObjects, true);
+function createObjects(newObjects, skipNotifications) {
+    processArgumentsWithHandler(newObjects, skipNotifications, createObject);
 }
 
-/**
- * Returns the object with the specified reference, or undefined if no such object. If a type is specified, this may
- * use a faster algorithm to look up the object.
+/*
+ * Given an object, do the following:
+ *   - Convert its properties to a JSON-compatible format
+ *   - Make sure it is a known schema object type
+ *   - Make sure it is a singleton or belongs to a type with a root property
+ *   - Add a reference  if appropriate
+ *   - Add the object to the mock server's internal cache of objects, replacing any instance already there
+ *   - Generate object creation or singleton update notifications if appropriate
  */
-function getObject(objectRef, type) {
-    if (type !== undefined) {
-        return _.find(objects[type], function(obj) { return obj.reference == objectRef; });
+function createObject(newObject, skipNotification) {
+    if (!newObject.type) {
+        dx.fail('No type property found on object.', newObject);
+    }
+
+    makeValuesJSON(newObject);
+
+    var schema = schemasByName[newObject.type];
+    if (!schema) {
+        dx.fail(newObject.type + ' is not a known schema type.');
+    }
+
+    if (schema.singleton) {
+        singletons[newObject.type] = newObject;
+
+        if (!skipNotification) {
+            postNotifications([{
+                type: 'SingletonUpdate',
+                objectType: newObject.type
+            }]);
+        }
     } else {
-        var matchedObject;
-        _.find(objects, function(singletonOrCollection) {
-            if (_.isArray(singletonOrCollection)) {
-                matchedObject = _.find(singletonOrCollection, function(anObject) {
-                    return (anObject.reference == objectRef);
-                });
-                return (matchedObject !== undefined);
-            } else {
-                if (singletonOrCollection.reference == objectRef) {
-                    matchedObject = singletonOrCollection;
-                    return true;
-                }
-                return false;
-            }
-        });
-        return matchedObject;
+        var rootType = getRootTypeForObject(schema);
+        var shouldHaveReference = !!getPropDef(schema, 'reference');
+
+        if (!rootType) {
+            dx.fail(newObject.type + ' is not a type descended from one with a root property.');
+        }
+
+        objects[rootType] = objects[rootType] || [];
+        objects[rootType].push(newObject);
+
+        if (shouldHaveReference && !newObject.reference) {
+            newObject.reference = newObject.type.toUpperCase() + '-' + nextReference;
+            nextReference++;
+        }
+
+        // Notifications only make sense for an object with a reference
+        if (newObject.reference && !skipNotification) {
+            postNotifications([{
+                type: 'ObjectNotification',
+                eventType: 'CREATE',
+                objectType: newObject.type,
+                object: newObject.reference
+            }]);
+        }
     }
 }
 
-/**
+/*
+ * Updates a set of objects in the mock server.
+ *
+ * The parameters for this are discussed in the header comment to this file.
+ *
+ * Note:
+ *   * All non-singleton objects MUST have a reference property set.
+ *   * If the object type has a reference or is a singleton, then a corresponding UPDATE notification object will be
+ *     automatically created unless skipNotifications is true.
+ */
+function updateObjects(objectsToUpdate, skipNotifications) {
+    processArgumentsWithHandler(objectsToUpdate, skipNotifications, updateObject);
+}
+
+function updateObject(newObject, skipNotification) {
+    makeValuesJSON(newObject);
+
+    var schema = schemasByName[newObject.type];
+
+    if (schema && schema.singleton) {
+        updateObjectProperties(getSingleton(newObject.type), newObject);
+
+        if (!skipNotification) {
+            postNotifications([{
+                type: 'SingletonUpdate',
+                objectType: newObject.type
+            }]);
+        }
+    } else {
+        if (!newObject.reference) {
+            dx.fail('Can not update an object without at least a reference.');
+        }
+        var existing = getObject(newObject.reference);
+
+        if (!existing) {
+            dx.fail('There is no object with the reference ' + newObject.reference + ' to update.');
+        }
+
+        updateObjectProperties(existing, newObject);
+
+        if (!skipNotification) {
+            postNotifications([{
+                type: 'ObjectNotification',
+                eventType: 'UPDATE',
+                objectType: existing.type,
+                object: existing.reference
+            }]);
+        }
+    }
+}
+
+/*
+ * Overlays the target with the new properties while being aware of the fact that objects that have no schema type
+ * associated with them should be treated as an "atomic" value and not overlaid but rather replaced as a unit.
+ */
+function updateObjectProperties(targetObject, newProperties) {
+    _.each(newProperties, function(propval, propname) {
+        if (_.isObject(propval)) {
+            var schema = schemasByName[targetObject.type];
+            var propDef = getPropDef(schema, propname);
+
+            if (propDef && propDef.$ref) {
+                if (!_.isObject(targetObject[propname])) {
+                    targetObject[propname] = {};
+                }
+                updateObjectProperties(targetObject[propname], propval);
+                propval = targetObject[propname];
+            }
+        }
+        targetObject[propname] = propval;
+    });
+
+    return targetObject;
+}
+
+/*
+ * Deletes a set of objects in the mock server.
+ *
+ * The parameters for this are discussed in the header comment to this file.
+ * In addition, if the objectsToDelete is an array, you can simply specify an array of references:
+ *    deleteObjects(['REF-1', 'REF-2', 'REF-3'...])
+ * This is, far and away, the most common use of this.
+ *
+ * Note:
+ *   * This will throw an error if you try to delete a Singleton.
+ *   * All objects MUST have a reference property set.
+ *   * A corresponding DELETE notification object will be automatically created unless skipNotifications is true.
+ */
+function deleteObjects(objectsToDelete, skipNotifications) {
+    processArgumentsWithHandler(objectsToDelete, skipNotifications, deleteObject);
+}
+
+function deleteObject(doomedObjectOrRef, skipNotifications) {
+    var targetReference = doomedObjectOrRef;
+
+    if (_.isObject(doomedObjectOrRef)) {
+        targetReference = doomedObjectOrRef.reference;
+    }
+
+    if (!targetReference) {
+        dx.fail('No reference provided to identify the object to delete.');
+    }
+
+    if (isSingleton(targetReference)) {
+        dx.fail('Can not delete singletons (' + targetReference + ' is a singleton).');
+    }
+
+    var deletedIt = _.find(objects, function(objectsArray) {
+        return _.find(objectsArray, function(anObject, index) {
+            if (anObject.reference === targetReference) {
+                objectsArray.splice(index, 1);
+
+                if (!skipNotifications) {
+                    postNotifications([{
+                        type: 'ObjectNotification',
+                        eventType: 'DELETE',
+                        objectType: anObject.type,
+                        object: anObject.reference
+                    }]);
+                }
+
+                return true;
+            }
+        });
+    });
+
+    if (!deletedIt) {
+        dx.fail('Could not find ' + targetReference + ' to delete it.');
+    }
+}
+
+/*
+ * Modifies the provided object so that its values are all JSON-compatible.  Specifically
+ * this replaces 'undefined' with 'null', and replaces Date instances with JSON-compatible strings.
+ */
+function makeValuesJSON(anObject) {
+    _.each(anObject, function(value, key) {
+        if (_.isUndefined(value)) {
+            anObject[key] = null;
+        } else if (_.isDate(value)) {
+            anObject[key] = value.toJSON();
+        } else if (_.isArray(value)) {
+            _.each(value, makeValuesJSON);
+        } else if (_.isObject(value)) {
+            makeValuesJSON(value);
+        }
+    });
+}
+
+/*
+ * Routine that process arguments to several input routines in a uniform way.  The arguments may be in one of two
+ * forms:
+ *    [{ ... properties ... }, { ... properties ... } ...]
+ *  or
+ *    {
+ *        RootTypeName: [{ ... properties ... }, { ... properties ... } ...],
+ *        RootTypeName: [{ ... properties ... }, { ... properties ... } ...],
+ *        ...
+ *    }
+ * This will walk through each set of object properties, and call the specified handler with that set of properties
+ * and the skipNotifications parameter.  In the case of the latter style, a type property will be added to each
+ * individual object if it does not already have one.
+ */
+function processArgumentsWithHandler(objectsToProcess, skipNotifications, handler) {
+    var copyOfObjects =  dx.core.util.deepClone(objectsToProcess);
+    if (_.isArray(copyOfObjects)) {
+        for (var index = 0; index < copyOfObjects.length; index++) {
+            handler(copyOfObjects[index], skipNotifications);
+        }
+    } else {
+        _.each(copyOfObjects, function(objectOrArray, typeName) {
+            if (_.isArray(objectOrArray)) {
+                for (var ctr = 0; ctr < objectOrArray.length; ctr++) {
+                    var anObject = objectOrArray[ctr];
+                    addTypeIfNeeded(anObject, typeName);
+                    handler(anObject, skipNotifications);
+                }
+            } else {
+                addTypeIfNeeded(objectOrArray, typeName);
+                handler(objectOrArray, skipNotifications);
+            }
+        });
+    }
+}
+
+function addTypeIfNeeded(obj, typeName) {
+    if (!obj.type) {
+        obj.type = typeName;
+    }
+}
+/*
+ * Sets the 'standard (CRUD) object operations' that can be on the mock server.
+ *
+ * The parameter has the form discussed in the files header comment.
+ *
+ * You may override any of the standard operations that are supported for a given type. MockServer already provides
+ * default implementations of these handlers, but overriding these may be useful in certain cases, such as testing
+ * various failure scenarious as well as being able to spy on these operations.
+ * Any operations defined in the parameter will replace their equivalents already installed in the mock server, if any.
+ */
+function addStandardOpHandlers(operationHash) {
+    if (!_.isObject(operationHash)) {
+        dx.fail('Expected an object, but got a ' + (typeof operationHash) + '.');
+    }
+
+    _.each(operationHash, function(ops, type) {
+        _.each(ops, function(oFunc, oName) {
+            addStandardOpHandler(type, oName, oFunc);
+        });
+    });
+}
+
+/*
+ * Like addStandardOpHandlers(), but instead adds a single operation.
+ */
+function addStandardOpHandler(typeName, opName, opHandler) {
+    if (!_.isString(typeName)) {
+        dx.fail('Expected a string as a type name, but got a ' + typeof typeName + '.');
+    }
+    if (!_.isString(opName)) {
+        dx.fail('Expected a string as an operation name, but got a ' + typeof opName + '.');
+    }
+    if (!_.isFunction(opHandler)) {
+        dx.fail('Expected a function for the handler, but got a ' + typeof opHandler + '.');
+    }
+    if (!schemasByName[typeName]) {
+        dx.fail(typeName + ' is not a schema type.');
+    }
+    if (!_.contains(opName, STANDARD_OPERATONS) && !schemasByName[typeName][opName]) {
+        dx.fail(opName + ' is not one of the standard operations (' + STANDARD_OPERATONS.join(', ') + ').');
+    }
+
+    standardOperations[typeName] = standardOperations[typeName] || {};
+    standardOperations[typeName][opName] = opHandler;
+}
+
+/*
+ * Sets the 'root operations' that can be on the mock server.
+ *
+ * The parameter has the form discussed in the files header comment.
+ */
+function addRootOpHandlers(operationHash) {
+    _.each(operationHash, function(ops, type) {
+        _.each(ops, function(oFunc, oName) {
+            addRootOpHandler(type, oName, oFunc);
+        });
+    });
+}
+
+/*
+ * Like addRootOpHandlers(), but instead adds a single operation.
+ */
+function addRootOpHandler(typeName, opName, opHandler) {
+    if (!_.isString(typeName)) {
+        dx.fail('Expected a string as a type name, but got a ' + typeof typeName + '.');
+    }
+    if (!_.isString(opName)) {
+        dx.fail('Expected a string as an operation name, but got a ' + typeof opName + '.');
+    }
+    if (!_.isFunction(opHandler)) {
+        dx.fail('Expected a function for the handler, but got a ' + typeof opHandler + '.');
+    }
+    if (!schemasByName[typeName]) {
+        dx.fail(typeName + ' is not a schema type.');
+    }
+    if (!schemasByName[typeName].rootOperations || !schemasByName[typeName].rootOperations[opName]) {
+        dx.fail(opName + ' is not a root operation on ' + typeName + '.');
+    }
+
+    rootOperations[typeName] = rootOperations[typeName] || {};
+    rootOperations[typeName][opName] = opHandler;
+}
+
+/*
+ * Adds one or more 'object operations' that can be on the mock server.
+ *
+ * The parameter has the form discussed in the files header comment.
+ */
+function addObjectOpHandlers(operationHash) {
+    _.each(operationHash, function(ops, type) {
+        _.each(ops, function(oFunc, oName) {
+            addObjectOpHandler(type, oName, oFunc);
+        });
+    });
+}
+
+/*
+ * Like addObjectOpHandlers(), but instead adds a single operation.
+ */
+function addObjectOpHandler(typeName, opName, opHandler) {
+    if (!_.isString(typeName)) {
+        dx.fail('Expected a string as a type name, but got a ' + typeof typeName + '.');
+    }
+    if (!_.isString(opName)) {
+        dx.fail('Expected a string as an operation name, but got a ' + typeof opName + '.');
+    }
+    if (!_.isFunction(opHandler)) {
+        dx.fail('Expected a function for the handler, but got a ' + typeof opHandler + '.');
+    }
+    if (!schemasByName[typeName]) {
+        dx.fail(typeName + ' is not a schema type.');
+    }
+    if (!schemasByName[typeName].operations || !schemasByName[typeName].operations[opName]) {
+        dx.fail(opName + ' is not an object operation on ' + typeName + '.');
+    }
+
+    objectOperations[typeName] = objectOperations[typeName] || {};
+    objectOperations[typeName][opName] = opHandler;
+}
+
+/*
+ * Adds resources that can be called from a test.  In this case, a resource is an arbitrary string associated with
+ * the full path portion of a URL.  This can be useful, for example, to register templates with the mock server that
+ * can then be requested from a test.
+ *
+ * For example, this might be called with:
+ * {
+ *     '/test/template/basic.hjs': '<div id=basicTest></div>'
+ * }
+ */
+function addResources(resourcesHash) {
+    _.extend(resources, resourcesHash);
+}
+
+/*
+ * Reset all the 'user' provided data in this mock server. Delete all objects, root operations and object operations.
+ */
+function reset() {
+    nextReference = START_REF;
+    callCount = 0;
+    pendingCallbacks = [];
+    objects = {};
+    singletons = {};
+    resources = {};
+    standardOperations = {};
+    rootOperations = {};
+    objectOperations = {};
+}
+
+/*
+ * Helper function to post an array of notifications.
+ */
+function postNotifications(notifications) {
+    if (notifications.length > 0) {
+        createObjects({
+            Notification: notifications
+        }, true);
+
+        // Kick off any pending notification request if present
+        if (pendingNotificationCallback)
+            setTimeout(pendingNotificationCallback, 0);
+    }
+}
+
+/*
  * Returns the number of times the mock API has been called.
  */
 function getAjaxCallCount() {
     return callCount;
 }
 
-/**
+/*
  * Invoke any queued calls to success, error, or statusCode routines that resulted from calls to $.ajax(). This is the
  * equivalent of delivering HTTP responses to the client.  We need these callbacks to be executed asynchronously to
  * preserve proper execution semantics. But async tests are a pain to write, so we adopt a hybrid where tests can call
@@ -731,9 +1197,11 @@ function respond(onlyRespondOnce, maxResponseCount) {
             _.each(currentCallbacks, executeCallback);
         }
     } while (!onlyRespondOnce && pendingCallbacks.length);
+    $.event.trigger('ajaxComplete');
 }
 
-/**
+/*
+ *
  * See respond for a completion description of the respond semantic.
  * This variant of respond only processes pending requests and does not process new request initiated in a callback.
  */
@@ -742,369 +1210,16 @@ function respondOnlyToCurrent() {
 }
 
 /*
- * Sets the 'standard (CRUD) object operations' that can be on the mock server.
- *
- * The parameter is a hash of the following form:
- *    {
- *        schemaCollectionType : {
- *            list: function(config) {},
- *            create: function(config) {},
- *            read: function(ref) {},
- *            update: function(ref, config) {},
- *            delete: function(ref) {}
- *        },
- *        ...
- *    }
- *
- * You may override any of the standard operations that are supported for a given type. MockServer already provides
- * default implementations of these handlers, but overriding these may be useful in certain cases, such as testing
- * various failure scenarious as well as being able to spy on these operations.
- * Any operations defined in the parameter will replace their equivalents already installed in the mock server, if any.
- * This does not check that the input parameters are valid, in order to improve performance.
+ * See respond for a completion description of the respond semantic.
+ * This variant of respond only processes pending requests and does not process new request initiated in a callback.
  */
-function addStandardOperations(operationHash) {
-    _.each(operationHash, function(ops, type) {
-        standardOperations[type] = standardOperations[type] || {};
-        _.extend(standardOperations[type], ops);
-    });
-}
 
-/*
- * Create and return a Jasmine spy that is added for the specified standard operation for the specified type.
- */
-function spyOnStandardOperation(typeName, operationName) {
-    var spy = jasmine.createSpy(typeName + '.' + operationName + 'Spy');
-
-    standardOperations[typeName] = standardOperations[typeName] || {};
-    standardOperations[typeName][operationName] = spy;
-
-    return spy;
-}
-
-/*
- * Sets the 'root operations' that can be on the mock server.
- *
- * The parameter is a hash of the following form:
- *    {
- *        schemaCollectionType : {
- *            rootOperationName: function() {},
- *            rootOperationName: function() {}
- *        },
- *        schemaSingletonType: {
- *            rootOperationName: function() {}
- *        },
- *        ...
- *    }
- * If any of the operations already exist in the server, they will be replaced with the value in the params.
- * This does not check that the input parameters are valid, in order to improve performance.
- */
-function addRootOperations(operationHash) {
-    _.each(operationHash, function(ops, type) {
-        rootOperations[type] = rootOperations[type] || {};
-        _.extend(rootOperations[type], ops);
-    });
-}
-
-/*
- * Create and return a Jasmine spy that is added for the specified root operation for the specified type.
- */
-function spyOnRootOperation(typeName, operationName) {
-    var spy = jasmine.createSpy(typeName + '.' + operationName + 'Spy');
-
-    rootOperations[typeName] = rootOperations[typeName] || {};
-    rootOperations[typeName][operationName] = spy;
-
-    return spy;
-}
-
-/*
- * Adds one or more 'object operations' that can be on the mock server.
- *
- * The parameter is a hash of the following form:
- *    {
- *        schemaCollectionType : {
- *            operationName: function() {},
- *            operationName: function() {}
- *        },
- *        ...
- *    }
- *
- * If any of the operations already exist in the server, they will be replaced with the value in the params.
- * This does not check that the input parameters are valid, in order to improve performance.
- */
-function addObjectOperations(operationHash) {
-    _.each(operationHash, function(ops, type) {
-        objectOperations[type] = objectOperations[type] || {};
-        _.extend(objectOperations[type], ops);
-    });
-}
-
-/*
- * Create and return a Jasmine spy that is added for the specified object operation for the specified type.
- */
-function spyOnObjectOperation(typeName, operationName) {
-    var spy = jasmine.createSpy(typeName + '.' + operationName + 'Spy');
-
-    objectOperations[typeName] = objectOperations[typeName] || {};
-    objectOperations[typeName][operationName] = spy;
-
-    return spy;
-}
-
-/**
- * Sets the resources that can be called from a test.  In this case, a resource is an arbitrary string associated with
- * the full path portion of a URL.  This can be useful, for example, to register templates with the mock server that
- * can then be requested from a test.
- *
- * For example, this might be called with:
- * {
- *     '/test/template/basic.hjs': '<div id=basicTest></div>'
- * }
- *
- * This does not check that the input parameters are valid, in order to improve performance.
- *
- * The parameter is a hash of the following form:
- *    {
- *        URL : data,
- *        ...
- *    }
- */
-function setResources(resourcesHash) {
-    resources = resourcesHash;
-}
-
-function publicGetCollection(typeName) {
-    var result = objects[typeName];
-    if (_.isArray(result)) {
-        return result;
-    }
-}
-
-function publicGetSingleton(typeName) {
-    var result = objects[typeName];
-
-    if (!_.isArray(result)) {
-        return result;
-    }
-}
-
-/**
- * Reset all the 'user' provided data in this mock server. Delete all objects, root operations and object operations.
- */
-function reset() {
-    nextReference = START_REF;
-    callCount = 0;
-    pendingCallbacks = [];
-    setObjects({});
-    setResources({});
-    standardOperations = {};
-    rootOperations = {};
-    objectOperations = {};
-}
-
-/*
- * Helper function to post an array of notifications.
- */
-function postNotifications(notifications) {
-    if (notifications.length > 0) {
-        createObjects({
-            Notification: notifications
-        }, true);
-
-        // Kick off any pending notification request if present
-        if (pendingNotificationCallback)
-            setTimeout(pendingNotificationCallback, 0);
-    }
-}
-
-/*
- * Changes the mode of operation (browser or test) based on the argument. This is only called when bootstrapping
- * the mock server into the browser. In browser mode, async $.ajax requests are handled via setTimeout(). In non-browser
- * mode, all async requests are queued for delivery until respond() is called, at which point they are all all invoked
- * synchronously. Regardless of mode, synchronous $.ajax calls are always handled synchronously.
- */
 function setBrowserMode(newBrowserMode) {
     browserMode = newBrowserMode;
 }
 
 function getBrowserMode() {
     return browserMode;
-}
-
-/*
- * Add new objects to the system. Unlike setObjects(), this will augment the current set of objects, and create
- * object change notifications for each one. This is used in integration context, where we want to overlay
- * objects on top of the default mock implementation. The format of 'newObjects' is the same as in setObjects().
- *
- * The 'skipNotifications' argument is purely for internal use, and is set when invoking this function from
- * setObjects() context.
- */
-function createObjects(newObjects, skipNotifications) {
-
-    var notifications = [];
-
-    _.each(newObjects, function (s, typeName) {
-        if (_.isArray(s)) {
-            if (!objects[typeName]) {
-                objects[typeName] = [];
-            }
-            objects[typeName] = objects[typeName].concat(s);
-
-            // For convenience, set the type and reference if needed
-            _.each(s, function (o) {
-                if (!o.type)
-                    o.type = typeName;
-
-                if (o.type !== 'ObjectNotification' && o.type !== 'SingletonUpdate' && o.type !== 'NotificationDrop') {
-                    if (!o.reference)
-                        o.reference = o.type.toUpperCase() + '-' + (nextReference++);
-
-                    if (!skipNotifications) {
-                        notifications.push({
-                            type: 'ObjectNotification',
-                            eventType: 'CREATE',
-                            objectType: o.type,
-                            object: o.reference
-                        });
-                    }
-                }
-            });
-        } else {
-            objects[typeName] = s;
-            // Set the type if needed
-            if (!s.type)
-                s.type = typeName;
-
-            if (!skipNotifications) {
-                notifications.push({
-                    type: 'SingletonUpdate',
-                    objectType: typeName
-                });
-            }
-        }
-    });
-
-    postNotifications(notifications);
-}
-
-/*
- * Delete the given objects, removing them from server side state and posting and requisite change notifications. The
- * format of the 'objectsToDelete' is an array of references:
- *
- *      [ reference, reference, ... ]
- *
- * It is not possible to delete singleton objects.
- *
- * Note that this is not particularly efficient, running in O(m * n), but for the scale we expect in testing it should
- * be sufficient.
- */
-function deleteObjects(objectsToDelete) {
-    var newObjects = {};
-    var notifications = [];
-
-    _.each(objects, function (objects, type) {
-        // Skip singletons
-        if (!_.isArray(objects)) {
-            newObjects[type] = objects;
-            return;
-        }
-
-        var matchFunc = function(o) {
-            return _.indexOf(objectsToDelete, o.reference) !== -1;
-        };
-
-        newObjects[type] = _.reject(objects, matchFunc);
-        var toDelete = _.filter(objects, matchFunc);
-
-        _.each(toDelete, function(o) {
-            notifications.push({
-                type: 'ObjectNotification',
-                eventType: 'DELETE',
-                objectType: type,
-                object: o.reference
-            });
-        });
-    });
-
-    objects = newObjects;
-    postNotifications(notifications);
-}
-
-/*
- * Overlays dst with src while being schema aware so that plain objects are overwritten
- */
-function updateObject(dst, src) {
-    _.each(src, function (propval, propname) {
-        if (_.isArray(propval)) {
-            dst[propname] = dx.core.util.deepClone(propval);
-        } else if (_.isObject(propval)) {
-            var schema = dx.core.data.parsedSchemas[dst.type];
-            if (_.isUndefined(schema)) {
-                dx.fail('Attempting to update object with a type that doesn\'t exist in the schema: ' + dst.type);
-            }
-            if (_.isUndefined(schema.properties[propname])) {
-                dx.fail('Attempting to update an invalid property named ' + propname + ' on object of type ' +
-                    dst.type);
-            }
-
-            if (_.isDate(propval)) {
-                // Date isn't a normal object and so must be handled specially and copied over whole
-                dst[propname] = new Date(propval.getTime());
-            } else if (_.isUndefined(schema.properties[propname].$ref)) {
-                // The object property is a plain object, overwrite it
-                dst[propname] = dx.core.util.deepClone(propval);
-            } else {
-                 if (!_.isObject(dst[propname])) {
-                    dst[propname] = {};
-                 }
-                updateObject(dst[propname], propval);
-            }
-        } else {
-            dst[propname] = propval;
-        }
-    });
-
-    return dst;
-}
-
-/*
- * Update the given objects, overlaying contents and posting requisite change notifications. The input to this is
- * an array of partial objects:
- *
- * [
- *      { reference: 'ref', property: value, ... },
- *      ...
- * ]
- *
- * These objects require 'reference', unless the object is a singleton, in which case 'type' is required.
- */
-function updateObjects(objectsToUpdate) {
-    var notifications = [];
-
-    _.each(objectsToUpdate, function(o, providedType) {
-        var tgt = o.reference ? getObject(o.reference) : getSingleton(o.type ? o.type : providedType);
-
-        if (!tgt)
-            return;
-
-        updateObject(tgt, o);
-        if (tgt.reference) {
-            notifications.push({
-                type: 'ObjectNotification',
-                eventType: 'UPDATE',
-                objectType: tgt.type,
-                object: tgt.reference
-            });
-        } else {
-            notifications.push({
-                type: 'SingletonUpdate',
-                objectType: tgt.type
-            });
-
-        }
-    });
-
-    postNotifications(notifications);
 }
 
 var jQueryAjax = $.ajax;
@@ -1133,19 +1248,51 @@ function stopMockServer() {
     dx.core.browser.getWindowLocation = dxGetWindowLocation;
 }
 
-// Build the handlers based on the schema. This only needs to be executed once
-_.each(delphixSchema, function(schema, schemaKey) {
+function fixName(schemaKey) {
+    return schemaKey.replace(/\.json$/, '').
+        replace(/-/g, '_').
+        replace(/\//g, '');
+}
+
+// Returns the property definition if instances of the specified schema have a specific property, undefined otherwise
+function getPropDef(schema, propName) {
+    if (schema.properties && schema.properties[propName]) {
+        return schema.properties[propName];
+    }
+
+    if (schema.extends && schema.extends.$ref) {
+        return getPropDef(schemasByName[schema.extends.$ref], propName);
+    }
+}
+
+// Returns the name of the root type for the specified schema, or undefined.
+function getRootTypeForObject(schema) {
     if (schema.root) {
+        return schema.name;
+    }
 
-        // Some schemas have no name. For these use the schemaKey (the name of the json file)
-        if (!schema.name) {
-            // don't modify the original schema
-            schema = dx.core.util.deepClone(schema);
-            schema.name = schemaKey.replace(/\.json$/, '').
-                replace(/-/g, '_').
-                replace(/\//g, '');
-        }
+    if (schema.extends && schema.extends.$ref) {
+        return getRootTypeForObject(schemasByName[schema.extends.$ref]);
+    }
+}
 
+// Fix all the names for all the schemas, and store them by name
+_.each(delphixSchema, function(schema, schemaKey) {
+    // don't modify the original schema
+    var schemaCopy = dx.core.util.deepClone(schema);
+    if (!schemaCopy.name) {
+        schemaCopy.name = fixName(schemaKey);
+    }
+    schemasByName[schemaCopy.name] = schemaCopy;
+});
+
+// Fix internal references to the schemas and build the callback handlers for all operations.
+_.each(schemasByName, function(schema) {
+    if (schema.extends) {
+        schema.extends.$ref = fixName(delphixSchema[schema.extends.$ref].name);
+    }
+
+    if (schema.root) {
         if (schema.singleton) {
             buildHandlersForSingletonSchema(schema);
         } else {
@@ -1158,26 +1305,25 @@ _.each(delphixSchema, function(schema, schemaKey) {
 _.extend(dx.test.mockServer, {
     start: startMockServer,
     stop: stopMockServer,
-    setObjects: setObjects,
-    setResources: setResources,
-    addStandardOperations: addStandardOperations,
-    spyOnStandardOperation: spyOnStandardOperation,
-    addRootOperations: addRootOperations,
-    spyOnRootOperation: spyOnRootOperation,
-    addObjectOperations: addObjectOperations,
-    spyOnObjectOperation: spyOnObjectOperation,
+    createObjects: createObjects,
+    updateObjects: updateObjects,
+    deleteObjects: deleteObjects,
+    addResources: addResources,
+    addStandardOpHandlers: addStandardOpHandlers,
+    addStandardOpHandler: addStandardOpHandler,
+    addRootOpHandlers: addRootOpHandlers,
+    addRootOpHandler: addRootOpHandler,
+    addObjectOpHandlers: addObjectOpHandlers,
+    addObjectOpHandler: addObjectOpHandler,
+    getObject: getObject,
+    getCollection: getCollection,
+    getSingleton: getSingleton,
     reset: reset,
     respond: respond,
     respondOnlyToCurrent: respondOnlyToCurrent,
     getAjaxCallCount: getAjaxCallCount,
-    getObject: getObject,
-    getCollection: publicGetCollection,
-    getSingleton: publicGetSingleton,
     setBrowserMode: setBrowserMode,
     getBrowserMode: getBrowserMode,
-    createObjects: createObjects,
-    deleteObjects: deleteObjects,
-    updateObjects: updateObjects,
     makeMockServerResponse: publicMakeMockServerResponse,
     jQueryAjax: jQueryAjax
 });
