@@ -13,14 +13,14 @@
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, $, _, Backbone */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.core.data");
+dx.namespace('dx.core.data');
 
 (function() {
 
@@ -29,14 +29,14 @@ dx.namespace("dx.core.data");
  * files containing the level 1 and level 2 code.
  *
  * This provides several public functions to get at Delphix-Schema-Based models and collections:
- *     newClientModel                  Returns a "read/write" model of the specified schema type.
+ *     newClientModel                  Returns a 'read/write' model of the specified schema type.
  *
- *     getServerModel                  Returns a "read-only" model of the specified schema type which is kept in
+ *     getServerModel                  Returns a 'read-only' model of the specified schema type which is kept in
  *                                     sync with the server as long as it remains a member of a Server Collection.
  *
- *     getServerSingleton              Returns a "read-only" model of the specified schema type.
+ *     getServerSingleton              Returns a 'read-only' model of the specified schema type.
  *
- *     getServerCollection             Returns a "read-only" collection which contains Server Models of a particular
+ *     getServerCollection             Returns a 'read-only' collection which contains Server Models of a particular
  *                                     type.
  *
  *     getCreationListener             Register a creation listener for a particular type.
@@ -62,12 +62,12 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
 
     /*
      * Returns a Server Collection for the specified type.  Each call returns a new collection, which may contain
-     * distinct elements from other collections of the same type.  The collection is "read only", which means its
+     * distinct elements from other collections of the same type.  The collection is 'read only', which means its
      * contents may not be directly manipulated. However, its contents may be changed with the $$list() operation on
      * the collection.
      *
-     * typeName:    This should be the "root type" for the collection type wanted. That is, if one wants a collection
-     *              of DB2Containers, one should pass "Container" here.
+     * typeName:    This should be the 'root type' for the collection type wanted. That is, if one wants a collection
+     *              of DB2Containers, one should pass 'Container' here.
      * resetOnList: If true, $$list()'s will only trigger a single 'reset' event rather than individual 'add' and
      *              'remove' events. Otherwise this happens only when the $$list() fully replaces the contents of the
      *              collection.
@@ -90,7 +90,7 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
      */
     function getCreationListener(settings) {
         if (dx.core.util.isNone(settings)) {
-            dx.fail("settings must be specified");
+            dx.fail('Settings must be specified.');
         }
         _.extend(settings, {
             context: context
@@ -106,17 +106,16 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
      * data asynchronously retrieved from the server.
      *
      * typeName:     The name of the type to fetch
-     * successError: An object that may contain success and/or error callback functions. If the model is already present
+     * options:      An object that may contain success and/or error callback functions. If the model is already present
      *               success will be invoked immediately. If it isn't present, success or error will be called once the
-     *               underlying fetch has been completed.
+     *               underlying fetch has been completed. Additionally, one may set suppressDefaultErrorHandler as an
+     *               option here to prevent the default error handler from being executed on error.
      */
-    function getServerSingleton(typeName, successError) {
-        successError = successError || {};
-        var model = context._cache.getCachedSingleton(typeName, {
-                update: !context.notification.isStarted(),
-                success: successError.success,
-                error: successError.error
-            });
+    function getServerSingleton(typeName, options) {
+        options = _.extend(_.clone(options || {}), {
+            update: !context.notification.isStarted()
+        });
+        var model = context._cache.getCachedSingleton(typeName, options);
 
         if (!context.notification.isStarted()) {
             model._dxIsReady = false;   // if someone sets a ready handler, don't let it fire until new data is back
@@ -129,11 +128,11 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
      * Return the Server Model instance with the specified reference and of the specified type. If the model already
      * is being maintained by the data system, this will return the same instance. If not, a new instance will be
      * returned, and a request to populate it from data on the server.  To determine if the model has at least an
-     * initial set of data, one should assign a "ready" event handler (probably with the once() function).
+     * initial set of data, one should assign a 'ready' event handler (probably with the once() function).
      *
      * reference:    The reference for the model
-     * typeName:     The type for the model. If the desired model is a DB2Container, can be "Container" or
-     *               "DB2Container". If the type is not known, assume the most general root type ("Container") should be
+     * typeName:     The type for the model. If the desired model is a DB2Container, can be 'Container' or
+     *               'DB2Container'. If the type is not known, assume the most general root type ('Container') should be
      *               passed.
      * suppressDefaultErrorHandler:      If truthy, the default error handled is not triggered on errors.
      */
@@ -155,9 +154,9 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
      * It is rejected if/when the model's 'error' event is triggered.
      * For a description of the parameters see context.getServerModel()
      */
-    function getServerModelPromise(reference, typeName, successError) {
+    function getServerModelPromise(reference, typeName, suppressDefaultErrorHandler) {
         var deferred = new $.Deferred();
-        var model = context.getServerModel(reference, typeName, successError);
+        var model = context.getServerModel(reference, typeName, suppressDefaultErrorHandler);
 
         return setupPromise(model, deferred);
     }
@@ -187,15 +186,15 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
             deferred.reject(model);
         }
 
-        model.once("ready", onReadyCallback);
-        model.once("error", onErrorCallback);
+        model.once('ready', onReadyCallback);
+        model.once('error', onErrorCallback);
 
         // use promise() to lock to deferred, exposing only methods to attach callbacks
         return deferred.promise();
     }
 
     /*
-     * Given a model type, return the name of the "root type". Given DB2Container, OracleContainer, or Container, this
+     * Given a model type, return the name of the 'root type'. Given DB2Container, OracleContainer, or Container, this
      * will return Container.
      */
     function getCollectionTypeFromModelType(modelType) {
@@ -209,7 +208,7 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
     var errorCallback;
     function setErrorCallback(func) {
         if (!_.isFunction(func)) {
-            dx.fail("setErrorCallback expects a function as an argument.");
+            dx.fail('setErrorCallback expects a function as an argument.');
         }
         errorCallback = func;
     }
@@ -218,8 +217,8 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
      * Reports an ErrorResult model to the end user in the best fashion available at this time.
      */
     function reportErrorResult(errorResult) {
-        if (!(errorResult instanceof Backbone.Model) || errorResult.get("type") !== "ErrorResult") {
-            dx.fail("reportErrorResult expects an ErrorResult model as an argument.");
+        if (!(errorResult instanceof Backbone.Model) || errorResult.get('type') !== 'ErrorResult') {
+            dx.fail('reportErrorResult expects an ErrorResult model as an argument.');
         }
 
         // errorCallback is set by an external source using setErrorCallback
@@ -227,11 +226,11 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
             errorCallback(errorResult);
         }
 
-        dx.warn("Error result: " + JSON.stringify(errorResult.toJSON()));
+        dx.warn('Error result: ' + JSON.stringify(errorResult.toJSON()));
     }
 
     /*
-     * Start the real work here. Initialize everything "below" us.
+     * Start the real work here. Initialize everything 'below' us.
      */
     context = context || this;
     var parsedSchemas = dx.core.data._prepareSchemas(schemas, queryParamAnnotations);
@@ -240,7 +239,7 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
     dx.core.data._initFilters(context);
     dx.core.data._generateModelConstructors(parsedSchemas, context);
     dx.core.data._generateCollectionConstructors(parsedSchemas, context);
-    dx.core.data._setupNotification(context);
+    dx.core.data._setupNotificationSystem(context);
 
     _.extend(context, {
         parsedSchemas: parsedSchemas,

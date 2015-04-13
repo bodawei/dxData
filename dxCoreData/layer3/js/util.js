@@ -13,14 +13,14 @@
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, _ */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.core.data.util");
+dx.namespace('dx.core.data.util');
 
 /*
  * Misc data-related utilities.  Generally not needed unless you are bypassing dx.core.data in some fashion.
@@ -37,7 +37,8 @@ function engineTimeToDateObject(timeString) {
     // in case of IE 9 or less, the format has to be converted to: YYYY/MM/DDThh:mm:ss
     if (isNaN(parsedDate)) {
         var s = timeString.split(/\D/);
-        parsedDate = new Date(Date.UTC(s[0], --s[1]||"", s[2]||"", s[3]||"", s[4]||"", s[5]||"", s[6]||""));
+        parsedDate = new Date(Date.UTC(s[0], --s[1] || '', s[2] || '', s[3] || '', s[4] || '', s[5] || '',
+            s[6] || ''));
     }
 
     return parsedDate;
@@ -46,7 +47,7 @@ function engineTimeToDateObject(timeString) {
 /*
  * Converts a date object to a string in the format the server expects.
  *
- * You might think we could just say "toJSON()" to get the job done. However, dear IE8 doesn't report the
+ * You might think we could just say 'toJSON()' to get the job done. However, dear IE8 doesn't report the
  * milliseconds for that call. So, we hand build the MS part
  */
 function dateObjectToEngineTime(date) {
@@ -55,7 +56,7 @@ function dateObjectToEngineTime(date) {
     // IE 8 doesn't include the milliseconds when toJSON is called. Catch this case and add the milliseconds
     if (result && result.length === 20) {
         var ms = date.getUTCMilliseconds();
-        result = result.substring(0, 19) + "." + (ms < 10 ? "00" : (ms < 100 ? "0" : "")) + ms + "Z";
+        result = result.substring(0, 19) + '.' + (ms < 10 ? '00' : (ms < 100 ? '0' : '')) + ms + 'Z';
     }
 
     return result;
