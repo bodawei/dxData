@@ -13,20 +13,20 @@
  */
 
 /*
- * Copyright (c) 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, _, Backbone */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.core.data");
+dx.namespace('dx.core.data');
 
 (function() {
 
 function dumpEventListners(eventLadenObject) {
-    _.each(eventLadenObject._events, function (listenerArray, eventName) {
-        dx.info("   " + eventName + " : " + listenerArray.length + " listeners", listenerArray);
+    _.each(eventLadenObject._events, function(listenerArray, eventName) {
+        dx.info('   ' + eventName + ' : ' + listenerArray.length + ' listeners', listenerArray);
     });
 }
 
@@ -39,7 +39,7 @@ function ModelSubscriberStore() {
     var modelSubscribersByType = {};
 
     function forEachSubscription(functionToApply) {
-        _.each(modelSubscribersByType, function (subscriber) {
+        _.each(modelSubscribersByType, function(subscriber) {
             _.each(subscriber, functionToApply);
         });
     }
@@ -56,7 +56,7 @@ function ModelSubscriberStore() {
     function remove(subscriber) {
         var baseType = subscriber._dxInfo.baseType;
         var index = modelSubscribersByType[baseType].indexOf(subscriber);
-        if (index != -1) {
+        if (index !== -1) {
             if (subscriber instanceof Backbone.Collection) {
                 subscriber.clear();
             }
@@ -83,7 +83,7 @@ function ModelSubscriberStore() {
         var toRemove = [];
 
         // accumulate the items to remove
-        forEachSubscription(function (subscriber) {
+        forEachSubscription(function(subscriber) {
             toRemove.push(subscriber);
         });
 
@@ -97,7 +97,7 @@ function ModelSubscriberStore() {
     function prune() {
         var toRemove = [];
 
-        forEachSubscription(function (subscriber) {
+        forEachSubscription(function(subscriber) {
             if (subscriber instanceof Backbone.Collection) {
                 if (_.isEmpty(subscriber._events)) {
                     toRemove.push(subscriber);
@@ -126,28 +126,29 @@ function ModelSubscriberStore() {
      * Write out the subscribers.
      */
     function dump() {
-        dx.info("SUBSCRIBERS");
-        dx.info("===========");
+        dx.info('SUBSCRIBERS');
+        dx.info('===========');
         dx.info(modelSubscribersByType);
     }
 
     function dumpText() {
-        dx.info("SUBSCRIBERS");
-        dx.info("===========");
+        dx.info('SUBSCRIBERS');
+        dx.info('===========');
         if (_.isEmpty(modelSubscribersByType)) {
-            dx.info("None.");
+            dx.info('None.');
         }
         var types = _.keys(modelSubscribersByType);
-        _.each(types.sort(), function (typeName) {
+        _.each(types.sort(), function(typeName) {
             dx.info(typeName);
-            dx.info("-------------");
-            _.each(modelSubscribersByType[typeName], function (subscriber) {
+            dx.info('-------------');
+            _.each(modelSubscribersByType[typeName], function(subscriber) {
                 if (subscriber instanceof Backbone.Collection) {
                     var collection = subscriber;
-                    dx.info("Collection with " + collection.length + " elements.", collection);
+                    dx.info('Collection with ' + collection.length + ' elements.', collection);
                     dumpEventListners(collection);
                 } else {
-                    dx.info("Notification Listener with query params ", subscriber.getQueryParameters());
+                    var qp = subscriber.getQueryParameters();
+                    dx.info('Notification Listener with query params: ' + (qp ? JSON.stringify(qp) : 'None'));
                 }
             });
         });
@@ -174,7 +175,7 @@ function SingletonStore() {
     var singletons = {};
 
     function add(singleton) {
-        singletons[singleton.get("type")] = singleton;
+        singletons[singleton.get('type')] = singleton;
     }
 
     function get(typeName) {
@@ -182,8 +183,8 @@ function SingletonStore() {
     }
 
     function remove(singleton) {
-        if (!_.isUndefined(singletons[singleton.get("type")])) {
-            delete singletons[singleton.get("type")];
+        if (!_.isUndefined(singletons[singleton.get('type')])) {
+            delete singletons[singleton.get('type')];
         }
     }
 
@@ -195,7 +196,7 @@ function SingletonStore() {
      * Forcibly remove all singletons
      */
     function reset() {
-        _.each(_.keys(singletons), function (typeName) {
+        _.each(_.keys(singletons), function(typeName) {
             delete singletons[typeName];
         });
     }
@@ -204,12 +205,12 @@ function SingletonStore() {
      * Remove all singletons that have no more listeners
      */
     function prune() {
-        var toRemove = _.filter(singletons, function (singleton) {
+        var toRemove = _.filter(singletons, function(singleton) {
             return _.isEmpty(singleton._events);
         });
 
-        _.each(toRemove, function (model) {
-            delete singletons[model.get("type")];
+        _.each(toRemove, function(model) {
+            delete singletons[model.get('type')];
         });
     }
 
@@ -226,18 +227,18 @@ function SingletonStore() {
      * Write out the singletons.
      */
     function dump() {
-        dx.info("SINGLETONS");
-        dx.info("==========");
+        dx.info('SINGLETONS');
+        dx.info('==========');
         dx.info(singletons);
     }
 
     function dumpText() {
-        dx.info("SINGLETONS");
-        dx.info("==========");
+        dx.info('SINGLETONS');
+        dx.info('==========');
         if (_.isEmpty(singletons)) {
-            dx.info("None.");
+            dx.info('None.');
         }
-        _.each(singletons, function (singleton, typeName) {
+        _.each(singletons, function(singleton, typeName) {
             dx.info(typeName);
             dumpEventListners(singleton);
         });
@@ -265,18 +266,18 @@ function ModelStore(context) {
     var modelsByTypeThenRef = {};
 
     function forEachModel(functionToApply) {
-        _.each(modelsByTypeThenRef, function (models) {
+        _.each(modelsByTypeThenRef, function(models) {
             _.each(models, functionToApply);
         });
     }
 
     function add(model) {
-        var rootType = context._getRootType(model.get("type"));
-        var reference = model.get("reference");
+        var rootType = context._getRootType(model.get('type'));
+        var reference = model.get('reference');
         modelsByTypeThenRef[rootType] = modelsByTypeThenRef[rootType] || {};
 
         if (dx.core.util.isNone(reference)) {
-            dx.fail("Can not cache a model with no reference (type is: " + model.get("type") + ").");
+            dx.fail('Can not cache a model with no reference (type is: ' + model.get('type') + ').');
         }
 
         modelsByTypeThenRef[rootType][reference] = model;
@@ -300,10 +301,9 @@ function ModelStore(context) {
         }
     }
 
-    // reference is optional
-    function remove(model, optionalReference) {
-        var rootType = context._getRootType(model.get("type"));
-        var reference = model.get("reference") || optionalReference;
+    function remove(model) {
+        var rootType = context._getRootType(model.get('type'));
+        var reference = model.get('reference');
         modelsByTypeThenRef[rootType] = modelsByTypeThenRef[rootType] || [];
         model.off(undefined, undefined, context);
 
@@ -347,7 +347,7 @@ function ModelStore(context) {
              */
             var hasCachingListeners = events.badReference && events.badReference.length === 1 &&
                 events.change && events.change.length === 1;
-            var listeners = hasCachingListeners ? _.omit(events, ["badReference", "change"]) : events;
+            var listeners = hasCachingListeners ? _.omit(events, ['badReference', 'change']) : events;
 
             if (_.isEmpty(listeners)) {
                 toRemove[reference] = model;
@@ -370,23 +370,23 @@ function ModelStore(context) {
      * Write out the models.
      */
     function dump() {
-        dx.info("SERVER MODELS");
-        dx.info("=============");
+        dx.info('SERVER MODELS');
+        dx.info('=============');
         dx.info(modelsByTypeThenRef);
     }
 
     function dumpText() {
-        dx.info("SERVER MODELS");
-        dx.info("=============");
+        dx.info('SERVER MODELS');
+        dx.info('=============');
         if (_.isEmpty(modelsByTypeThenRef)) {
-            dx.info("None.");
+            dx.info('None.');
         }
         var types = _.keys(modelsByTypeThenRef);
-        _.each(types.sort(), function (typeName) {
+        _.each(types.sort(), function(typeName) {
             dx.info(typeName);
-            dx.info("-------------");
+            dx.info('-------------');
             var references = _.keys(modelsByTypeThenRef[typeName]);
-            _.each(references.sort(), function (reference) {
+            _.each(references.sort(), function(reference) {
                 var model = modelsByTypeThenRef[typeName][reference];
                 dx.info(reference);
                 dumpEventListners(model);
@@ -424,18 +424,18 @@ function ModelStore(context) {
  *     and call _modelSubscribersStore.add to make sure the subscribers gets notified of changes and collections
  *     updated.
  *
- * This entire cache system is "private" to the data system, and should not be called from outside.
+ * This entire cache system is 'private' to the data system, and should not be called from outside.
  *
  * Unless reset() is called, at this time models and collections are never discarded.
  *
- * As with other parts of the data system, this takes a "context" object, and attaches a _cache object to that one,
+ * As with other parts of the data system, this takes a 'context' object, and attaches a _cache object to that one,
  * where private (to the data system) caching routines reside. The intent here is to make sure that if needed multiple
  * data systems can co-exist.
  */
 dx.core.data._initCache = function(context) {
     /*
      * Return a singleton of the specified type. If it doesn't already exist, a new model is created, cached, and
-     * returned.  If "update" is true, then this will fetch new data for the model.
+     * returned.  If 'update' is true, then this will fetch new data for the model.
      * typeName:   The type of the singleton
      * options:    JSON object with these optional properties:
      *               update: {true|false}  Will cause an update (fetch) on the model
@@ -444,7 +444,7 @@ dx.core.data._initCache = function(context) {
      */
     function getCachedSingleton(typeName, options) {
         if (!_.isString(typeName)) {
-            dx.fail("A type name must be passed to get the singleton.");
+            dx.fail('A type name must be passed to get the singleton.');
         }
         options = options || {};
         var model;
@@ -458,7 +458,7 @@ dx.core.data._initCache = function(context) {
             var schema = assertTypeAndGetModelSchema(typeName);
 
             if (!schema.singleton) {
-                dx.fail(typeName + " is not a singleton.");
+                dx.fail(typeName + ' is not a singleton.');
             }
 
             model = context._newServerModel(typeName);
@@ -498,11 +498,11 @@ dx.core.data._initCache = function(context) {
         var model;
 
         if (!_.isObject(properties) || !_.isString(properties.type)) {
-            dx.fail("Must be called with an object that has a type property that is a string value.");
+            dx.fail('Must be called with an object that has a type property that is a string value.');
         }
 
         if (!context._modelConstructors[properties.type]) {
-            dx.fail("Don't know how to create a model of type " + properties.type +".");
+            dx.fail('Don\'t know how to create a model of type ' + properties.type + '.');
         }
 
         // Not all types have a reference property. Those that do not are not cachable. Assume this is a client model
@@ -540,7 +540,7 @@ dx.core.data._initCache = function(context) {
      */
     function getCachedModel(reference, typeName, options) {
         if (!_.isString(reference) || !_.isString(typeName)) {
-            dx.fail("A reference and a type must be passed to get the model.");
+            dx.fail('A reference and a type must be passed to get the model.');
         }
         options = options || {};
 
@@ -567,7 +567,7 @@ dx.core.data._initCache = function(context) {
                     if (isNew) {
                         context._modelStore.remove(model);
                     }
-                    if (!options && !options.suppressDefaultErrorHandler) {
+                    if (!options || !options.suppressDefaultErrorHandler) {
                         context.reportErrorResult(result);
                     }
                 }
@@ -582,7 +582,7 @@ dx.core.data._initCache = function(context) {
      */
     function containsCachedModel(reference, typeName) {
         if (!_.isString(reference) || !_.isString(typeName)) {
-            dx.fail("A reference and a type must be passed to check on the model.");
+            dx.fail('A reference and a type must be passed to check on the model.');
         }
 
         return !_.isUndefined(context._modelStore.get(reference, context._getRootType(typeName)));
@@ -591,11 +591,11 @@ dx.core.data._initCache = function(context) {
     /*
      * Deletes the model. This means removing it from the cache, as well as from any
      * collections that contain it, and clears the model's properties.
-     * If the dontTriggerDelete flag is not set, this will also trigger a "delete" event on the model.
+     * If the dontTriggerDelete flag is not set, this will also trigger a 'delete' event on the model.
      */
     function deleteCachedModel(reference, typeName, dontTriggerDelete) {
         if (!_.isString(reference) || !_.isString(typeName)) {
-            dx.fail("A reference and a type must be passed to delete a model.");
+            dx.fail('A reference and a type must be passed to delete a model.');
         }
 
         var rootType = context._getRootType(typeName);
@@ -611,7 +611,7 @@ dx.core.data._initCache = function(context) {
         });
 
         if (!dontTriggerDelete) {
-            doomed.trigger("delete", doomed);
+            doomed.trigger('delete', doomed);
         }
         doomed.off(null, null, context);
         context._modelStore.remove(doomed);
@@ -633,10 +633,10 @@ dx.core.data._initCache = function(context) {
      */
     function dumpCacheAsText() {
         context._modelSubscribersStore.dumpText();
-        dx.info("");
+        dx.info('');
 
         context._singletonStore.dumpText();
-        dx.info("");
+        dx.info('');
 
         context._modelStore.dumpText();
     }
@@ -646,13 +646,13 @@ dx.core.data._initCache = function(context) {
      */
     function dumpCache() {
         context._modelSubscribersStore.dump();
-        dx.info("");
+        dx.info('');
 
         context._singletonStore.dump();
-        dx.info("");
+        dx.info('');
 
         context._modelStore.dump();
-        dx.info("");
+        dx.info('');
     }
 
     function prune() {
@@ -674,7 +674,7 @@ dx.core.data._initCache = function(context) {
         var model = context._newServerModel(typeName);
         model._dxSet(properties);
         context._modelStore.add(model);
-        model.on("badReference", function() { deleteCachedModel(properties.reference, rootType, true); }, context);
+        model.on('badReference', function() { deleteCachedModel(properties.reference, rootType, true); }, context);
 
         return model;
     }
@@ -687,7 +687,7 @@ dx.core.data._initCache = function(context) {
          * Recheck whether the model should be added to collections any time it changes.
          * This does not apply for subscribers which only need to be notified once for each object.
          */
-        model.on("change", function() { notifySubscriptionsOfModelChanged(model, rootType); }, context);
+        model.on('change', function() { notifySubscriptionsOfModelChanged(model, rootType); }, context);
         notifySubscriptionsOfModel(model, rootType, options);
     }
 
@@ -718,7 +718,7 @@ dx.core.data._initCache = function(context) {
         var ModelConstructor = context._modelConstructors[typeName];
 
         if (!ModelConstructor) {
-            dx.fail(typeName + " is not a known type name.");
+            dx.fail(typeName + ' is not a known type name.');
         }
 
         return ModelConstructor.prototype._dxSchema;
@@ -729,10 +729,13 @@ dx.core.data._initCache = function(context) {
      */
     function isTypeCachable(type) {
         var Constructor = context._modelConstructors[type];
-        var typeDef = (Constructor || {}).prototype._dxSchema;
+        if (!Constructor) {
+            return false;
+        }
+        var typeDef = Constructor.prototype._dxSchema;
         var propDefs = typeDef.properties || {};
 
-        return propDefs.reference;
+        return !!propDefs.reference;
     }
 
     context._modelSubscribersStore = new ModelSubscriberStore();

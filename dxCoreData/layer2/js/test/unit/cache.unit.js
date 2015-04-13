@@ -154,6 +154,12 @@ describe("dx.core.data._cache", function () {
         });
 
         it("will fetch a second time if the update parameter is true", function() {
+            ajaxSpy.andCallFake(function(options) {
+                options.success({
+                    type: 'OKResult'
+                });
+            });
+
             target._cache.getCachedSingleton("SingletonType");
             target._cache.getCachedSingleton("SingletonType", { update: true});
 

@@ -18,9 +18,9 @@
 
 /*global dx, _ */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.core.data");
+dx.namespace('dx.core.data');
 
 (function() {
 
@@ -53,7 +53,7 @@ function processSchema(schema, schemaKey, sourceSchemas, queryParamAnnotations, 
     }
 
     // Process the parent schema, if any. This assumes all extends schemas have just a $ref property.
-    var parentSchema = schema["extends"];
+    var parentSchema = schema.extends;
     if (parentSchema) {
         schema.parentSchema = processSchema(sourceSchemas[parentSchema.$ref], parentSchema.$ref,
             sourceSchemas, queryParamAnnotations, newSchemas);
@@ -86,16 +86,16 @@ function processSchema(schema, schemaKey, sourceSchemas, queryParamAnnotations, 
  */
 function schemaKeyToTypeName(schemaKey, schemas) {
     if (!schemas[schemaKey]) {
-        dx.fail("Could not find a schema entry for " + schemaKey);
+        dx.fail('Could not find a schema entry for ' + schemaKey);
     }
 
     if (schemas[schemaKey].name) {
         return schemas[schemaKey].name;
     }
 
-    var newString = schemaKey.replace(/\.json$/, "").
-        replace(/-/g, "_").
-        replace(/\//g, "");
+    var newString = schemaKey.replace(/\.json$/, '').
+        replace(/-/g, '_').
+        replace(/\//g, '');
 
     return newString;
 }
@@ -134,12 +134,12 @@ function addQParamAnnotations(schema, queryParamAnnotations) {
  *     propertyName: {
  *         type: object
  *     }
- *  or an "embedded object"
+ *  or an 'embedded object'
  *     propertyName: {
  *         type: object,
  *         $ref: schemaKey
  *     }
- *  or a "referenced object"
+ *  or a 'referenced object'
  *     propertyName: {
  *         type: string,
  *         format: objectReference,
@@ -163,7 +163,7 @@ function addQParamAnnotations(schema, queryParamAnnotations) {
  * Note that there are many other validation related properties, but they are not altered by this processing.
  *
  * This does two things:
- *  1) provides "property inheritance" by copying the parent's properties (if any) and replacing them as appropriate
+ *  1) provides 'property inheritance' by copying the parent's properties (if any) and replacing them as appropriate
  *     with this schema's properties.
  *  2) Replaces any references to schema types with the type name of the target types.
  */
@@ -212,13 +212,13 @@ function processProperties(schema, parentSchema, sourceSchemas, preserveUnneeded
  */
 function processOperations(schema, parentSchema, sourceSchemas) {
     // Do some schema validation
-    var schemaOps = _.pick(schema, ["operations", "rootOperations", "create", "read", "list", "update", "delete"]);
+    var schemaOps = _.pick(schema, ['operations', 'rootOperations', 'create', 'read', 'list', 'update', 'delete']);
     if (!schema.root && !_.isEmpty(schemaOps)) {
-        dx.fail("Found " + _.keys(schemaOps) + " on a non-root schema.");
+        dx.fail('Found ' + _.keys(schemaOps) + ' on a non-root schema.');
     }
 
     if (schema.operations && parentSchema && parentSchema.operations) {
-        dx.fail("Both " + parentSchema.name + " and " + schema.name + " have operations. This isn't supported.");
+        dx.fail('Both ' + parentSchema.name + ' and ' + schema.name + ' have operations. This isn\'t supported.');
     }
 
     var parentOps = (parentSchema && parentSchema.operations) ? parentSchema.operations : {};
@@ -238,17 +238,17 @@ function processOperations(schema, parentSchema, sourceSchemas) {
     });
 
     var pSchema = parentSchema || {};
-    _.each(["create", "update", "read", "list", "delete"], function(opName) {
+    _.each(['create', 'update', 'read', 'list', 'delete'], function(opName) {
         var opDef = schema[opName];
         if (!dx.core.util.isNone(opDef)) {
-            if (opName === "create" || opName === "update") {
+            if (opName === 'create' || opName === 'update') {
                opDef.validateAs = opDef.validateAs || opName;
             }
 
             processOperation(opDef, opName, sourceSchemas);
         }
 
-        if (opName !== "create" && opName !== "list") {
+        if (opName !== 'create' && opName !== 'list') {
             schema[opName] = opDef || pSchema[opName];
         }
     });
@@ -259,7 +259,7 @@ function processOperations(schema, parentSchema, sourceSchemas) {
  * the form:
  *     operationName: {
  *         payload: {
- *             [type: "object",
+ *             [type: 'object',
  *             $ref: url-to-type]
  *         }
  *         [validateAs: create|update]
@@ -276,7 +276,7 @@ function processOperations(schema, parentSchema, sourceSchemas) {
  * or the following, which means a GET with no parameters
  *     operationName: {
  *     }
- * Any one of those may have a "sub-operation" of the same form (though, the last, with neither payload nor
+ * Any one of those may have a 'sub-operation' of the same form (though, the last, with neither payload nor
  * parameters defined will be recognized, simply because it is ambiguous with other entries).
  *         subOpName: {
  *             payload: {...},
@@ -298,8 +298,8 @@ function processOperations(schema, parentSchema, sourceSchemas) {
  *     }
  * or
  *     paramName: {
- *         type: "string",
- *         format: "objectReference",
+ *         type: 'string',
+ *         format: 'objectReference',
  *         referenceTo: schemaKey
  *         [required: true|false]
  *     }
@@ -315,14 +315,14 @@ function processOperations(schema, parentSchema, sourceSchemas) {
  *     }
  * or
  *     return : {
- *        type: "array",
+ *        type: 'array',
  *         [items: {
  *             $ref: schemaKey
  *         }]
  *     }
  * or
  *     return : {
- *        type: "array",
+ *        type: 'array',
  *         [items: {
  *             referenceTo: schemaKey
  *         }]
@@ -330,7 +330,7 @@ function processOperations(schema, parentSchema, sourceSchemas) {
  * These will be modified in these ways:
  *  1) $ref and referenceTo's will be set to type name of the relevant schemas
  *  2) Any sub-operation is extracted from its default location, and put into a sub-object called dxOperations
- *  3) in the case of a "missing" parameters, an empty one will be inserted.
+ *  3) in the case of a 'missing' parameters, an empty one will be inserted.
  *  4) Any $ref in the return value or the return.items value will be replaced with the type name of the schema.
  * Thus, we get:
  * {
@@ -356,7 +356,7 @@ function processOperations(schema, parentSchema, sourceSchemas) {
 function processOperation(opDef, opName, sourceSchemas) {
     if (opDef.payload) {
         if (opDef.parameters) {
-            dx.fail("Found both a payload and a parameters for the operation " + opName + ".");
+            dx.fail('Found both a payload and a parameters for the operation ' + opName + '.');
         }
         if (opDef.payload.$ref) {
             opDef.payload.$ref = schemaKeyToTypeName(opDef.payload.$ref, sourceSchemas);
@@ -371,18 +371,18 @@ function processOperation(opDef, opName, sourceSchemas) {
         });
     }
 
-    if (opDef["return"]) {
-        convertTypeReference(opDef["return"], sourceSchemas);
+    if (opDef.return) {
+        convertTypeReference(opDef.return, sourceSchemas);
     }
 
     // Move any sub-operations into a sub-object
     _.each(opDef, function(value, key) {
-        if (key === "payload" || key === "parameters") {
+        if (key === 'payload' || key === 'parameters') {
             return;
         }
         if (value.payload || value.parameters) {
             opDef.dxOperations = opDef.dxOperations || {};
-            opDef.dxOperations[key] = processOperation(value, opName + "." + key, sourceSchemas);
+            opDef.dxOperations[key] = processOperation(value, opName + '.' + key, sourceSchemas);
             delete opDef[key];
         }
     });
@@ -396,19 +396,19 @@ function processOperation(opDef, opName, sourceSchemas) {
  */
 function convertTypeReference(propData, sourceSchemas) {
     function convertReferences(type, propData) {
-        if (type === "array" && _.has(propData, "items")) {
-            if (_.has(propData.items, "$ref")) {
+        if (type === 'array' && _.has(propData, 'items')) {
+            if (_.has(propData.items, '$ref')) {
                 propData.items.$ref = schemaKeyToTypeName(propData.items.$ref, sourceSchemas);
-            } else if (_.has(propData.items, "referenceTo")) {
+            } else if (_.has(propData.items, 'referenceTo')) {
                 propData.items.referenceTo = schemaKeyToTypeName(propData.items.referenceTo, sourceSchemas);
             }
         }
 
-        if (type === "string" && propData.format === "objectReference" && propData.referenceTo) {
+        if (type === 'string' && propData.format === 'objectReference' && propData.referenceTo) {
             propData.referenceTo = schemaKeyToTypeName(propData.referenceTo, sourceSchemas);
         }
 
-        if (type === "object" && propData.$ref) {
+        if (type === 'object' && propData.$ref) {
             propData.$ref = schemaKeyToTypeName(propData.$ref, sourceSchemas);
         }
     }
@@ -434,23 +434,23 @@ function checkQPAnnotations(schemas, queryParamAnnotations) {
                 return;
             }
 
-            var segs = qParam.mapsTo.split(".");
+            var segs = qParam.mapsTo.split('.');
             var numSegs = segs.length;
 
             var currType = key;
             var currSchema = schemas[currType];
             _.each(segs, function(seg, idx) {
                 if (idx !== numSegs - 1) {
-                    if (seg.charAt(0) !== "$") {
-                        dx.fail("Can only chain object references (evaluating '" + seg + "' in '" + qParam.mapsTo +
-                            "').");
+                    if (seg.charAt(0) !== '$') {
+                        dx.fail('Can only chain object references (evaluating "' + seg + '" in "' + qParam.mapsTo +
+                            '").');
                     }
                     seg = seg.slice(1);
                 }
 
                 var prop = currSchema.properties[seg];
                 if (!prop) {
-                    dx.fail("Property '" + seg + "' not found for type " + currType);
+                    dx.fail('Property "' + seg + '" not found for type ' + currType);
                 }
 
                 currType = prop.referenceTo;
@@ -470,7 +470,7 @@ function markListOperations(schemas) {
     _.each(schemas, function(schema) {
         if (schema.list) {
             if (_.isEmpty(schema.list.parameters)) {
-                schema.list.dxFilterMode = "none";
+                schema.list.dxFilterMode = 'none';
             } else {
                 var missingMapsTo = false;
                 _.each(schema.list.parameters, function(param) {
@@ -478,7 +478,7 @@ function markListOperations(schemas) {
                         missingMapsTo = true;
                     }
                 });
-                schema.list.dxFilterMode = missingMapsTo ? "custom" : "uber";
+                schema.list.dxFilterMode = missingMapsTo ? 'custom' : 'uber';
             }
         }
     });
@@ -489,11 +489,11 @@ function markListOperations(schemas) {
  *
  * Specifically, this expects the schemas to come in the form:
  * {
- *     "schemaKey": {
+ *     'schemaKey': {
  *        [name: typeName,]
  *        [singleton: true|false,]
- *        [extends: { $ref: "schemaKey" },]
- *        [root: "url-fragment",]
+ *        [extends: { $ref: 'schemaKey' },]
+ *        [root: 'url-fragment',]
  *        [properties: {...},]
  *        [create: {...},]
  *        [read: {...},]
@@ -511,7 +511,7 @@ function markListOperations(schemas) {
  * below.
  *
  * schemas:               The set of schemas to be prepared.  This is the only parameter that must be provided.
- * queryParamAnnotations: The set of "annotations" to add to schema query parameters. This expects annotations to come
+ * queryParamAnnotations: The set of 'annotations' to add to schema query parameters. This expects annotations to come
  *                        in the form:
  *                        {
  *                           Type1: {
@@ -527,17 +527,17 @@ function markListOperations(schemas) {
  *
  * copySchemas:           If truthy, this will make a copy of the provided schemas before making changes to them.
  *                        Otherwise the original schema objects will be altered.
- * preserveUnneeded:      If truthy, properties like "description" that aren't needed will not be deleted.
+ * preserveUnneeded:      If truthy, properties like 'description' that aren't needed will not be deleted.
  */
 function prepareSchemas(schemas, queryParamAnnotations, copySchemas, preserveUnneeded) {
     var newSchemas = {};
 
     if (!_.isObject(schemas)) {
-        dx.fail("Must provide a schemas object.");
+        dx.fail('Must provide a schemas object.');
     }
 
     if (!_.isUndefined(queryParamAnnotations) && !_.isObject(queryParamAnnotations)) {
-        dx.fail("queryParamAnnotations is defined but not an object.");
+        dx.fail('queryParamAnnotations is defined but not an object.');
     }
 
     // Always copy the schemas at this time, as it caused model-generator to be unhappy.
@@ -614,20 +614,20 @@ function prepareEnums(schemas) {
     var enums = {};
 
     if (!_.isObject(schemas)) {
-        dx.fail("Must provide a set of prepared schemas.");
+        dx.fail('Must provide a set of prepared schemas.');
     }
 
     function processEnum(type, name, definition) {
         var enumType = enums[type] = enums[type] || {};
         var enumProp = enumType[name] = enumType[name] || {};
-        _.each(definition["enum"], function(enumVal) {
+        _.each(definition.enum, function(enumVal) {
             enumProp[enumVal] = enumVal;
         });
     }
 
     function processParameters(type, opDef) {
         _.each(opDef.parameters, function(paramDef, paramName) {
-            if (paramDef["enum"]) {
+            if (paramDef.enum) {
                 processEnum(type, paramName, paramDef);
             }
         });
@@ -635,10 +635,10 @@ function prepareEnums(schemas) {
 
     _.each(schemas, function(schema, type) {
         _.each(schema.properties, function(propDef, propName) {
-            if (propDef["enum"]) {
+            if (propDef.enum) {
                 processEnum(type, propName, propDef);
             // Array of enums
-            } else if (propDef.items && propDef.items["enum"]) {
+            } else if (propDef.items && propDef.items.enum) {
                 processEnum(type, propName, propDef.items);
             }
         });

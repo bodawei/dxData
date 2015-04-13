@@ -13,14 +13,14 @@
  */
 
 /*
- * Copyright (c) 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, _ */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.core.data");
+dx.namespace('dx.core.data');
 
 (function() {
 
@@ -39,15 +39,15 @@ dx.namespace("dx.core.data");
 function CreationListener(settings) {
     var self = this;
     if (dx.core.util.isNone(settings.typeName)) {
-        dx.fail("To create a new creation listener, a type name must be provided.");
+        dx.fail('To create a new creation listener, a type name must be provided.');
     }
     var typeName = settings.typeName;
     var context = settings.context;
     if (!isListableType(typeName, context)) {
-        dx.fail(typeName + " is not a known type with a list operation. Can not create this creation listener.");
+        dx.fail(typeName + ' is not a known type with a list operation. Can not create this creation listener.');
     }
     if (!_.isFunction(settings.callback)) {
-        dx.fail("Callback must be provided as a function.");
+        dx.fail('Callback must be provided as a function.');
     }
 
     self._dxInfo = {
@@ -66,7 +66,7 @@ function CreationListener(settings) {
             return;
         }
 
-        context._filters[typeName](self, model, function (placement) {
+        context._filters[typeName](self, model, function(placement) {
             switch (placement) {
                 case context._filters.INCLUDE:
                     settings.callback(model);
@@ -74,10 +74,10 @@ function CreationListener(settings) {
                 case context._filters.EXCLUDE:
                     break;
                 case context._filters.UNKNOWN:
-                    dx.fail("UNKNOWN filter result not supported by creation listeners");
-                    break;
+                    dx.fail('UNKNOWN filter result not supported by creation listeners');
+                    break;  // to keep ant check happy.
                 default:
-                    dx.fail("Filter returned an invalid value.");
+                    dx.fail('Filter returned an invalid value.');
             }
         });
     };

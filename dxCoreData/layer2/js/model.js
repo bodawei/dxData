@@ -13,20 +13,20 @@
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, $, _, Backbone */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.core.data");
+dx.namespace('dx.core.data');
 
 (function() {
 
 /*
  * This takes a set of schemas (modified by _prepareSchemas), and creates a set of Backbone Model constructor functions
- * (and, by implication, functionality upon the models). This also creates a set of "root operation" functions.
+ * (and, by implication, functionality upon the models). This also creates a set of 'root operation' functions.
  * The constructor functions will be used by the level 3 API's to provide final collections to consumers of dxCore Data.
  *
  * CONSTRUCTOR FUNCTIONS
@@ -36,15 +36,15 @@ dx.namespace("dx.core.data");
  * terms, and can remain insulated from managing network communication.
  *
  * Terminology notes:
- *     Attributes:       Backbone calls the name/value pairs on a Model "attributes".
+ *     Attributes:       Backbone calls the name/value pairs on a Model 'attributes'.
  *     Client Model:     A model which is created on the client, and generally doesn't reflect data that exists on the
  *                       server. Most commonly, these are either parameters to operations on Server Models, or return
  *                       values from operations. Client Models are not maintained by the notification system.
  *     DSB Model:        Delphix-Schema-Based Model.  The models produced by the constructor functions this creates.
  *                       These are Backbone models that are constrained and enhanced to fit our Delphix Schema
  *                       requirements.
- *     Embedded Model:   A model that is placed "within" another model via a object/referenceTo property in the schema.
- *     Properties:       The name/value pairs on an ordinary Javascript/JSON/JSON-Schema object are called "properties".
+ *     Embedded Model:   A model that is placed 'within' another model via a object/referenceTo property in the schema.
+ *     Properties:       The name/value pairs on an ordinary Javascript/JSON/JSON-Schema object are called 'properties'.
  *     Referenced Model: A model that is referenced via a string/objectReference property in another.
  *     Server Model:     A model which represents a corresponding object on the server.  These models may not be
  *                       modified from outside of the dxCore Data, since they are guaranteed to remain accurate and up
@@ -59,7 +59,7 @@ dx.namespace("dx.core.data");
  *
  * EVENTS
  * ready:        If you want to know if a model is ready to be used (has an initial set of data retrieved from the
- *               server), then make use of the "ready" event, which is unique to DSB models. Ready indicates that the
+ *               server), then make use of the 'ready' event, which is unique to DSB models. Ready indicates that the
  *               model has retrieved an initial set of data from the server. Unlike ordinary events, if a ready handler
  *               is assigned to a model that is already ready, that handler (and no others) will be triggered
  *               immediately. Ready handlers are  always passed the model as the first, and only, argument. The handler
@@ -75,7 +75,7 @@ dx.namespace("dx.core.data");
  *
  * Standard Backbone properties (none of these should be changed)
  *     id              : -- : Standard
- *     idAttribute     : -- : Set to "reference", as this is the unique ID property name for Delphix Schemas.
+ *     idAttribute     : -- : Set to 'reference', as this is the unique ID property name for Delphix Schemas.
  *     cid             : -- : Standard
  *     attributes      : -- : Standard, but essentially private.
  *     changed         : -- : Standard, but essentially private. Use hasChanged() etc.
@@ -85,12 +85,12 @@ dx.namespace("dx.core.data");
  *
  * Standard Backbone functions
  *     Unless otherwise noted, all functions accept only attribute names specified in the Delphix schema (they will
- *     throw an error if given something else). If an attribute is of type string/objectReference, then "$attribute" can
+ *     throw an error if given something else). If an attribute is of type string/objectReference, then '$attribute' can
  *     be used to retrieve the referenced model. In the descriptions below, functions marked as S can be called on
  *     server models, while those marked as C can be called on client models.
  *
  *     get      : SC : Standard, as above.
- *     set      :  C : Standard, but accepts values for embedded models. Does not accept "$attribute" names.
+ *     set      :  C : Standard, but accepts values for embedded models. Does not accept '$attribute' names.
  *     escape   : SC : Standard, as above. Note that Backbone's escape doesn't deal well with objects or arrays.
  *     has      : SC : Standard, as above.
  *     unset    :  C : Standard, as above. Sets attribute to default value. Embedded models clear()'ed.
@@ -100,7 +100,7 @@ dx.namespace("dx.core.data");
  *     fetch    : -- : Do not use this. Use newClientModel() or getServerModel() instead.
  *     save     : -- : Do not use this. Use $$update() instead.
  *     destroy  : -- : Do not use this. Use $$delete() instead.
- *     keys     : SC : Standard. Does not return the "$attribute" keys.
+ *     keys     : SC : Standard. Does not return the '$attribute' keys.
  *     values   : SC : Standard. Returns Embedded Models, but not Referenced Models.
  *     pairs    : SC : Standard. Returns Embedded Models, but not Referenced Models.
  *     invert   : SC : Standard. Returns Embedded Models, but not Referenced Models.
@@ -142,11 +142,11 @@ dx.namespace("dx.core.data");
  * Parameters:
  *     schemas: The set of schemas this should generate constructors from.
  *     context: The object to put the resulting constructors (_modelConstructors) on. If not specified, puts them on
- *              "this".
+ *              'this'.
  */
 dx.core.data._generateModelConstructors = function(schemas, context) {
 
-    // Note: "context" is the only true "global" within this closure. Please don't add others.
+    // Note: 'context' is the only true 'global' within this closure. Please don't add others.
 
     /*
      * ========================================
@@ -159,9 +159,9 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * is fired.
      *
      * For DSB models, we provide standard behavior for this, but do some special processing if someone is listening
-     * for the "ready" or "error" event. In that case, if we have already fetched the model (or if this is a client
+     * for the 'ready' or 'error' event. In that case, if we have already fetched the model (or if this is a client
      * model), then trigger the ready event immediately.  Note that if the model is already ready or in error,
-     * then we will react to "ready" or "error" immediately without storing the listener, since this is a one
+     * then we will react to 'ready' or 'error' immediately without storing the listener, since this is a one
      * time pseudo-event.
      */
     function dxOn(name, callback, context) {
@@ -169,16 +169,16 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
         /*
          * If the user is asking for ready, and we are already ready or in error, then trigger the ready or
-         * do nothing. There is no reason to keep the eevent listener around for more than this call.
+         * do nothing. There is no reason to keep the event listener around for more than this call.
          * Similarly if the user is asking for the error pseudo event.
          */
-        if (name === "ready") {
+        if (name === 'ready') {
             if (this._dxIsReady) {
                 transientTrigger = triggerReady;
             } else if (this._dxErrorResult) {
                 return;
             }
-        } else if (name === "error") {
+        } else if (name === 'error') {
             if (this._dxErrorResult) {
                 transientTrigger = triggerError;
             } else if (this._dxIsReady) {
@@ -194,12 +194,10 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         } else {
             Backbone.Events.on.call(this, name, callback, context);
         }
-
-        return;
     }
 
     /*
-     * Either "ready" or "error" events is triggered once in the lifecycle of a model. Cleanup listeners as soon as
+     * Either 'ready' or 'error' events is triggered once in the lifecycle of a model. Cleanup listeners as soon as
      * possible.
      *
      * Without this automatic cleanup, callers would have to setup 2 listeners and cancel each other when triggered.
@@ -208,7 +206,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function removeEventHandlers(model, events) {
         _.each(events, function(value, name) {
-            _.each(value, function (event) {
+            _.each(value, function(event) {
                 if (event.callback) {
                     model.off(name, event.callback);
                 }
@@ -230,20 +228,20 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     }
 
     /*
-     * Trigger the "ready" event and clean up error listeners
+     * Trigger the 'ready' event and clean up error listeners
      */
     function triggerReady(model) {
         var handlers = getEventHandlers(model);
-        model.trigger("ready", model);
+        model.trigger('ready', model);
         removeEventHandlers(model, handlers);
     }
 
     /*
-     * Trigger the "error" event and clean up ready listeners
+     * Trigger the 'error' event and clean up ready listeners
      */
     function triggerError(model) {
         var handlers = getEventHandlers(model);
-        model.trigger("error", model, model._dxErrorResult);
+        model.trigger('error', model, model._dxErrorResult);
         removeEventHandlers(model, handlers);
     }
 
@@ -251,8 +249,8 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * Backbone defines this as: Get the current value of an attribute from the model.
      *
      * For DSB models, this does the same thing, with two additional features. First, asking for an attribute that isn't
-     * in the schema definition will cause an error to be thrown.  Second, if there is an attribute named "attr" whose
-     * schema property is of type string/objectReference, then one can also get("$attr"), and this will return the
+     * in the schema definition will cause an error to be thrown.  Second, if there is an attribute named 'attr' whose
+     * schema property is of type string/objectReference, then one can also get('$attr'), and this will return the
      * corresponding DSB model.
      */
     function dxGet(attrName) {
@@ -266,7 +264,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             if (_.isString(referenceValue)) {
                 return context._cache.getCachedModel(referenceValue, getRootType(info.propDef.referenceTo));
             }
-            dx.fail("Tried to retrieve a related object with " + attrName + " but value was " + referenceValue + ".");
+            dx.fail('Tried to retrieve a related object with ' + attrName + ' but value was ' + referenceValue + '.');
         } else {
             return Backbone.Model.prototype.get.call(this, info.baseName);
         }
@@ -274,12 +272,12 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
     /*
      * Backbone defines this as: Set a hash of attributes (one or many) on the model. If any of the attributes change
-     * the model's state, a "change" event will be triggered on the model.
+     * the model's state, a 'change' event will be triggered on the model.
      *
      * For DSB Models, there are a number of differences.
      *     1) Only attributes defined in the schemas can be set.
      *     2) Attributes may only be set to values with the data type specified in the schemas.
-     *     3) DSB models may contain "embedded" DSB models (object/$ref)
+     *     3) DSB models may contain 'embedded' DSB models (object/$ref)
      *
      * To set an attribute on an embedded DSB model, one must still specify values in JSON format. Thus:
      *     myModel.set({
@@ -290,7 +288,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      *     })
      * A DSB model may, legitimately, have an array or object that, itself, contains a DSB model (for example, an
      * APIError may contain a plain JSON object whose values are other APIErrors).  To deal with this properly, set()
-     * will detect any object that has a "type" property, whose value is a Delphix-schema type name, and create a
+     * will detect any object that has a 'type' property, whose value is a Delphix-schema type name, and create a
      * DSB model automatically. Without that type property, however, set() will treat the object as an ordinary
      * JSON object.
      *
@@ -330,7 +328,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                 (!this._dxIsReady || this._dxIsClientModel)) {
                 convertToSubtype(this, newAttrs.type);
             } else {
-                dx.fail("Tried to change this from " + this._dxSchema.name + " to " + newAttrs.type + ".");
+                dx.fail('Tried to change this from ' + this._dxSchema.name + ' to ' + newAttrs.type + '.');
             }
         }
 
@@ -339,7 +337,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
          */
         var invalidAttrs = _.omit(newAttrs, _.keys(this._dxSchema.properties || {}));
         if (!_.isEmpty(invalidAttrs)) {
-            dx.fail(_.keys(invalidAttrs) + " are not attributes of a model of type " + this._dxSchema.name + ".");
+            dx.fail(_.keys(invalidAttrs) + ' are not attributes of a model of type ' + this._dxSchema.name + '.');
         }
 
         /*
@@ -353,31 +351,31 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             var newType = assertValueMatchesDefinition(newName, newValue, propDef);
 
             switch (newType) {
-                case "undefined":
-                case "boolean":
-                case "string":
-                case "number":
-                case "integer":
+                case 'undefined':
+                case 'boolean':
+                case 'string':
+                case 'number':
+                case 'integer':
                     finalAttrs[newName] = newValue;
                     break;
-                case "null":
+                case 'null':
                     if (this.get(newName) instanceof Backbone.Model) {
                         subModelsToClear[newName] = newValue;
                     } else {
                         finalAttrs[newName] = newValue;
                     }
                     break;
-                case "date":
+                case 'date':
                     if (newValue instanceof Date) {
                         finalAttrs[newName] = new Date(newValue.getTime());
                     } else {
                         finalAttrs[newName] = dx.core.data.util.engineTimeToDate(newValue);
                     }
                     break;
-                case "array":
+                case 'array':
                     finalAttrs[newName] = setupArray(newValue, propDef.items);
                     break;
-                case "object":
+                case 'object':
                     if (this.get(newName) instanceof Backbone.Model) {
                         subModelsToSet[newName] = newValue;
                     } else {
@@ -406,7 +404,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function dxHas(attrName) {
         if (!_.isString(attrName)) {
-            dx.fail("Must provide an attribute name.");
+            dx.fail('Must provide an attribute name.');
         }
 
         var info = getAttrInfo(this, attrName);
@@ -416,21 +414,21 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     }
 
     /*
-     * Backbone defines this as: Remove an attribute by deleting it from the internal attributes hash. Fires a "change"
+     * Backbone defines this as: Remove an attribute by deleting it from the internal attributes hash. Fires a 'change'
      * event unless silent is passed as an option.
      *
      * For DSB models, the behavior is a bit different:
      *  1) Calling unset() on a defined attribute will cause that to be reset to its default value, unless it is an
      *     embedded object, in which case it is equivalent to calling clear() on it.
      *  2) Calling unset() an attribute that isn't defined in the schemas will throw an error
-     *  3) calling unset("$attribute") will unset "attribute"
-     *  4) This considers the default of a "type" attribute to be the schema name, and so unset will never actually
+     *  3) calling unset('$attribute') will unset 'attribute'
+     *  4) This considers the default of a 'type' attribute to be the schema name, and so unset will never actually
      *     change it.
      */
     function dxUnset(attrName, options) {
         var info = assertAndGetAttrInfo(this, attrName);
 
-        if (attrName === "type") {
+        if (attrName === 'type') {
             return;
         }
 
@@ -442,7 +440,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     }
 
     /*
-     * Backbone defines this as: Removes all attributes from the model, including the id attribute. Fires a "change"
+     * Backbone defines this as: Removes all attributes from the model, including the id attribute. Fires a 'change'
      * event unless silent is passed as an option.
      *
      * For DSB models, this resets all attributes to their default values, unless they are embedded objects, in which
@@ -451,7 +449,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     function dxClear(options) {
         var changes = {};
         _.each(this._dxSchema.properties, function(propDef, propName) {
-            if (propName === "type") {
+            if (propName === 'type') {
                 return;
             }
             if (isEmbeddedProp(propDef)) {
@@ -492,7 +490,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * Delphix values returned from the server come in several flavors:
      *  1) an ErrorResult. This means that whatever request got to us failed.
      *  2) an OKResult. This is the result of a successful call
-     *  3) a "naked" Delphix object type. This happens when a collection is parsing each object in its returned array.
+     *  3) a 'naked' Delphix object type. This happens when a collection is parsing each object in its returned array.
      *  4) a ListResult, or other Delphix return value.  These should never happen here.
      *
      * In the case of problems (cases 1 and 4), we return undefined (we report the error result through the error result
@@ -502,16 +500,16 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function dxParse(response) {
         if (!response || !response.type) {
-            dx.warn("Got an undefined response, or one without a type in parse().");
+            dx.warn('Got an undefined response, or one without a type in parse().');
             return;
         }
 
-        if (response.type === "OKResult") {
+        if (response.type === 'OKResult') {
             return response.result;
         } else if (isSchemaType(response.type)) {
             return response;
         } else {
-            dx.warn("Got an unexpected type of response (" + response.type + ") in parse().");
+            dx.warn('Got an unexpected type of response (' + response.type + ') in parse().');
             return;
         }
     }
@@ -535,13 +533,13 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * Returns true if the provided type name is this object's type name, or the type name of one of this model's
      * extended types.  Will throw an exception if the provided type name isn't one of the schema types.
      */
-    function instanceOf (typeName) {
+    function instanceOf(typeName) {
         if (!_.isString(typeName)) {
-            dx.fail("instanceOf() requires a type name as a parameter.");
+            dx.fail('instanceOf() requires a type name as a parameter.');
         }
 
         if (!isSchemaType(typeName)) {
-            dx.fail(typeName + " is not a known type name.");
+            dx.fail(typeName + ' is not a known type name.');
         }
 
         var candidateTypeInfo = this._dxSchema;
@@ -565,22 +563,22 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * Entirely block the standard Backbone destroy() routine. We want users to call $$delete() instead.
      */
     function noDestroy() {
-        dx.fail("Do not call destroy() directly. Instead, call $$delete().");
+        dx.fail('Do not call destroy() directly. Instead, call $$delete().');
     }
 
     /*
      * Delete this model on the server.  On success, this will clear() this model.  This will also fire
-     * a "request" event on the model before making the call, and a "sync" and "destroy" afterwards on success.
+     * a 'request' event on the model before making the call, and a 'sync' and 'destroy' afterwards on success.
      * Depending on the underlying schema definition, this can be called in any of these ways:
      *    $$delete([successError])  // in case of no payload defined
      *    $$delete(payload[, successError])  // in case of payload required
      *    $$delete([payload][, successError])  // in case of payload optional
      */
     function dxDelete(arg1, arg2) {
-        var opDef = this._dxSchema["delete"];
+        var opDef = this._dxSchema.delete;
 
         if ((arg1 instanceof Backbone.Model) && !opDef.payload) {
-            dx.fail("$$delete does not allow a payload.");
+            dx.fail('$$delete does not allow a payload.');
         }
 
         var payload = arg1;
@@ -591,13 +589,13 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             successError = arg1;
         }
 
-        assertHasReferenceAttr(this, "$delete", true);
-        var preparedData = assertAndPreparePayload("$delete", opDef, payload);
+        assertHasReferenceAttr(this, '$delete', true);
+        var preparedData = assertAndPreparePayload('$delete', opDef, payload);
 
         return callOperation(this, {
             data: preparedData,
             url: this.url()
-        }, "DELETE", opDef, successError);
+        }, 'DELETE', opDef, successError);
     }
 
     /*
@@ -609,7 +607,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function dxCreate(opDef, url, arg1, arg2) {
         if ((arg1 instanceof Backbone.Model) && !opDef.payload) {
-            dx.fail("$$create does not allow a payload.");
+            dx.fail('$$create does not allow a payload.');
         }
 
         var payload = arg1;
@@ -621,16 +619,16 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         }
 
         return callOperation({}, {
-            data: assertAndPreparePayload("$create", opDef, payload),
+            data: assertAndPreparePayload('$create', opDef, payload),
             url: url
-        }, "POST", opDef, successError);
+        }, 'POST', opDef, successError);
     }
 
     /*
      * Entirely block the standard Backbone save() routine. We want users to call $$update() instead.
      */
     function noSave() {
-        dx.fail("Do not call save() directly. Instead, call $$update().");
+        dx.fail('Do not call save() directly. Instead, call $$update().');
     }
 
     /*
@@ -642,9 +640,9 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         var opDef = this._dxSchema.update;
 
         if (dx.core.util.isNone(attributes) || _.isEmpty(attributes)) {
-            dx.fail("$$update must be called with a non-empty set of attributes.");
+            dx.fail('$$update must be called with a non-empty set of attributes.');
         }
-        assertHasReferenceAttr(this, "$update", !this._dxSchema.singleton);
+        assertHasReferenceAttr(this, '$update', !this._dxSchema.singleton);
 
         var newModel = newClientModel(this._dxSchema.name);
         newModel.set(attributes);
@@ -654,18 +652,18 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         return callOperation(this, {
             data: preparedData,
             url: this._dxGetUrl()
-        }, "POST", opDef, successError);
+        }, 'POST', opDef, successError);
     }
 
     /*
      * Entirely block the standard Backbone fetc() routine.
      */
     function noFetch() {
-        dx.fail("Do not call fetch() directly. Instead, call getServerModel().");
+        dx.fail('Do not call fetch() directly. Instead, call getServerModel().');
     }
 
     /*
-     * Mark the specified model as "ready". The 'triggerNotify' parameter controls whether we trigger the 'ready'
+     * Mark the specified model as 'ready'. The 'triggerNotify' parameter controls whether we trigger the 'ready'
      * event. This is exposed to the level3 API so that a collection can be marked as ready before notifying consumers.
      */
     function makeReady(model, triggerNotify) {
@@ -682,12 +680,21 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         }
     }
 
+    /*
+     * Handle an error for a successError callback or an array of callbacks.
+     * The context error handler is invoked once unless all callbacks define a custom error handler.
+     */
     function handleErrorResult(processedResult, successError) {
-        if (successError && successError.error) {
-            successError.error(processedResult);
-        } else if (!successError || !successError.suppressDefaultErrorHandler) {
-            context.reportErrorResult(processedResult);
-        }
+        var callbacks = _.isArray(successError) ? successError : [successError];
+        var reportedError = false;
+        _.each(callbacks, function(successError) {
+            if (successError && successError.error) {
+                successError.error(processedResult);
+            } else if (!reportedError && (!successError || !successError.suppressDefaultErrorHandler)) {
+                context.reportErrorResult(processedResult);
+                reportedError = true;
+            }
+        });
     }
 
     /*
@@ -697,14 +704,43 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function dxFetch(successError) {
         var model = this;
+        model._dxFetchQueue = model._dxFetchQueue || [];
+        model._dxFetchQueue.push(successError);
+        if (model._dxFetchQueue.length === 1) {
+            dxFetchNow(model);
+        }
+    }
+
+    function dxFetchNow(model) {
+
+        /*
+         * Applies the handler to the pending request queue.
+         *
+         * If there is more than one callback in the queue, apply the response to entries 0..N-2 and issue a new
+         * dxFetch for the most recent request.
+         *
+         * If dxFetch requests are issued during callback execution, they do not resolve immediately.
+         */
+        function makeHandler(mainHandler) {
+            return function dxFetchCallbackHandler(arg) {
+                var queue = model._dxFetchQueue;
+                delete model._dxFetchQueue;
+                var callbacks = _.first(queue, Math.max(1, queue.length - 1));
+                mainHandler(arg, callbacks);
+                if (queue.length > 1) {
+                    model._dxFetch(_.last(queue));
+                }
+            };
+        }
+
         var options = {
             parse: true,
-            success: function(resp) {
-                if (resp && resp.type === "ErrorResult") {
+            success: makeHandler(function(resp, callbacks) {
+                if (resp && resp.type === 'ErrorResult') {
                     var processedResult = resultToModel(resp);
                     model._dxErrorResult = processedResult;
                     triggerError(model);
-                    return handleErrorResult(processedResult, successError);
+                    return handleErrorResult(processedResult, callbacks);
                 }
 
                 model._dxErrorResult = undefined;
@@ -712,22 +748,25 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
                 makeReady(model, true);
 
-                if (successError && successError.success) {
-                    successError.success(model);
-                }
-            },
-            error: function(xhr) {
+                _.each(callbacks, function(successError) {
+                    if (successError && successError.success) {
+                        successError.success(model);
+                    }
+                });
+
+            }),
+            error: makeHandler(function(xhr, callbacks) {
                 var errorResult = convertXhrToErrorResult(xhr);
-                handleErrorResult(errorResult, successError);
+                handleErrorResult(errorResult, callbacks);
                 if (xhr && xhr.status === 404) {
-                    model.trigger("badReference", model, errorResult);
+                    model.trigger('badReference', model, errorResult);
                 }
                 model._dxErrorResult = errorResult;
                 triggerError(model);
-            }
+            })
         };
 
-        Backbone.sync("read", this, options);
+        Backbone.sync('read', model, options);
     }
 
     /*
@@ -748,7 +787,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     function addOperations(target, operations, namePrefix, urlPrefix, perObject) {
         _.each(operations, function(opDef, opName) {
             var opFunction;
-            var opUrl = (urlPrefix === "") ? opName : urlPrefix + "/" + opName;
+            var opUrl = (urlPrefix === '') ? opName : urlPrefix + '/' + opName;
 
             if (!_.isUndefined(opDef.payload)) {
                 opFunction = (_.isEmpty(opDef.payload)) ?
@@ -760,7 +799,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     };
             } else {
                 opFunction = (_.isEmpty(opDef.parameters)) ?
-                    function (successError) {
+                    function(successError) {
                         return noParametersFunction(this, opUrl, opDef, perObject, successError);
                     } :
                     function(parameters, successFailure) {
@@ -768,11 +807,11 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     };
             }
 
-            if (_.has(opDef, "dxOperations")) {
-                addOperations(target, opDef.dxOperations, namePrefix + opName + "_", opUrl, perObject);
+            if (_.has(opDef, 'dxOperations')) {
+                addOperations(target, opDef.dxOperations, namePrefix + opName + '_', opUrl, perObject);
             }
 
-            target["$" + namePrefix + opName] = opFunction;
+            target['$' + namePrefix + opName] = opFunction;
         });
     }
 
@@ -783,12 +822,12 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         assertHasReferenceAttr(caller, opName, perObject);
 
         if (successError instanceof Backbone.Model) {
-            dx.fail("$" + opName + " can not be called with a payload (only a success/error object).");
+            dx.fail('$' + opName + ' can not be called with a payload (only a success/error object).');
         }
 
         return callOperation(caller, {
-                url: caller._dxGetUrl() + "/" + opName
-            }, "POST", opDef, successError);
+                url: caller._dxGetUrl() + '/' + opName
+            }, 'POST', opDef, successError);
     }
 
     /*
@@ -799,19 +838,19 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
         return callOperation(caller, {
                 data: assertAndPreparePayload(opName, opDef, payload),
-                url: caller._dxGetUrl() + "/" + opName
-            }, "POST", opDef, successError);
+                url: caller._dxGetUrl() + '/' + opName
+            }, 'POST', opDef, successError);
     }
 
     /*
-     * Call a server function that is a "GET", and takes no parameters.
+     * Call a server function that is a 'GET', and takes no parameters.
      */
     function noParametersFunction(caller, opName, opDef, perObject, successError) {
         assertHasReferenceAttr(caller, opName, perObject);
 
         return callOperation(caller, {
-                url: caller._dxGetUrl() + "/" + opName
-            }, "GET", opDef, successError);
+                url: caller._dxGetUrl() + '/' + opName
+            }, 'GET', opDef, successError);
     }
 
     /*
@@ -822,7 +861,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         assertHasReferenceAttr(caller, opName, perObject);
 
         if (!_.isObject(parameters) && !dx.core.util.isNone(parameters)) {
-            dx.fail("$" + opName + " must be passed a (possibly empty) hash of parameters.");
+            dx.fail('$' + opName + ' must be passed a (possibly empty) hash of parameters.');
         }
 
         if (!dx.core.util.isNone(parameters)) {
@@ -831,13 +870,13 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
         return callOperation(caller, {
                 data: sendableParams,
-                url: caller._dxGetUrl() + "/" + opName
-            }, "GET", opDef, successError);
+                url: caller._dxGetUrl() + '/' + opName
+            }, 'GET', opDef, successError);
     }
 
     function assertHasReferenceAttr(model, opName, perObject) {
         if (!model.id && perObject) {
-            dx.fail("$" + opName + " can not be called without a reference property set.");
+            dx.fail('$' + opName + ' can not be called without a reference property set.');
         }
     }
 
@@ -852,12 +891,12 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      *     onto the provided handler or the system-wide hander, unless suppressErrorHandler was specified.
      */
     function callOperation(caller, options, type, opDef, successError) {
-        if (successError && _.has(successError, "success") && !_.isFunction(successError.success)) {
-            dx.fail("The success handler must be a function, but found a " + typeof successError.success + ".");
+        if (successError && _.has(successError, 'success') && !_.isFunction(successError.success)) {
+            dx.fail('The success handler must be a function, but found a ' + typeof successError.success + '.');
         }
 
-        if (successError && _.has(successError, "error") && !_.isFunction(successError.error)) {
-            dx.fail("The error handler must be a function, but found a " + typeof successError.error + ".");
+        if (successError && _.has(successError, 'error') && !_.isFunction(successError.error)) {
+            dx.fail('The error handler must be a function, but found a ' + typeof successError.error + '.');
         }
 
         var deferred = new $.Deferred();
@@ -865,18 +904,18 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         var params = {
             success: function(result) {
                 var processedResult;
-                if (result && result.type === "ErrorResult") {
+                if (result && result.type === 'ErrorResult') {
                     processedResult = resultToModel(result);
                     handleErrorResult(processedResult, successError);
                     deferred.reject(processedResult);
                 } else {
                     if (dx.core.util.isNone(result) || dx.core.util.isNone(result.type)) {
-                        dx.fail("Operation returned success, but without a typed object: " + result);
+                        dx.fail('Operation returned success, but without a typed object: ' + result);
                     }
-                    if (dx.core.util.isNone(opDef["return"]) && result.result === "") {
+                    if (dx.core.util.isNone(opDef.return) && result.result === '') {
                         delete result.result;
                     }
-                    assertValueMatchesDefinition("(return value)", result.result, opDef["return"]);
+                    assertValueMatchesDefinition('(return value)', result.result, opDef.return);
                     processedResult = resultToModel(result);
                     if (successError && successError.success) {
                         successError.success(processedResult);
@@ -885,7 +924,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                         successError.jsonSuccess(result);
                     }
                     if (_.isFunction(caller.trigger)) {
-                        caller.trigger("sync", caller);
+                        caller.trigger('sync', caller);
                     }
                     deferred.resolve(processedResult);
                 }
@@ -898,7 +937,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         };
 
         if (_.isFunction(caller.trigger)) {
-            caller.trigger("request", caller);
+            caller.trigger('request', caller);
         }
 
         _.extend(params, options);
@@ -914,19 +953,19 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function assertAndPreparePayload(opName, opDef, payload) {
         if (dx.core.util.isNone(payload) && opDef.payload && opDef.payload.required) {
-            dx.fail("Must call $" + opName + " with a payload of type " + opDef.payload.$ref + ".");
+            dx.fail('Must call $' + opName + ' with a payload of type ' + opDef.payload.$ref + '.');
         }
 
         if (!dx.core.util.isNone(payload)) {
             if (!_.isObject(payload) || !(payload instanceof Backbone.Model)) {
-                dx.fail("Must call $" + opName + " with a backbone model.");
+                dx.fail('Must call $' + opName + ' with a backbone model.');
             }
 
             if (!payload.instanceOf(opDef.payload.$ref)) {
-                dx.fail("Must call $" + opName + " with an instance of " + opDef.payload.$ref + ".");
+                dx.fail('Must call $' + opName + ' with an instance of ' + opDef.payload.$ref + '.');
             }
 
-            return JSON.stringify(jsonIze(payload, opDef.validateAs || "send"));
+            return JSON.stringify(jsonIze(payload, opDef.validateAs || 'send'));
         }
     }
 
@@ -942,12 +981,12 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         parameters = parameters || {};
         var undefinedParams = _.omit(parameters, _.keys(paramDefinitions));
         if (!_.isEmpty(undefinedParams)) {
-            dx.fail(_.keys(undefinedParams) + " is not a valid parameter name.");
+            dx.fail(_.keys(undefinedParams).join(', ') + ' is not a valid parameter name.');
         }
 
         _.each(parameters, function(value, key) {
             if (_.isUndefined(value)) {
-                dx.fail("Can not send a request with an undefined parameter (" + key + " is undefined).");
+                dx.fail('Can not send a request with an undefined parameter (' + key + ' is undefined).');
             }
         });
 
@@ -955,12 +994,12 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             if (_.has(parameters, paramName)) {
                 assertValueMatchesDefinition(paramName, parameters[paramName], paramDef);
             } else if (paramDef.required) {
-                dx.fail(paramName + " is required, but has not been passed.");
+                dx.fail(paramName + ' is required, but has not been passed.');
             }
         });
 
         // slightly misuse the jsonIze() routine. It does what we need, even if parameters isn't a Backbone model.
-        return jsonIze(parameters, "send");
+        return jsonIze(parameters, 'send');
     }
 
     /*
@@ -1004,11 +1043,11 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function makeNewModel(typeName, isClient) {
         if (dx.core.util.isNone(typeName)) {
-            dx.fail("To create a new model, a type name must be provided.");
+            dx.fail('To create a new model, a type name must be provided.');
         }
 
         if (!isSchemaType(typeName)) {
-            dx.fail(typeName + " is not a known type name. Can not create one.");
+            dx.fail(typeName + ' is not a known type name. Can not create one.');
         } else {
             var model = new context._modelConstructors[typeName]();
             model._dxIsClientModel = isClient;
@@ -1036,11 +1075,11 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * Given a type definition, return the default value for that type.
      */
     function defaultFor(propDef, isClientModel) {
-        var defaultValue = propDef["default"];
+        var defaultValue = propDef.default;
 
         if (_.isUndefined(defaultValue) &&
-            propDef.type === "object") {
-            defaultValue = (_.has(propDef, "$ref")) ?
+            propDef.type === 'object') {
+            defaultValue = (_.has(propDef, '$ref')) ?
                 isClientModel ? newClientModel(propDef.$ref) : newServerModel(propDef.$ref) :
                 undefined;
         }
@@ -1054,7 +1093,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     function makeIntoServerModel(model) {
         model._dxIsClientModel = false;
 
-        if (model._dxSchema["delete"]) {
+        if (model._dxSchema.delete) {
             model.$$delete = model._dxStandardOps.$$delete;
         }
 
@@ -1075,7 +1114,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     }
 
     function cantModifyServerModel() {
-        dx.fail("Can not modify a server " + this._dxSchema.name + " instance.");
+        dx.fail('Can not modify a server ' + this._dxSchema.name + ' instance.');
     }
 
     /*
@@ -1084,11 +1123,11 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function getRootType(childType) {
         if (!_.isString(childType)) {
-            dx.fail("Must call with a type name.");
+            dx.fail('Must call with a type name.');
         }
 
         if (!isSchemaType(childType)) {
-            dx.fail(childType + " is not a known type name.");
+            dx.fail(childType + ' is not a known type name.');
         }
 
         return context._modelConstructors[childType].prototype._dxSchema.rootTypeName;
@@ -1103,28 +1142,28 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
         // for testing xhr may not have getResponseHeader, and not all responses have a content-type!
         var contentType = dx.core.util.isNone(xhr.getResponseHeader) ? undefined :
-            xhr.getResponseHeader("content-type");
+            xhr.getResponseHeader('content-type');
 
         if (!dx.core.util.isNone(contentType) &&
-            contentType.indexOf("application/json") > -1 &&
+            contentType.indexOf('application/json') > -1 &&
             !_.isObject(responseInfo)) {
             try {
                 responseInfo = JSON.parse(responseInfo);
             } catch (e) {
-                dx.fail("Server response claimed to be application/json, but couldn't be parsed as JSON (" +
-                    xhr.responseText + ").");
+                dx.fail('Server response claimed to be application/json, but couldn\'t be parsed as JSON (' +
+                    xhr.responseText + ').');
             }
         }
 
-        if (responseInfo && responseInfo.type === "ErrorResult") {
+        if (responseInfo && responseInfo.type === 'ErrorResult') {
             return resultToModel(responseInfo);
         } else {
-            var errorResult = newClientModel("ErrorResult");
-            errorResult.get("error").set({
-                details: "Communication Error",
-                commandOutput: "HTTP Error: " + xhr.status + "\n" +
-                     "Status text: " + xhr.statusText + "\n" +
-                     "Response text: " + xhr.responseText
+            var errorResult = newClientModel('ErrorResult');
+            errorResult.get('error').set({
+                details: 'Communication Error',
+                commandOutput: 'HTTP Error: ' + xhr.status + '\n' +
+                     'Status text: ' + xhr.statusText + '\n' +
+                     'Response text: ' + xhr.responseText
             });
             return errorResult;
         }
@@ -1132,7 +1171,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
     /*
      * ========================================
-     * "subroutines" and utility functions
+     * 'subroutines' and utility functions
      * ========================================
      */
 
@@ -1144,7 +1183,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         var info = getAttrInfo(model, attrName);
 
         if (_.isUndefined(info.propDef)) {
-            dx.fail(attrName + " is not a known attribute.");
+            dx.fail(attrName + ' is not a known attribute.');
         }
 
         return info;
@@ -1152,17 +1191,17 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
     /*
      * This returns information about the attribute, including its base name (if the value passed was $attr, this
-     * returns "attr"), whether this was a $-prefixed name (and thus it is actually asking for the referenced model),
+     * returns 'attr'), whether this was a $-prefixed name (and thus it is actually asking for the referenced model),
      * and the definition of the schema property.
      */
     function getAttrInfo(model, attrName) {
         if (!_.isString(attrName)) {
-            dx.fail("Must provide an attribute name.");
+            dx.fail('Must provide an attribute name.');
         }
 
         var baseName = attrName;
         var wantsModel = false;
-        if (baseName.charAt(0) === "$") {
+        if (baseName.charAt(0) === '$') {
             baseName = baseName.substring(1);
             wantsModel = true;
         }
@@ -1188,43 +1227,43 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
          */
         function typeOfValue(value) {
             if (_.isNull(value)) {
-                return "null";
+                return 'null';
             }
 
             if (_.isArray(value)) {
-                return "array";
+                return 'array';
             }
 
-            if (typeof value  === "number") {
-                return (value === Math.floor(value)) ? "integer" : "number";
+            if (typeof value  === 'number') {
+                return (value === Math.floor(value)) ? 'integer' : 'number';
             }
 
             if (value instanceof Date) {
-                return "date";
+                return 'date';
             }
 
-            if (typeof value == "string" && dateStringRegex.exec(value)) {
-                return "date-or-string"; // could be either.
+            if (typeof value === 'string' && dateStringRegex.exec(value)) {
+                return 'date-or-string'; // could be either.
             }
 
             return typeof value;
         }
 
         function isTypeCompatible(actualType, objectType, defType, defObjectType, defFormat) {
-            if (actualType === "integer" && defType === "number") {
+            if (actualType === 'integer' && defType === 'number') {
                 return true;
-            } else if (actualType === "null" || actualType === "undefined") {
+            } else if (actualType === 'null' || actualType === 'undefined') {
                 return true;    // can assign null or undefined to all types
-            } else if (actualType === "date" && defType === "string" && defFormat === "date") {
+            } else if (actualType === 'date' && defType === 'string' && defFormat === 'date') {
                 return true;
-            } else if (actualType === "date-or-string" && defType === "string") {
-                if (defFormat === "date") {
-                    type = "date";
+            } else if (actualType === 'date-or-string' && defType === 'string') {
+                if (defFormat === 'date') {
+                    type = 'date';
                 } else {
-                    type = "string";
+                    type = 'string';
                 }
                 return true;
-            } else if ((defType === "object") && (actualType === "object")) {
+            } else if ((defType === 'object') && (actualType === 'object')) {
                 if (_.isUndefined(defObjectType) || // definition is typeless
                     (!_.isUndefined(defObjectType) && _.isUndefined(objectType)) || // new value is typeless
                     defObjectType === objectType || // types same
@@ -1239,14 +1278,14 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         }
 
         var type = typeOfValue(value);
-        var objectType = (type === "object") ? value.type : undefined;
+        var objectType = (type === 'object') ? value.type : undefined;
         var typeMatches;
 
         if (_.isUndefined(def)) {
             if (dx.core.util.isNone(value)) {
                 return type;
             } else {
-                dx.fail(name + " has a value, but it has no definition.");
+                dx.fail(name + ' has a value, but it has no definition.');
             }
         }
 
@@ -1260,10 +1299,10 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
         if (!typeMatches) {
             if (!def.$ref) {
-                dx.fail(name + " has to be type " + ((def.type === "string" && def.format === "date") ?
-                    "date" : def.type) + " but is " + type + " (" + JSON.stringify(value) + ")");
+                dx.fail(name + ' has to be type ' + ((def.type === 'string' && def.format === 'date') ?
+                    'date' : def.type) + ' but is ' + type + ' (' + JSON.stringify(value) + ')');
             } else {
-                dx.fail(name + " has to be type " + def.type + "/" + def.$ref + " but is " + type + "/" + objectType);
+                dx.fail(name + ' has to be type ' + def.type + '/' + def.$ref + ' but is ' + type + '/' + objectType);
             }
         }
 
@@ -1271,8 +1310,8 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
          * Note: def.enum throws an error in IE8.  We're also good with undefined/null from previous checks but those
          * values obviously aren't part of the enum
          */
-        if (def["enum"] && !dx.core.util.isNone(value) && !_.contains(def["enum"], value)) {
-            dx.fail(name + " is an enum and has to be one of " + JSON.stringify(def["enum"]) + " but is " +
+        if (def.enum && !dx.core.util.isNone(value) && !_.contains(def.enum, value)) {
+            dx.fail(name + ' is an enum and has to be one of ' + JSON.stringify(def.enum) + ' but is ' +
                 JSON.stringify(value));
         }
 
@@ -1294,7 +1333,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
         // Copy over any operations
         _.each(targetType.prototype, function(value, name) {
-            if (name.charAt(0) === "$") {
+            if (name.charAt(0) === '$') {
                 model[name] = value;
             }
         });
@@ -1318,7 +1357,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
     /*
      * As part of the set() process, we can take a JSON array, and convert it into an array ready to be set on the
-     * model. This involves two special processes: If an "items" property has been specified, enforce the type
+     * model. This involves two special processes: If an 'items' property has been specified, enforce the type
      * constraint expressed there, and if an object is found that could be converted into a DSB model, create a new
      * model and add it.
      */
@@ -1327,7 +1366,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
         _.each(arrayValue, function(value) {
             if (!_.isUndefined(itemDef)) {
-                assertValueMatchesDefinition("(array item)", value, itemDef);
+                assertValueMatchesDefinition('(array item)', value, itemDef);
             }
 
             if (_.isArray(value)) {
@@ -1381,7 +1420,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * update: Return all non-null update required and optional values, as well as required ones.
      *
      * send, create and update all throw errors if a required attribute is null or undefined (unless that attribute
-     * is of type "null")
+     * is of type 'null')
      */
     function jsonIze(value, mode) {
         var result;
@@ -1406,7 +1445,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                 // Don't send null when it won't be accepted
                 if (dx.core.util.isNone(attrValue) && !isNullableType(propDef)) {
                     if (required) {
-                        dx.fail("The attribute " + key +" is required to be non-null/non-undefined.");
+                        dx.fail('The attribute ' + key + ' is required to be non-null/non-undefined.');
                     }
                     return;
                 }
@@ -1469,11 +1508,11 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         var propCount = 0;
         _.each(updateModel._dxSchema.properties, function(propDef, key) {
             // Don't include read-only properties when sending a property
-            if (isReadOnly(propDef, "update")) {
+            if (isReadOnly(propDef, 'update')) {
                 return;
             }
 
-            var required = isRequired(propDef, "update");
+            var required = isRequired(propDef, 'update');
 
             if (isEmbeddedProp(propDef)) {
                 var subProps = rawUpdateObj ? rawUpdateObj[key] : undefined;
@@ -1483,8 +1522,8 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     propCount++;
                 }
             } else {
-                var baseAttrJson = jsonIze(baseModel.get(key), "update");
-                var updateAttrJson = jsonIze(updateModel.get(key), "update");
+                var baseAttrJson = jsonIze(baseModel.get(key), 'update');
+                var updateAttrJson = jsonIze(updateModel.get(key), 'update');
                 var updateValue = updateWithChangedValue(rawUpdateObj, key, baseAttrJson, updateAttrJson);
 
                 if (updateValue) {
@@ -1509,27 +1548,27 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     }
 
     /*
-     * Determine whether the specified property is "read only" in the current jsonizing mode. It is readonly if
+     * Determine whether the specified property is 'read only' in the current jsonizing mode. It is readonly if
      * it there are no required or create/update settings, or if it is explicitly readonly.
      */
     function isReadOnly(propDef, mode) {
         var readOnly =
-            ((mode === "send" || mode === "create") &&
+            (mode === 'create' &&
                 ((_.isUndefined(propDef.create) && _.isUndefined(propDef.required)) ||
-                    propDef.create === "readonly")) ||
-            (mode === "update" &&
+                    propDef.create === 'readonly')) ||
+            (mode === 'update' &&
                 ((_.isUndefined(propDef.update) && _.isUndefined(propDef.required)) ||
-                    propDef.update === "readonly"));
+                    propDef.update === 'readonly'));
         return readOnly;
     }
 
     /*
-     * Determine whether the specified property is "required" given the specified jsonizing mode.
+     * Determine whether the specified property is 'required' given the specified jsonizing mode.
      */
     function isRequired(propDef, mode) {
         var required = (propDef.required === true) ||
-            (propDef.create === "required" && mode === "create") ||
-            (propDef.update === "required" && mode === "update");
+            (propDef.create === 'required' && mode === 'create') ||
+            (propDef.update === 'required' && mode === 'update');
         return required;
     }
 
@@ -1537,23 +1576,23 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * Determine whether the specified property is one that allows null values
      */
     function isNullableType(propDef) {
-        return _.isArray(propDef.type) ? _.contains(propDef.type, "null") : (propDef.type === "null");
+        return _.isArray(propDef.type) ? _.contains(propDef.type, 'null') : (propDef.type === 'null');
     }
 
     function isEmbeddedProp(propDef) {
-        return (propDef.type === "object" && _.has(propDef, "$ref"));
+        return (propDef.type === 'object' && _.has(propDef, '$ref'));
     }
 
     function isObjectRefProp(propDef) {
         if (_.isArray(propDef.type)) {
-            return _.contains(propDef.type, "string") && propDef.format === "objectReference";
+            return _.contains(propDef.type, 'string') && propDef.format === 'objectReference';
         }
-        return (propDef.type === "string" && propDef.format === "objectReference");
+        return (propDef.type === 'string' && propDef.format === 'objectReference');
     }
 
     function throwIfBadNull(value, propDef, key) {
         if (dx.core.util.isNone(value) && !isNullableType(propDef)) {
-            dx.fail("The attribute " + key +" is required to be non-null/non-undefined.");
+            dx.fail('The attribute ' + key + ' is required to be non-null/non-undefined.');
         }
     }
 
@@ -1578,7 +1617,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             _dxErrorResult: undefined,
             _dxIsClientModel: false,
             _dxStandardOps: {},
-            idAttribute: "reference",
+            idAttribute: 'reference',
             urlRoot: schema.root,
             _dxSet: dxSet,
             _dxClear: dxClear,
@@ -1607,21 +1646,21 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             return schema.root;
         }
 
-        addOperations(rwModel, schema.operations, "", "", true);
+        addOperations(rwModel, schema.operations, '', '', true);
 
         if (schema.rootOperations) {
             /*
              * Root operations on singletons are, essentially object operations, as far as the client object model
              * is concerned. So, treat those root operations as object operations.  However, there are also some
-             * singleton "pseudo-objects" (e.g. delphix_common) which only exist to hold a few operations, so those we
-             * put on the rootOps object.  These pseudo-objects all prefixed by "delphix_".
+             * singleton 'pseudo-objects' (e.g. delphix_common) which only exist to hold a few operations, so those we
+             * put on the rootOps object.  These pseudo-objects all prefixed by 'delphix_'.
              */
-            if (schema.singleton && schema.name.indexOf("delphix_") !== 0) {
-                addOperations(rwModel, schema.rootOperations, "", "", false);
+            if (schema.singleton && schema.name.indexOf('delphix_') !== 0) {
+                addOperations(rwModel, schema.rootOperations, '', '', false);
             } else {
                 context.rootOps[typeName] = {};
                 context.rootOps[typeName]._dxGetUrl = getRootUrl;
-                addOperations(context.rootOps[typeName], schema.rootOperations, "", "", false);
+                addOperations(context.rootOps[typeName], schema.rootOperations, '', '', false);
             }
         }
 
@@ -1632,7 +1671,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             };
         }
 
-        if (schema["delete"]) {
+        if (schema.delete) {
             rwModel._dxStandardOps.$$delete = dxDelete;
         }
 
