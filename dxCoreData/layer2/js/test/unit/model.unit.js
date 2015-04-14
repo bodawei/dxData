@@ -1075,7 +1075,7 @@ describe('dx.core.data.generateModelConstructors', function() {
             expect(setObj.get('value')).toBeUndefined();
         });
 
-        it('accepts setting a multi-typed attribute to any specified type', function() {
+        it('accepts setting a multi-typed attribute to any of the allowed types', function() {
             var model = buildModelFromSchema({
                 properties: {
                     multiProp: {
@@ -1088,7 +1088,7 @@ describe('dx.core.data.generateModelConstructors', function() {
             expect(model.get('multiProp')).toBe('stringValue');
 
             model.set('multiProp', null);
-            expect(model.get('multiProp')).toBe(null);
+            expect(model.get('multiProp')).toBeUndefined();
         });
 
         it('rejects setting a multi-typed attribute to an unsupported type', function() {
@@ -1593,7 +1593,7 @@ describe('dx.core.data.generateModelConstructors', function() {
             expect(model.get('strDef')).toBe('IAmDefault');
 
             model.unset('nullDef');
-            expect(model.get('nullDef')).toBe(null);
+            expect(model.get('nullDef')).toBeUndefined();
 
             model.unset('boolDef');
             expect(model.get('boolDef')).toBe(true);
@@ -1762,7 +1762,7 @@ describe('dx.core.data.generateModelConstructors', function() {
             model.clear();
 
             expect(model.get('strDef')).toBe('IAmDefault');
-            expect(model.get('nullDef')).toBe(null);
+            expect(model.get('nullDef')).toBeUndefined();
             expect(model.get('boolDef')).toBe(true);
             expect(model.get('intDef')).toBe(45);
             expect(model.get('numDef')).toBe(84.5);
@@ -1925,13 +1925,14 @@ describe('dx.core.data.generateModelConstructors', function() {
                 boolDef: true,
                 intDef: 45,
                 numDef: 84.5,
-                strNoDef: undefined,
-                nullNoDef: undefined,
-                boolNoDef: undefined,
-                intNoDef: undefined,
-                numNoDef: undefined,
-                objectNoDef: undefined,
-                arrayNoDef: undefined,
+                strNoDef: null,
+                nullNoDef: null,
+                boolNoDef: null,
+                intNoDef: null,
+                numNoDef: null,
+                dateNoDef : null,
+                objectNoDef: null,
+                arrayNoDef: null,
                 embedded: {
                     strDef: 'EmbeddedDefault'
                 }
@@ -1947,7 +1948,7 @@ describe('dx.core.data.generateModelConstructors', function() {
                 dateNoDef: '1977-05-25T00:00:00.001Z',
                 arrayNoDef: [
                     true, {
-                        aValue: undefined
+                        aValue: null
                     }
                 ],
                 objectNoDef: {
@@ -1974,7 +1975,7 @@ describe('dx.core.data.generateModelConstructors', function() {
                 intDef: 45,
                 numDef: 84.5,
                 strNoDef: 'Hi there',
-                nullNoDef: undefined,
+                nullNoDef: null,
                 boolNoDef: true,
                 intNoDef: -32767,
                 numNoDef: 3.14,
@@ -1993,7 +1994,7 @@ describe('dx.core.data.generateModelConstructors', function() {
                 },
                 arrayNoDef: [
                     true, {
-                        aValue: undefined
+                        aValue: null
                     }, {
                         strDef: 'EmbeddedDefault'
                     }

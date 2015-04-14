@@ -345,7 +345,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
          */
         var finalAttrs = {};
         var subModelsToSet = {};
-        var subModelsToClear = {};
+        var subModelsToClear = [];
         _.each(newAttrs, function(newValue, newName) {
             var propDef = this._dxSchema.properties[newName];
             var newType = assertValueMatchesDefinition(newName, newValue, propDef);
@@ -360,9 +360,9 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     break;
                 case 'null':
                     if (this.get(newName) instanceof Backbone.Model) {
-                        subModelsToClear[newName] = newValue;
+                        subModelsToClear.push(newName);
                     } else {
-                        finalAttrs[newName] = newValue;
+                        finalAttrs[newName] = undefined;
                     }
                     break;
                 case 'date':
@@ -388,8 +388,8 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         /*
          * Finally, set all the values
          */
-        _.each(subModelsToClear, function(value, key) {
-            this.get(key)._dxClear(options);
+        _.each(subModelsToClear, function(attrName) {
+            this.get(attrName)._dxClear(options);
         }, this);
 
         _.each(subModelsToSet, function(value, key) {
@@ -1058,8 +1058,9 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
     /*
      * Fill in the defaults for all attributes on the specified model.  This directly manipulates the attributes
-     * property, thus bypassing the normal set() semantics.  This is actually OK, as the default Backbone
-     * behavior is not to change its changedAttributes() values (etc) at creation time.
+     * property, thus bypassing the normal set() semantics.  This is actually OK, as the default Backbone behavior is
+     * not to change its changedAttributes() values (etc) at creation time. Additionally, we don't want to be triggering
+     * events when doing this.
      */
     function buildDefaultAttributes(model, propDefs) {
         _.each(propDefs, function(propDef, propName) {
@@ -1076,6 +1077,11 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      */
     function defaultFor(propDef, isClientModel) {
         var defaultValue = propDef.default;
+
+        // Expose "null" from the server as "undefined" to our clients
+        if (propDef.default === null) {
+            defaultValue = undefined;
+        }
 
         if (_.isUndefined(defaultValue) &&
             propDef.type === 'object') {
@@ -1467,7 +1473,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                 });
             }
         } else {
-            result = (_.isUndefined(value) && !_.isUndefined(mode)) ? null : value;
+            result = _.isUndefined(value) ? null : value;
         }
 
         return result;
@@ -1494,7 +1500,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      *       - If the update specifies a value which is not changed, don't send a duplicate
      *       - If a property is required for update, but isn't included in the attributes, grab it from the
      *         base model
-     *       - If the update attributes specified a null or undefined value, and the property is allowed to be null,
+     *       - If the update attributes specified an undefined value, and the property is allowed to be null,
      *         we send a null.
      *       - Embedded models need special handling.  If the embedded model is required, then we simply add it to
      *         the set of properties we are returning. If the embedded model is optional, however, then if there are no
