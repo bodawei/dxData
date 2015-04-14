@@ -13,29 +13,29 @@
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
 /*global basePath, testType, fs, files, exclude, preprocessors */
 
-var fs = require("fs");
+var fs = require('fs');
 var basePath = process.cwd();
-var testType="unit";
+var testType='unit';
 
 
 files = [
-    "node_modules/jquery/dist/jquery.js",
-    "node_modules/underscore/underscore.js",
-    "node_modules/backbone/backbone.js",
-    "dxCoreData/test/jasmineSetup.js",
-    "dxCoreData/dxBasics.js",
-    "dxCoreData/layer1/**/*.js",
-    "dxCoreData/layer2/**/*.js",
-    "dxCoreData/layer3/**/*.js",
-    "dxCoreData/test/delphixSchema.js",
-    "dxCoreData/test/bootstrap-dxcoredata.js",
-    "dxCoreData/mockServer/**/*.js",
-    "dxCoreData/test/bootstrap-mock.js",
+    'node_modules/jquery/dist/jquery.js',
+    'node_modules/underscore/underscore.js',
+    'node_modules/backbone/backbone.js',
+    'dxCoreData/test/jasmineSetup.js',
+    'dxCoreData/dxBasics.js',
+    'dxCoreData/layer1/**/*.js',
+    'dxCoreData/layer2/**/*.js',
+    'dxCoreData/layer3/**/*.js',
+    'dxCoreData/test/delphixSchema.js',
+    'dxCoreData/test/bootstrap-dxcoredata.js',
+    'dxCoreData/mockServer/**/*.js',
+    'dxCoreData/test/bootstrap-mock.js',
 ];
 
 preprocessors = {};
@@ -51,17 +51,17 @@ exclude = [
 module.exports = function(config) {
     config.set({
         basePath : basePath,
-        frameworks: ["jasmine"],
+        frameworks: ['jasmine'],
         files: files,
         exclude: exclude,
         preprocessors: preprocessors,
         reporters: ['progress', 'junit'], // test results reporter to use. possible values: 'dots', 'progress', 'junit'
         junitReporter: {
-            outputFile: basePath + "/out/" + testType + 'TestResults.xml'
+            outputFile: basePath + '/out/' + testType + 'TestResults.xml'
         },
         coverageReporter: {
             type : 'html',
-            dir : basePath + "/out/" + testType + 'TestCoverage/'
+            dir : basePath + '/out/' + testType + 'TestCoverage/'
         },
         port: 9876,                 // web server port
         colors: true,               // enable / disable colors in the output (reporters and logs)

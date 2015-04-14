@@ -13,7 +13,7 @@
  */
 
 /*
- * Copyright (c) 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, _ */
@@ -162,22 +162,22 @@ function checkPageSize(qParams, objectIndex, collectionLength) {
     }
 
     pageSize = qParams.pageSize || 25;
-    pageOffset = qParams.pageOffset || 0; // No pageOffset gives you the first page (page 0)
+    pageOffset = qParams.pageOffset || 0; // No pageOffset gives you the page with the most recent data
 
     if (pageSize < 0) {
         dx.fail('pageSize must be a positive integer');
     }
 
     if (pageOffset >= 0) {
-        start = pageSize * pageOffset;
-        end = start + pageSize;
+        end = collectionLength - pageSize * pageOffset - 1;
+        start = Math.max(0, end - pageSize + 1);
     } else {
-        // Negative offset takes the page from the end of the collection, with -1 being the last page
-        end = collectionLength + pageSize * (pageOffset + 1);
-        start = end - pageSize;
+        // Negative offset takes the page from the older end of the collection, with -1 being the oldest
+        start = pageSize * -(pageOffset + 1);
+        end = Math.min(collectionLength - 1, start + pageSize - 1);
     }
 
-    return objectIndex >= start && objectIndex < end;
+    return objectIndex >= start && objectIndex <= end;
 }
 
 /*
@@ -257,6 +257,8 @@ function maybeAddPagingToFilter(type, filterFunc) {
             result = _.filter(result, function(object, index) {
                 return checkPageSize(pagingParams, index, result.length);
             });
+            // The most recent result should be the first (index 0) in the list
+            result.reverse();
         }
 
         return result;

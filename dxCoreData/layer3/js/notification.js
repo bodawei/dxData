@@ -89,10 +89,6 @@ dx.core.data._setupNotificationSystem = function(context) {
                 var type = notification.get('objectType');
                 var rootType = context.getCollectionTypeFromModelType(type);
 
-                if (_.isUndefined(rootType)) {
-                    return;
-                }
-
                 switch (notification.get('eventType')) {
                     case 'CREATE':
                     case 'UPDATE':

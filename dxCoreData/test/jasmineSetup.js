@@ -13,12 +13,12 @@
  */
 
 /*
- * Copyright (c) 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
 /*global jasmine, spyOn, console */
 
-"use strict";
+'use strict';
 
 (function() {
  
@@ -31,7 +31,7 @@
 function toDxFail(expected) {
     var self = this;
     if (!jasmine.isSpy(console.error)) {
-        spyOn(console, "error");
+        spyOn(console, 'error');
     }
     return jasmine.Matchers.prototype.toThrow.call(self, expected);
 }

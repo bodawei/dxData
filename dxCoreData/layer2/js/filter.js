@@ -18,9 +18,9 @@
 
 /*global dx, _, $, Backbone */
 
-"use strict";
+'use strict';
 
-dx.namespace("dx.core.data");
+dx.namespace('dx.core.data');
 
 /*
  * Defines general purpose filter routines. These can be used to build type-specific filters.
@@ -39,11 +39,11 @@ dx.namespace("dx.core.data");
 (function() {
 
 dx.core.data._initFilters = function(context) {
-    var EXCLUDE = "EXCLUDE";
-    var INCLUDE = "INCLUDE";
-    var UNKNOWN = "UNKNOWN";
+    var EXCLUDE = 'EXCLUDE';
+    var INCLUDE = 'INCLUDE';
+    var UNKNOWN = 'UNKNOWN';
 
-    var DATE_PROPS = ["fromDate", "startDate", "toDate", "endDate"];
+    var DATE_PROPS = ['fromDate', 'startDate', 'toDate', 'endDate'];
 
     /*
      * Helper for non-generated filters. In many cases, the property in the query parameter is the same as that of the
@@ -70,10 +70,10 @@ dx.core.data._initFilters = function(context) {
     /*
      * When a model is being compared against a collection that has been retrieved with paging, then we can't reliably
      * tell whether the model belongs in the collection. Note that this assumes not specifying a page size implicitly
-     * sets it to a particular size (generally 25), while specifying 0 means "all"
+     * sets it to a particular size (generally 25), while specifying 0 means 'all'
      */
     function checkPageSize(qParams) {
-        if (!_.has(qParams, "pageSize") || qParams.pageSize !== 0) {
+        if (!_.has(qParams, 'pageSize') || qParams.pageSize !== 0) {
             return UNKNOWN;
         }
         return INCLUDE;
@@ -83,18 +83,18 @@ dx.core.data._initFilters = function(context) {
      * Helper function to check date-related query parameters. This assumes qParamName is a valid date property.
      */
     function checkDateProp(qParamVal, qParamName, qpSchema, model, attrName) {
-        if (!_.has(qpSchema, "inequalityType")) {
-            dx.fail("Date property '" + qParamName + "' missing 'inequalityType' schema property");
+        if (!_.has(qpSchema, 'inequalityType')) {
+            dx.fail('Date property "' + qParamName + '" missing "inequalityType" schema property');
         }
         if (!_.contains(DATE_PROPS, qParamName)) {
-            dx.fail("checkDateProp must be called with one of [" + DATE_PROPS.join(", ") + "] but got '" + qParamName +
-                "'.");
+            dx.fail('checkDateProp must be called with one of [' + DATE_PROPS.join(', ') + '] but got "' + qParamName +
+                '".');
         }
         if (dx.core.util.isNone(model.get(attrName))) {
             return EXCLUDE;
         }
 
-        if (_.contains(["fromDate", "startDate"], qParamName)) {
+        if (_.contains(['fromDate', 'startDate'], qParamName)) {
             if (model.get(attrName).getTime() < qParamVal.getTime()) {
                 return EXCLUDE;
             }
@@ -125,18 +125,18 @@ dx.core.data._initFilters = function(context) {
             mapsTo = qpSchema.mapsTo;
 
         if (!mapsTo) {
-            dx.fail("No mapsTo property found for query parameter " + qParamName + ".");
+            dx.fail('No mapsTo property found for query parameter ' + qParamName + '.');
         }
 
-        var pathSegs = mapsTo.split(".");
+        var pathSegs = mapsTo.split('.');
 
         // We know the last seg will be property to compare. Anything before will be a chain of object references.
         var finalAttrName = pathSegs.pop();
 
         // Recursively walk the data mapping segments
         function followNextSeg(currModel) {
-            currModel.once("error", deferred.reject);
-            currModel.once("ready", function() {
+            currModel.once('error', deferred.reject);
+            currModel.once('ready', function() {
                 if (_.isEmpty(pathSegs)) {
                     // We've reached the end of the path. Do the actual check.
                     var result;
@@ -156,8 +156,8 @@ dx.core.data._initFilters = function(context) {
                     // recursive case - continue following path segments.
                     var currPart = pathSegs.shift();
 
-                    if (currPart.charAt(0) !== "$") {
-                        dx.fail("Can only chain object references: " + currPart + ".");
+                    if (currPart.charAt(0) !== '$') {
+                        dx.fail('Can only chain object references: ' + currPart + '.');
                     }
 
                     var newModel = currModel.get(currPart);
@@ -175,7 +175,7 @@ dx.core.data._initFilters = function(context) {
      * This is the filter to rule all filters. It will filter models for a given collection based on the schema
      * definition and annotations. This may be used as a standalone filter or as a helper for another filter, usually
      * in conjunction with the 'skipParams' argument (see alertFilter).
-     * The uberFilter can only handle "standard" query parameters: simple equality checks, date comparisons, and
+     * The uberFilter can only handle 'standard' query parameters: simple equality checks, date comparisons, and
      * paging. Similarly there are instances of query parameters that the uberFilter should not attempt to handle.
      * These come in two flavors:
      * 1) Params that do not affect what comes back from the notification system are marked as 'excludeFromFilter' in
@@ -198,13 +198,13 @@ dx.core.data._initFilters = function(context) {
          * If a type could have pageSize, we may need to return UNKNOWN. Otherwise we can keep going in the filter.
          * Note that we don't care about paging params when dealing with creation listeners.
          */
-        if (_.has(schemaDef, "pageSize") && collection instanceof Backbone.Collection) {
+        if (_.has(schemaDef, 'pageSize') && collection instanceof Backbone.Collection) {
             var pageSizeResult = checkPageSize(qParams);
             if (pageSizeResult === UNKNOWN) {
                 return resultHandler(pageSizeResult);
             }
         }
-        qParams = _.omit(qParams, ["pageSize", "pageOffset"]);
+        qParams = _.omit(qParams, ['pageSize', 'pageOffset']);
 
         if (_.isEmpty(qParams)) {
             return resultHandler(INCLUDE);
