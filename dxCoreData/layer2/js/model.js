@@ -286,6 +286,17 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      *             embeddedAttr: 34
      *         }
      *     })
+     * Note that it is legal, in some circumstances, to change the type of an embedded model with a set. Naturally,
+     * on a ServerModel, only the server may do this, however on a ClientModel this can happen quite freely. The
+     * important things to keep in mind are the following:
+     *     a) When the type changes, the new type must be compatible with the type declared in the schema (which is to
+     *        say you may change it to that type or any subtype, but may not change it to an unrelated type).
+     *     b) Changing a type is equivalent to setting that embedded model to a new instance. That is, any values that
+     *        were in the embedded model before the set are replaced with default values, and then the values specified
+     *        to this set() routine are applied.
+     *     c) However, listeners on this embedded model are not affected, and appropriate change notifications will be
+     *        sent on setting.
+     *
      * A DSB model may, legitimately, have an array or object that, itself, contains a DSB model (for example, an
      * APIError may contain a plain JSON object whose values are other APIErrors).  To deal with this properly, set()
      * will detect any object that has a 'type' property, whose value is a Delphix-schema type name, and create a
@@ -302,10 +313,13 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
      * a Date object internally, so immediately calling get() will not return the original string).
      */
     function dxSet(key, value, options) {
+        var self = this;
         var newAttrs = {};
+        var preConvertAttrs;
+        var postConvertAttrs;
 
         if (_.isUndefined(key)) {
-            return this;
+            return self;
         }
 
         if (_.isObject(key)) {
@@ -319,25 +333,27 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             newAttrs[key] = value;
         }
 
+        options = options || {};
+
         /*
-         * Check whether this set would change the type of the model. This is allowed only if this is the initial set
-         * of values from the server, and then only when this is changing the type to a subtype.
+         * Check whether this set would change the type of the model. This only allows changing to a subtype.
          */
-        if (newAttrs.type && newAttrs.type !== this._dxSchema.name) {
-            if (firstIsSubtypeOfSecond(newAttrs.type, this._dxSchema.name) &&
-                (!this._dxIsReady || this._dxIsClientModel)) {
-                convertToSubtype(this, newAttrs.type);
+        if (newAttrs.type && newAttrs.type !== self._dxSchema.name) {
+            if (firstIsSubtypeOfSecond(newAttrs.type, self._dxSchema.name) || options._allowTypeConversion) {
+                preConvertAttrs = _.clone(self.attributes);
+                convertToType(self, newAttrs.type);
+                postConvertAttrs = _.clone(self.attributes);
             } else {
-                dx.fail('Tried to change this from ' + this._dxSchema.name + ' to ' + newAttrs.type + '.');
+                dx.fail('Tried to change this from ' + self._dxSchema.name + ' to ' + newAttrs.type + '.');
             }
         }
 
         /*
          * Reject the set if any of the attributes aren't of the right type
          */
-        var invalidAttrs = _.omit(newAttrs, _.keys(this._dxSchema.properties || {}));
+        var invalidAttrs = _.omit(newAttrs, _.keys(self._dxSchema.properties || {}));
         if (!_.isEmpty(invalidAttrs)) {
-            dx.fail(_.keys(invalidAttrs) + ' are not attributes of a model of type ' + this._dxSchema.name + '.');
+            dx.fail(_.keys(invalidAttrs) + ' are not attributes of a model of type ' + self._dxSchema.name + '.');
         }
 
         /*
@@ -346,8 +362,10 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         var finalAttrs = {};
         var subModelsToSet = {};
         var subModelsToClear = [];
+        var subModelsToConvert = {};
+
         _.each(newAttrs, function(newValue, newName) {
-            var propDef = this._dxSchema.properties[newName];
+            var propDef = self._dxSchema.properties[newName];
             var newType = assertValueMatchesDefinition(newName, newValue, propDef);
 
             switch (newType) {
@@ -359,7 +377,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     finalAttrs[newName] = newValue;
                     break;
                 case 'null':
-                    if (this.get(newName) instanceof Backbone.Model) {
+                    if (self.get(newName) instanceof Backbone.Model) {
                         subModelsToClear.push(newName);
                     } else {
                         finalAttrs[newName] = undefined;
@@ -376,27 +394,145 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     finalAttrs[newName] = setupArray(newValue, propDef.items);
                     break;
                 case 'object':
-                    if (this.get(newName) instanceof Backbone.Model) {
-                        subModelsToSet[newName] = newValue;
+                    if (self.get(newName) instanceof Backbone.Model) {
+                        if (newValue.type && self.get(newName).get('type') !== newValue.type) {
+                            subModelsToConvert[newName] = newValue;
+                        } else {
+                            subModelsToSet[newName] = newValue;
+                        }
                     } else {
                         finalAttrs[newName] = setupObject(newValue);
                     }
                     break;
             }
-        }, this);
+        });
 
         /*
          * Finally, set all the values
          */
         _.each(subModelsToClear, function(attrName) {
-            this.get(attrName)._dxClear(options);
-        }, this);
+            self.get(attrName)._dxClear(options);
+        });
+
+        var revisedOptions = _.extend(_.clone(options), { _allowTypeConversion: true });
+        _.each(subModelsToConvert, function(value, key) {
+            var subModel = self.get(key);
+            subModel._dxSet(value, revisedOptions);
+        });
 
         _.each(subModelsToSet, function(value, key) {
-            this.get(key)._dxSet(value, options);
-        }, this);
+            self.get(key)._dxSet(value, options);
+        });
 
-        return Backbone.Model.prototype.set.call(this, finalAttrs, options);
+        /*
+         * If we did a type converstion, we need to make sure to send all the change:AttrName events before we send
+         * the final change event.  Because we're relying on the Backbone set routine, it may think it needs to send
+         * the change event when it is done, but we have the potential to send a variety of other events afterwards.
+         * To work around this, we store all calls to trigger() until we are done.
+         */
+        if (preConvertAttrs) {
+            interceptTrigger(self);
+        }
+
+        /*
+         * This will set all the values, and trigger change:attr events for all the attributes that changed
+         * Note that if this is doing a type conversion, this will trigger changes for:
+         *   - attributes that were added (though conversion) and then changed
+         *   - attributes that existed before and after conversion, and changed from their converted value
+         */
+        var result = Backbone.Model.prototype.set.call(self, finalAttrs, options);
+
+        if (preConvertAttrs) {
+            var removedAttrs = _.omit(preConvertAttrs, _.keys(postConvertAttrs));
+            var addedAttrs = _.omit(postConvertAttrs, _.keys(preConvertAttrs));
+            var continuedAttrs = _.pick(preConvertAttrs, _.keys(postConvertAttrs));
+
+            // trigger change events for the attributes were removed
+            _.each(removedAttrs, function(value, key) {
+                self.trigger('change:' + key, self, undefined);
+            });
+
+            // trigger change events for the attributes that were added, by conversion, but not changed
+            _.each(addedAttrs, function(value, key) {
+                if (addedAttrs[key] === self.attributes[key]) {
+                    self.trigger('change:' + key, self, self.attributes[key]);
+                }
+            });
+
+            _.each(continuedAttrs, function(value, key) {
+                /*
+                 * Suppress a change:attrName event if if the attr changed during the set() to the same value as before
+                 * the conversion suppress event/
+                 */
+                if (continuedAttrs[key] === self.attributes[key] && postConvertAttrs[key] !== self.attributes[key]) {
+                    self._suppressEvents.push('change:' + key);
+                }
+                /*
+                 * Trigger a change:attrName if the value changed during conversation, but then wasn't changed by set.
+                 * For example: The original value was 1, then when we changed the type we put the default value of 2
+                 * in, and then Backbone's set changed it to 2.  So, set() didn't send an event, but we know that
+                 * there actually was a change from the client's point of view.
+                 */
+                if (continuedAttrs[key] !== postConvertAttrs[key] && postConvertAttrs[key] === self.attributes[key]) {
+                    self.trigger('change:' + key, self, self.attributes[key]);
+                }
+            });
+
+            replayTriggers(self);
+        }
+
+        return result;
+    }
+
+    /*
+     * Intercept and queue for later restoration, all calls to trigger().
+     * This also sets up a temporary property on the model, _suppressEvents, which is a list of events to not
+     * send when replayTriggers is called.
+     */
+    function interceptTrigger(model) {
+        model._queuedEvents = [];
+        model._storedTriggerFunction = model.trigger;
+        model._suppressEvents = [];
+        model.trigger = function() {
+            model._queuedEvents.push(arguments);
+        };
+    }
+
+    /*
+     * Send all paused events on their way, with some modifications including: suppressing certain named events, and
+     * assuring a change event is sent after all change:attrName events (but not if there are none)
+     */
+    function replayTriggers(model) {
+        var changeEvent;
+        var seenAttrChange = false;
+        model.trigger = model._storedTriggerFunction;
+        delete model._storedTriggerFunction;
+
+        _.each(model._queuedEvents, function(args) {
+            // don't send the change event yet
+            if (args[0] === 'change') {
+                changeEvent = args;
+                return;
+            }
+
+            // don't send events we are to suppress
+            if (_.contains(model._suppressEvents, args[0])) {
+                return;
+            }
+
+            if (args[0].indexOf('change:') === 0) {
+                seenAttrChange = true;
+            }
+            model.trigger.apply(model, args);
+        });
+        delete model._queuedEvents;
+        delete model._suppressEvents;
+
+        if (changeEvent) {
+            model.trigger(changeEvent);
+        } else if (seenAttrChange) {
+            model.trigger('change', model);
+        }
     }
 
     /*
@@ -1325,24 +1461,60 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     }
 
     /*
-     * Change the model to a subtype.
+     * Change the model to another type.  This is done "in place" since we want to preserve any listeners that may
+     * have been attached to this object.
+     *
+     * This returns true if this removed any attributes (it also triggers a 'change:attrName' event for each)
      */
-    function convertToSubtype(model, newType) {
-        var targetType = context._modelConstructors[newType];
+    function convertToType(model, newType) {
+        var SourceConstructor = context._modelConstructors[model.get('type')];
+        var TargetConstructor = context._modelConstructors[newType];
 
-        // add metadata from the target (child) type, overriding our own.
-        model._dxSchema = targetType.prototype._dxSchema;
+        // add metadata from the target type, overriding our own.
+        model._dxSchema = TargetConstructor.prototype._dxSchema;
+        model.urlRoot = TargetConstructor.prototype._dxSchema.root;
 
         // replace our attributes
         model.attributes = {};
         buildDefaultAttributes(model, model._dxSchema.properties);
 
-        // Copy over any operations
-        _.each(targetType.prototype, function(value, name) {
+        // Remove any operations we previously may have added to this object.
+        _.each(model, function(value, name) {
+            if (name.charAt(0) === '$') {
+                delete model[name];
+            }
+        });
+
+        /*
+         * This is really sad. Since we can't change the prototype of the object at runtime, we necessarily inherit the
+         * operations from its prototype.  But if by chance we are converting to a type that doesn't have those
+         * operations, we should not allow someone to call them. Insert a dummy function on the leaf object in the
+         * prototype chain to keep anyone from actually calling it.
+         */
+        _.each(SourceConstructor.prototype, function(value, name) {
+            if (name.charAt(0) === '$') {
+                model[name] = blockPrototypeOperation;
+            }
+        });
+
+        // Now actually add the operations to this that it should have based on the type it is being converted to.
+        _.each(TargetConstructor.prototype, function(value, name) {
             if (name.charAt(0) === '$') {
                 model[name] = value;
             }
         });
+
+        if (model._dxSchema.delete) {
+            model.$$delete = dxDelete;
+        }
+
+        if (model._dxSchema.update) {
+            model.$$update = dxUpdate;
+        }
+    }
+
+    function blockPrototypeOperation() {
+        dx.fail('This operation does not exist on this instance. (it has been converted from a type that had it).');
     }
 
     function firstIsSubtypeOfSecond(childType, parentType) {
@@ -1522,7 +1694,22 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
 
             if (isEmbeddedProp(propDef)) {
                 var subProps = rawUpdateObj ? rawUpdateObj[key] : undefined;
-                var embJson = jsonIzeForUpdate(subProps, updateModel.get(key), baseModel.get(key), required);
+                var baseEmbedded = baseModel.get(key);
+                var updateEmbedded = updateModel.get(key);
+                /*
+                 * The update may legitimately be trying to change the type of an embedded object. In this case we can't
+                 * keep using the baseModel's embedded model to extract properties from (in particular, there may be
+                 * properties in the 'update' data that aren't in the embedded model, so there's nothing to extract).
+                 * Further, our definition of changing types in embedded models is that we do not preserve any
+                 * properties properties that were there before, even if they could be. In this regard, changing the
+                 * type isn't an overlay, but is instead a replace operation. To make this work here we create a new
+                 * model to be used as the base model for the recursive call to jsonIzing.
+                 */
+                if (baseEmbedded.get('type') !== updateEmbedded.get('type')) {
+                    baseEmbedded = newClientModel(updateEmbedded.get('type'));
+                }
+
+                var embJson = jsonIzeForUpdate(subProps, updateEmbedded, baseEmbedded, required);
                 if (!_.isUndefined(embJson)) {
                     jsonUpdatePayload[key] = embJson;
                     propCount++;

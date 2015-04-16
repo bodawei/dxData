@@ -1179,13 +1179,54 @@ describe('dx.core.data.generateModelConstructors', function() {
                 model = target._newServerModel('PType');
             });
 
-            it('is allowed if the model is a client model', function() {
+            it('converts a supertype to a subtype', function() {
                 model = target._newClientModel('PType');
 
                 model.set({'type': 'CType'});
 
                 expect(model.get('type')).toBe('CType');
                 expect(model.get('age')).toBeUndefined();
+            });
+
+            it('triggers change:attr events when the type attribute changes', function() {
+                var changeSpy = jasmine.createSpy('changeSpy');
+                model = target._newClientModel('PType');
+                model.once('change:type', changeSpy);
+
+                model.set({'type': 'CType'});
+
+                expect(changeSpy).toHaveBeenCalledWith(model, 'CType');
+            });
+
+            it('triggers change:attr events when other attributes change during type conversion', function() {
+                var changeSpy = jasmine.createSpy('changeSpy');
+                model = target._newClientModel('PType');
+                model.set('value', 23);
+                model.once('change:value', changeSpy);
+
+                model.set({'type': 'CType'});
+
+                expect(changeSpy).toHaveBeenCalledWith(model, undefined);
+            });
+
+            it('triggers change:attr events when the attributes are added', function() {
+                var changeSpy = jasmine.createSpy('changeSpy');
+                model = target._newClientModel('PType');
+                model.once('change:age', changeSpy);
+
+                model.set({'type': 'CType'});
+
+                expect(changeSpy).toHaveBeenCalledWith(model, undefined);
+            });
+
+            it('triggers change event', function() {
+                var changeSpy = jasmine.createSpy('changeSpy');
+                model = target._newClientModel('PType');
+                model.once('change', changeSpy);
+
+                model.set({'type': 'CType'});
+
+                expect(changeSpy).toHaveBeenCalledWith(model);
             });
 
             it('is rejected if asked to change to an incompatible type', function() {
@@ -1219,7 +1260,7 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }).toDxFail(new Error('Tried to change this from CType to PType.'));
             });
 
-            it('is allowed if the type hasn\'t been fully fetched yet', function() {
+            it('is allowed if the type hasn\'t been fully fetched yet and this is a server model', function() {
                 spyOn(jQuery, 'ajax').andCallFake(function(options) {
                     options.success({
                         type: 'OKResult',
@@ -1298,6 +1339,439 @@ describe('dx.core.data.generateModelConstructors', function() {
 
                 expect(model.$anOp).toBeDefined();
             });
+        });
+
+        describe('(type change of embedded models)', function() {
+            var model;
+            var ajaxSpy;
+
+            beforeEach(function() {
+                var typedObject = {
+                    name: 'Typed',
+                    properties: {
+                        type: {
+                            type: 'string'
+                        },
+                        reference: {
+                            type: 'string'
+                        }
+                    }
+                };
+                var parent = {
+                    root: '/a/root/url',
+                    name: 'PType',
+                    extends: {
+                        $ref: 'typed'
+                    },
+                    properties: {
+                        embedded: {
+                            type: 'object',
+                            $ref: 'other'
+                        }
+                    }
+                };
+                var o1 = {
+                    name: 'Other',
+                    extends: {
+                        $ref: 'typed'
+                    },
+                    properties: {
+                        name: {
+                            type: 'string',
+                            default: 'defaultName'
+                        }
+                    }
+                };
+                var o2 = {
+                    // Having a root on a type which is embedded type is very strange. But make sure it works anyway
+                    root: '/api/other',
+                    name: 'Other2',
+                    extends: {
+                        $ref: 'other'
+                    },
+                    properties: {
+                        height: {
+                            type: 'integer'
+                        }
+                    },
+                    operations: {
+                        doit: {
+                            payload: {
+                                type: 'object',
+                                $ref: 'other'
+                            }
+                        }
+                    },
+                    update: {},
+                    delete: {}
+                };
+                var o3 = {
+                    name: 'Other3',
+                    extends: {
+                        $ref: 'other2'
+                    },
+                    properties: {
+                        width: {
+                            type: 'integer'
+                        }
+                    }
+                };
+
+                target = {};
+                var schemas = dx.core.data._prepareSchemas({
+                    typed: typedObject,
+                    p: parent,
+                    other: o1,
+                    other2: o2,
+                    other3: o3
+                });
+                dx.core.data._initCache(target);
+                dx.core.data._generateModelConstructors(schemas, target);
+                model = target._newServerModel('PType');
+                ajaxSpy = spyOn(jQuery, 'ajax');
+            });
+
+            it('changes a super type to a subtype', function() {
+                model = target._newClientModel('PType');
+
+                model.set({
+                    embedded: {
+                        type: 'Other2'
+                    }
+                });
+
+                expect(model.get('embedded').get('type')).toBe('Other2');
+            });
+
+            it('resets properties when changing a super type to a subtype', function() {
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        name: 'startingName'
+                    }
+                });
+
+                model.set({
+                    embedded: {
+                        type: 'Other2'
+                    }
+                });
+
+                expect(model.get('embedded').get('name')).toBe('defaultName');
+            });
+
+            it('sets child properties when changing a super type to a subtype', function() {
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        name: 'startingName'
+                    }
+                });
+
+                model.set({
+                    embedded: {
+                        type: 'Other2',
+                        height: 23
+                    }
+                });
+
+                expect(model.get('embedded').get('height')).toBe(23);
+            });
+
+            it('triggers property changes on properties that are reset when converting to subtype', function() {
+                var nameSpy = jasmine.createSpy('nameSpy');
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        name: 'startingName'
+                    }
+                });
+                model.get('embedded').on('change:name', nameSpy);
+
+                model.set({
+                    embedded: {
+                        type: 'Other2',
+                        height: 23
+                    }
+                });
+
+                expect(nameSpy.callCount).toEqual(1);
+                model.get('embedded').off('change:name', nameSpy);
+            });
+
+            it('triggers property changes on properties that are set', function() {
+                var heightSpy = jasmine.createSpy('heightSpy');
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        name: 'startingName'
+                    }
+                });
+                model.get('embedded').on('change:height', heightSpy);
+
+                model.set({
+                    embedded: {
+                        type: 'Other2',
+                        height: 23
+                    }
+                });
+
+                expect(heightSpy.callCount).toEqual(1);
+                model.get('embedded').off('change:height', heightSpy);
+            });
+
+            it('does not trigger a change:attrName when an attribute is changed on type converstion, ' +
+                'and then unchanged on set', function() {
+                var nameSpy = jasmine.createSpy('nameSpy');
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3',
+                        name: 'fred'
+                    }
+                });
+                model.get('embedded').on('change:name', nameSpy);
+
+                model.set({
+                    embedded: {
+                        type: 'Other',
+                        name: 'fred'
+                    }
+                });
+
+                expect(nameSpy).not.toHaveBeenCalled();
+                model.get('embedded').off('change:name', nameSpy);
+            });
+
+            it('triggers a change:attrName when an attribute is changed on type converstion, ' +
+                'and then unchanged on set', function() {
+                var nameSpy = jasmine.createSpy('nameSpy');
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3',
+                        name: 'fred'
+                    }
+                });
+                model.get('embedded').on('change:name', nameSpy);
+
+                model.set({
+                    embedded: {
+                        type: 'Other'
+                    }
+                });
+
+                expect(nameSpy).toHaveBeenCalled();
+                model.get('embedded').off('change:name', nameSpy);
+            });
+
+            it('adds operations when converting to a subtype', function() {
+                model = target._newClientModel('PType');
+
+                model.set({
+                    embedded: {
+                        type: 'Other2',
+                        reference: 'OTHER-2'
+                    }
+                });
+
+                model.get('embedded').$doit(model.get('embedded'));
+
+                expect(ajaxSpy.mostRecentCall.args[0].url).toEqual('/api/other/OTHER-2/doit');
+                expect(ajaxSpy.mostRecentCall.args[0].data).toEqual('{"name":"defaultName","type":"Other2",' +
+                    '"reference":"OTHER-2"}');
+            });
+
+            it('adds update operation when converting to a subtype', function() {
+                model = target._newClientModel('PType');
+
+                model.set({
+                    embedded: {
+                        type: 'Other2',
+                        reference: 'OTHER-2'
+                    }
+                });
+
+                model.get('embedded').$$update({
+                    name: 'fred'
+                });
+
+                expect(ajaxSpy.mostRecentCall.args[0].type).toEqual('POST');
+                expect(ajaxSpy.mostRecentCall.args[0].url).toEqual('/api/other/OTHER-2');
+            });
+
+            it('adds delete operation when converting to a subtype', function() {
+                model = target._newClientModel('PType');
+
+                model.set({
+                    embedded: {
+                        type: 'Other2',
+                        reference: 'OTHER-2'
+                    }
+                });
+
+                model.get('embedded').$$delete();
+
+                expect(ajaxSpy.mostRecentCall.args[0].type).toEqual('DELETE');
+                expect(ajaxSpy.mostRecentCall.args[0].url).toEqual('/api/other/OTHER-2');
+            });
+
+            it('changes a subtype to a supertype', function() {
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3'
+                    }
+                });
+
+                model.set({
+                    embedded: {
+                        type: 'Other'
+                    }
+                });
+
+                expect(model.get('embedded').get('type')).toBe('Other');
+            });
+
+            it('resets attributes when changing a subtype to a supertype', function() {
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3',
+                        name: 'startingName'
+                    }
+                });
+
+                model.set({
+                    embedded: {
+                        type: 'Other'
+                    }
+                });
+
+                expect(model.get('embedded').get('name')).toBe('defaultName');
+            });
+
+            it('triggers property changes on attributes that are reset', function() {
+                var nameSpy = jasmine.createSpy('nameSpy');
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3',
+                        name: 'startingName'
+                    }
+                });
+                model.get('embedded').on('change:name', nameSpy);
+
+                model.set({
+                    embedded: {
+                        type: 'Other'
+                    }
+                });
+
+                expect(nameSpy.callCount).toEqual(1);
+                model.get('embedded').off('change:name', nameSpy);
+            });
+
+            it('removes subtype attributes when changing a subtype to a supertype', function() {
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3',
+                        width: 45
+                    }
+                });
+
+                model.set({
+                    embedded: {
+                        type: 'Other'
+                    }
+                });
+
+                expect(function() {
+                    model.get('embedded').get('width');
+                }).toDxFail('width is not a known attribute.');
+            });
+
+            it('triggers property changes on attributes that are removed', function() {
+                var widthSpy = jasmine.createSpy('nameSpy');
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3',
+                        width: 45
+                    }
+                });
+                model.get('embedded').on('change:width', widthSpy);
+
+                model.set({
+                    embedded: {
+                        type: 'Other'
+                    }
+                });
+
+                expect(widthSpy.callCount).toEqual(1);
+                model.get('embedded').off('change:width', widthSpy);
+            });
+
+            it('sets child attributes when changing a supertype to a subtype', function() {
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3'
+                    }
+                });
+
+                model.set({
+                    embedded: {
+                        type: 'Other',
+                        name: 'setName'
+                    }
+                });
+
+                expect(model.get('embedded').get('name')).toBe('setName');
+            });
+
+            it('triggers property changes on attributes that are set', function() {
+                var nameSpy = jasmine.createSpy('nameSpy');
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3'
+                    }
+                });
+                model.get('embedded').on('change:name', nameSpy);
+
+                model.set({
+                    embedded: {
+                        type: 'Other',
+                        name: 'setName'
+                    }
+                });
+
+                expect(nameSpy.callCount).toEqual(1);
+                model.get('embedded').off('change:name', nameSpy);
+            });
+
+            it('removes operations when converting to a supertype that does not have them', function() {
+                model = target._newClientModel('PType');
+                model.set({
+                    embedded: {
+                        type: 'Other3'
+                    }
+                });
+
+                model.set({
+                    embedded: {
+                        type: 'Other'
+                    }
+                });
+
+                expect(function() {
+                    model.get('embedded').$doit(model.get('embedded'));
+                }).toDxFail('This operation does not exist on this instance. (it has been converted from a type ' +
+                    'that had it).');
+            });
+
         });
 
         describe('with backbone models', function() {
@@ -2628,28 +3102,6 @@ describe('dx.core.data.generateModelConstructors', function() {
                         $ref: 't'
                     }
                 };
-                var okResult = {
-                    name: 'OKResult',
-                    properties: {
-                        type: {
-                            type: 'string'
-                        },
-                        result: {
-                            type: 'string'
-                        }
-                    }
-                };
-                var error = {
-                    name: 'ErrorResult',
-                    properties: {
-                        type: {
-                            type: 'string'
-                        },
-                        error: {
-                            type: 'string'
-                        }
-                    }
-                };
                 var updateWithAll = {
                     name: 'UpdateType',
                     root: '/somewhere',
@@ -2693,9 +3145,12 @@ describe('dx.core.data.generateModelConstructors', function() {
                 var schemas = dx.core.data._prepareSchemas({
                     t: schema,
                     c: childType,
-                    ok: okResult,
-                    e : error,
-                    u: updateWithAll});
+                    api: dx.test.dataMocks.apiErrorSchema,
+                    call: dx.test.dataMocks.callResultSchema,
+                    ok: dx.test.dataMocks.okResultSchema,
+                    e : dx.test.dataMocks.errorResultSchema,
+                    u: updateWithAll
+                });
                 dx.core.data._initCache(target);
                 dx.core.data._generateModelConstructors(schemas, target);
                 model = target._newServerModel('RootType');
@@ -3003,7 +3458,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                         name: 'EmbeddedType',
                         properties: {
                             type: {
-                                type: 'string'
+                                type: 'string',
+                                required: true
                             },
                             embRequiredTrue: {
                                 type: ['string', 'null'],
@@ -3025,6 +3481,18 @@ describe('dx.core.data.generateModelConstructors', function() {
                                 type: 'object',
                                 $ref: 'g',
                                 update: 'optional'
+                            }
+                        }
+                    };
+                    var extendedEmbedded = {
+                        name: 'ExtendedEmbeddedType',
+                        'extends': {
+                            $ref: 'c'
+                        },
+                        properties: {
+                            nameForTesting: {
+                                type: 'string',
+                                required:true
                             }
                         }
                     };
@@ -3056,7 +3524,12 @@ describe('dx.core.data.generateModelConstructors', function() {
                     var schemas = dx.core.data._prepareSchemas({
                         p: root,
                         c: embedded,
-                        g: subembedded
+                        g: subembedded,
+                        x: extendedEmbedded,
+                        api: dx.test.dataMocks.apiErrorSchema,
+                        call: dx.test.dataMocks.callResultSchema,
+                        ok: dx.test.dataMocks.okResultSchema,
+                        e : dx.test.dataMocks.errorResultSchema
                     });
                     dx.core.data._generateModelConstructors(schemas, target);
                 });
@@ -3101,8 +3574,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                     });
 
                     expect(ajaxSpy.mostRecentCall.args[0].data).
-                        toEqual('{"requiredTrue":"r","updateRequired":"r","embedded":{"embRequiredTrue":"required",' +
-                            '"embUpdateRequired":"er"}}');
+                        toEqual('{"requiredTrue":"r","updateRequired":"r","embedded":{"type":"EmbeddedType",' +
+                            '"embRequiredTrue":"required","embUpdateRequired":"er"}}');
                 });
 
                 it('will send them when they have data that should be sent', function() {
@@ -3113,6 +3586,7 @@ describe('dx.core.data.generateModelConstructors', function() {
 
                     model.$$update({
                         embedded: {
+                            type: 'EmbeddedType',
                             subEmbedded: {
                                 subRequiredTrue: 'sr',
                                 subUpdateRequired: 'sr'
@@ -3121,8 +3595,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                     });
 
                     expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
-                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"embRequiredTrue":null,' +
-                        '"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":"sr",' +
+                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
+                        '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":"sr",' +
                         '"subUpdateRequired":"sr"}}}');
                 });
 
@@ -3146,9 +3620,9 @@ describe('dx.core.data.generateModelConstructors', function() {
                     });
 
                     expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
-                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"embRequiredTrue":null,' +
-                        '"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,"subUpdateRequired":null,' +
-                        '"subUpdateOptional":"new"}}}');
+                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
+                        '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,' +
+                        '"subUpdateRequired":null,"subUpdateOptional":"new"}}}');
                 });
 
                 it('will send an embedded value which is set to undefined', function() {
@@ -3171,8 +3645,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                     });
 
                     expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
-                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"embRequiredTrue":null,' +
-                        '"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,' +
+                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
+                        '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,' +
                         '"subUpdateRequired":null,"subUpdateOptional":null}}}');
                 });
 
@@ -3196,9 +3670,77 @@ describe('dx.core.data.generateModelConstructors', function() {
                     });
 
                     expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
-                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"embRequiredTrue":null,' +
-                        '"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,"subUpdateRequired":"new"}}}');
+                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
+                        '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,' +
+                        '"subUpdateRequired":"new"}}}');
                 });
+
+                it('sends an update that changes the type of an embedded object to a subtype', function() {
+                    model = target._newServerModel('RootType');
+                    model._dxSet({
+                        reference: 'REF-1',
+                        embedded: {
+                            embRequiredTrue: 'yep'
+                        }
+                    });
+
+                    model.$$update({
+                        embedded: {
+                            type: 'ExtendedEmbeddedType',
+                            nameForTesting: 'testName'
+                        }
+                    });
+
+                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"nameForTesting":"testName",' +
+                        '"type":"ExtendedEmbeddedType","embRequiredTrue":null,"embUpdateRequired":null}}');
+                });
+
+                it('sends an update that changes the type of an embedded object to a super type', function() {
+                    model = target._newServerModel('RootType');
+                    model._dxSet({
+                        reference: 'REF-1',
+                        embedded: {
+                            type: 'ExtendedEmbeddedType',
+                            nameForTesting: 'testName',
+                            embUpdateRequired: 'I should not carry over'
+                        }
+                    });
+
+                    model.$$update({
+                        embedded: {
+                            type: 'EmbeddedType',
+                            embRequiredTrue: 'valueIncluded'
+                        }
+                    });
+
+                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
+                        '"embRequiredTrue":"valueIncluded","embUpdateRequired":null}}');
+                });
+
+                it('throws an error when asked to do an update that changes the type to an incompatible type',
+                        function() {
+                    model = target._newServerModel('RootType');
+                    model._dxSet({
+                        reference: 'REF-1',
+                        embedded: {
+                            type: 'ExtendedEmbeddedType',
+                            nameForTesting: 'testName'
+                        }
+                    });
+
+                    expect(function() {
+                        model.$$update({
+                            embedded: {
+                                type: 'RootType',
+                                reference: 'bogus'
+                            }
+                        });
+                    }).toDxFail('embedded has to be type object/EmbeddedType but is object/RootType');
+
+                });
+
             });
 
             it('calls success callback on success', function() {

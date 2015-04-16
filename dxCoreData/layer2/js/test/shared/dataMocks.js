@@ -38,7 +38,7 @@ _.extend(dx.test.dataMocks, {
     },
     okResultSchema: {
         name: 'OKResult',
-        'extends': {
+        extends: {
             $ref: 'call'
         },
         properties: {
@@ -50,7 +50,7 @@ _.extend(dx.test.dataMocks, {
     // must be given the schemaKey of 'api' when registering
     apiErrorSchema: {
         name: 'APIError',
-        'extends': {
+        extends: {
             $ref: 'call'
         },
         properties: {
@@ -64,10 +64,10 @@ _.extend(dx.test.dataMocks, {
     },
     errorResultSchema: {
         name: 'ErrorResult',
+        extends: {
+            $ref: 'call'
+        },
         properties: {
-            type: {
-                type: 'string'
-            },
             error: {
                 type: 'object',
                 $ref: 'api'
