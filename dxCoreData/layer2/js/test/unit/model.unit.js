@@ -3693,7 +3693,9 @@ describe('dx.core.data.generateModelConstructors', function() {
 
                     expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"nameForTesting":"testName",' +
-                        '"type":"ExtendedEmbeddedType","embRequiredTrue":null,"embUpdateRequired":null}}');
+                        '"type":"ExtendedEmbeddedType","embRequiredTrue":null,"embRequiredFalse":null,' +
+                        '"embUpdateRequired":null,"embUpdateOptional":null,"subEmbedded":{"subRequiredTrue":null,' +
+                        '"subRequiredFalse":null,"subUpdateRequired":null,"subUpdateOptional":null}}}');
                 });
 
                 it('sends an update that changes the type of an embedded object to a super type', function() {
@@ -3714,9 +3716,12 @@ describe('dx.core.data.generateModelConstructors', function() {
                         }
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
-                        '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
-                        '"embRequiredTrue":"valueIncluded","embUpdateRequired":null}}');
+                    // To be clear, changing the type means sending all subproperties
+                     expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
+                        '"embRequiredTrue":"valueIncluded","embRequiredFalse":null,"embUpdateRequired":null,' +
+                        '"embUpdateOptional":null,"subEmbedded":{"subRequiredTrue":null,"subRequiredFalse":null,' +
+                        '"subUpdateRequired":null,"subUpdateOptional":null}}}');
                 });
 
                 it('throws an error when asked to do an update that changes the type to an incompatible type',

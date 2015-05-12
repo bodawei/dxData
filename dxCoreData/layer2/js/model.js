@@ -780,7 +780,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
         }
         assertHasReferenceAttr(this, '$update', !this._dxSchema.singleton);
 
-        var newModel = newClientModel(this._dxSchema.name);
+        var newModel = this.clone();
         newModel.set(attributes);
 
         var preparedData = JSON.stringify(jsonIzeForUpdate(attributes, newModel, this, true));
@@ -1696,6 +1696,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                 var subProps = rawUpdateObj ? rawUpdateObj[key] : undefined;
                 var baseEmbedded = baseModel.get(key);
                 var updateEmbedded = updateModel.get(key);
+                var embJson;
                 /*
                  * The update may legitimately be trying to change the type of an embedded object. In this case we can't
                  * keep using the baseModel's embedded model to extract properties from (in particular, there may be
@@ -1706,10 +1707,12 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                  * model to be used as the base model for the recursive call to jsonIzing.
                  */
                 if (baseEmbedded.get('type') !== updateEmbedded.get('type')) {
-                    baseEmbedded = newClientModel(updateEmbedded.get('type'));
+                    // Doing an update that changes the type really means we are just sending the new data
+                    embJson = jsonIze(updateEmbedded, 'update');
+                } else {
+                    embJson = jsonIzeForUpdate(subProps, updateEmbedded, baseEmbedded, required);
                 }
 
-                var embJson = jsonIzeForUpdate(subProps, updateEmbedded, baseEmbedded, required);
                 if (!_.isUndefined(embJson)) {
                     jsonUpdatePayload[key] = embJson;
                     propCount++;
