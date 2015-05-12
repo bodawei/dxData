@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
@@ -18,7 +19,7 @@
 'use strict';
 
 /*eslint-env jasmine */
-/*global dx, $ */
+/*global dx, $, Backbone */
 
 describe('dx.core.data._cache', function() {
     var target;
@@ -812,8 +813,7 @@ describe('dx.core.data._cache', function() {
             target._cache.dumpText();
 
             expect(lines).toEqual('SUBSCRIBERS\n===========\nNone.\n\nSINGLETONS\n==========\nSingletonType\n\n' +
-                'SERVER MODELS\n=============\nSimple\n-------------\nMODEL-1\n   badReference : 1 listeners\n' +
-                '   change : 1 listeners\n');
+                'SERVER MODELS\n=============\nSimple\n-------------\nMODEL-1\n');
         });
     });
 
@@ -1063,14 +1063,29 @@ describe('dx.core.data._cache', function() {
                 expect(lines).toBe('SUBSCRIBERS\n===========\nNone.\n');
             });
 
-            it('shows details about collections', function() {
+            it('shows details about collections including model references', function() {
                 collection1.on('anEvent', function() {});
                 store.add(collection1);
 
                 store.dumpText();
 
-                expect(lines).toBe('SUBSCRIBERS\n===========\nSimple\n-------------\nCollection with 1 elements.\n' +
-                    '   anEvent : 1 listeners\n');
+                expect(lines).toBe('SUBSCRIBERS\n===========\nSimple\n-------------\n' +
+                    '   1 model collection. IDs: MODEL-1\n' +
+                    '   anEvent : 1 callbacks (1 anonymous)\n');
+            });
+
+            it('shows details about collections but excludes model referenes if there are none', function() {
+                var ModelType = Backbone.Model.extend();
+                var model = new ModelType();
+                collection1.models = [];
+                collection1.models.push(model);
+                collection1.on('anEvent', function() {});
+                store.add(collection1);
+
+                store.dumpText();
+
+                expect(lines).toBe('SUBSCRIBERS\n===========\nSimple\n-------------\n   1 model collection\n' +
+                    '   anEvent : 1 callbacks (1 anonymous)\n');
             });
 
         });
@@ -1241,7 +1256,7 @@ describe('dx.core.data._cache', function() {
 
                 store.dumpText();
 
-                expect(lines).toBe('SINGLETONS\n==========\nSingletonType\n   anEvent : 1 listeners\n');
+                expect(lines).toBe('SINGLETONS\n==========\nSingletonType\n   anEvent : 1 callbacks (1 anonymous)\n');
             });
 
         });
@@ -1483,7 +1498,17 @@ describe('dx.core.data._cache', function() {
                 store.dumpText();
 
                 expect(lines).toBe('SERVER MODELS\n=============\nSimple\n-------------\nMODEL-1\n' +
-                    '   anEvent : 1 listeners\n');
+                    '   anEvent : 1 callbacks (1 anonymous)\n');
+            });
+
+            it('shows details about models including callback function names when present', function() {
+                model1.on('anEvent', function testCallback() {});
+                store.add(model1);
+
+                store.dumpText();
+
+                expect(lines).toBe('SERVER MODELS\n=============\nSimple\n-------------\nMODEL-1\n' +
+                    '   anEvent : 1 callbacks. testCallback\n');
             });
 
         });

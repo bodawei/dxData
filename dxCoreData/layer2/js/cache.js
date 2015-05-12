@@ -25,8 +25,33 @@ dx.namespace('dx.core.data');
 (function() {
 
 function dumpEventListners(eventLadenObject) {
+    var functionNameRegEx = /.*function *([^ \(]*) *\(/;
     _.each(eventLadenObject._events, function(listenerArray, eventName) {
-        dx.info('   ' + eventName + ' : ' + listenerArray.length + ' listeners', listenerArray);
+        var anonymousCount = 0;
+        var callbackNames = _.reduce(listenerArray, function(memo, item) {
+            if (item.callback) {
+                var functionString = item.callback.toString();
+                var functionName = functionString.match(functionNameRegEx);
+                if (functionName && functionName[1] !== '') {
+                    memo.push(functionName[1]);
+                } else {
+                    anonymousCount++;
+                }
+            }
+            return memo;
+        }, []);
+
+        // Don't show the internal callbacks used by this cache to mange the models. These never affect prune().
+        if (callbackNames.length === 1 &&
+            (eventName === 'badReference' && callbackNames[0] === 'handle404' ||
+            eventName === 'change' && callbackNames[0] === 'updateCollections')) {
+            return;
+        }
+        var suffix = callbackNames.length === 0 ? '' : '. ' + callbackNames.join(',');
+        if (anonymousCount > 0) {
+            suffix += ' (' + anonymousCount + ' anonymous)';
+        }
+        dx.info('   ' + eventName + ' : ' + listenerArray.length + ' callbacks' + suffix);
     });
 }
 
@@ -144,7 +169,15 @@ function ModelSubscriberStore() {
             _.each(modelSubscribersByType[typeName], function(subscriber) {
                 if (subscriber instanceof Backbone.Collection) {
                     var collection = subscriber;
-                    dx.info('Collection with ' + collection.length + ' elements.', collection);
+                    var references = collection.reduce(function(memo, item) {
+                        if (item.id) {
+                            memo.push(item.id);
+                        }
+                        return memo;
+                    }, []);
+
+                    var suffix = references.length === 0 ? '' :  '. IDs: ' + references.join(', ');
+                    dx.info('   ' + collection.length + ' model collection' + suffix);
                     dumpEventListners(collection);
                 } else {
                     var qp = subscriber.getQueryParameters();
@@ -674,7 +707,9 @@ dx.core.data._initCache = function(context) {
         var model = context._newServerModel(typeName);
         model._dxSet(properties);
         context._modelStore.add(model);
-        model.on('badReference', function() { deleteCachedModel(properties.reference, rootType, true); }, context);
+        model.on('badReference', function handle404() {
+            deleteCachedModel(properties.reference, rootType, true);
+        }, context);
 
         return model;
     }
@@ -687,7 +722,9 @@ dx.core.data._initCache = function(context) {
          * Recheck whether the model should be added to collections any time it changes.
          * This does not apply for subscribers which only need to be notified once for each object.
          */
-        model.on('change', function() { notifySubscriptionsOfModelChanged(model, rootType); }, context);
+        model.on('change', function updateCollections() {
+            notifySubscriptionsOfModelChanged(model, rootType);
+        }, context);
         notifySubscriptionsOfModel(model, rootType, options);
     }
 
