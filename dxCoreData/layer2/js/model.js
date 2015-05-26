@@ -377,7 +377,10 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     finalAttrs[newName] = newValue;
                     break;
                 case 'null':
-                    if (self.get(newName) instanceof Backbone.Model) {
+                    var nullable = _.any(propDef.type, function(type) {
+                        return type === 'null';
+                    });
+                    if (self.get(newName) instanceof Backbone.Model && !nullable) {
                         subModelsToClear.push(newName);
                     } else {
                         finalAttrs[newName] = undefined;

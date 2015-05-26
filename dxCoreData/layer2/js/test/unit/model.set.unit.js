@@ -590,7 +590,10 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 }
             });
 
-            model.set('objectProp', { value: 1138 });
+            model.set('objectProp', {
+                type: 'SimpleType',
+                value: 1138
+            });
             var setObj = model.get('objectProp');
             expect(setObj instanceof Backbone.Model).toBe(true);
             expect(setObj.get('value')).toBe(1138);
@@ -611,7 +614,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             expect(setObj.get('value')).toBeUndefined();
         });
 
-        it('clear\'s the properties on an embedded model when it is set to null', function() {
+        it('clears the properties on an embedded model when it is set to null', function() {
             var model = buildModelFromSchema({
                 properties: {
                     objectProp: {
@@ -621,10 +624,31 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 }
             });
 
-            model.set('objectProp', { value: 1138 });
+            model.set('objectProp', {
+                type: 'SimpleType',
+                value: 1138
+            });
             model.set('objectProp', null);
             var setObj = model.get('objectProp');
             expect(setObj.get('value')).toBeUndefined();
+        });
+
+        it('sets an embedded model to unefined when the schema allows it', function() {
+            var model = buildModelFromSchema({
+                properties: {
+                    objectProp: {
+                        type: ['object', 'null'],
+                        $ref: 's'
+                    }
+                }
+            });
+            model.set('objectProp', {
+                type: 'SimpleType',
+                value: 1138
+            });
+            model.set('objectProp', null);
+
+            expect(model.get('objectProp')).toBeUndefined();
         });
 
         it('accepts setting a multi-typed attribute to any of the allowed types', function() {
