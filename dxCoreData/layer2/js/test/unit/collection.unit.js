@@ -102,7 +102,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             }
         };
 
-        schemas = dx.core.data._prepareSchemas({'u': unRooted, 'p': rooted, 'c': rootChild});
+        schemas = dx.core.data._prepareSchemas({u: unRooted, p: rooted, c: rootChild});
         dx.core.data._initCache(target);
         dx.core.data._initFilters(target);
         target._filters.HasRoot = function(collection, model, handler) {
@@ -162,10 +162,10 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 status: 'OK',
                 action: '',
                 job: '',
-                result: [ {'foo': 'bar'}, {'age': 23} ]
+                result: [ {foo: 'bar'}, {age: 23} ]
             });
 
-            expect(result).toEqual([ {'foo': 'bar'}, {'age': 23} ]);
+            expect(result).toEqual([ {foo: 'bar'}, {age: 23} ]);
         });
 
         it('throws an error if encountering a result without a type', function() {
@@ -219,7 +219,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                     }
                 },
                 list: {
-                    'parameters': {
+                    parameters: {
                         param1: {
                             type: 'string'
                         },
@@ -267,7 +267,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 name: 'RequiredParams',
                 root: '/somewhere',
                 list: {
-                    'parameters': {
+                    parameters: {
                         required: {
                             type: 'string',
                             required: true
@@ -694,7 +694,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                                 type: 'string'
                             }
                         },
-                        'return': {
+                        return: {
                             type: 'string'
                         }
                     }
@@ -1430,7 +1430,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 name: 'hasList',
                 root: '/somewhere',
                 list: {
-                    'parameters': {
+                    parameters: {
                         param1: {
                             type: 'string'
                         }

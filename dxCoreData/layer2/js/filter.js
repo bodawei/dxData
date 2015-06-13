@@ -13,7 +13,7 @@
  */
 
 /*
- * Copyright (c) 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, _, $, Backbone */
@@ -81,14 +81,11 @@ dx.core.data._initFilters = function(context) {
 
     /*
      * Helper function to check date-related query parameters. This assumes qParamName is a valid date property.
+     * The caller is responsible for making sure that qParamName is one of DATE_PROPS
      */
     function checkDateProp(qParamVal, qParamName, qpSchema, model, attrName) {
         if (!_.has(qpSchema, 'inequalityType')) {
             dx.fail('Date property "' + qParamName + '" missing "inequalityType" schema property');
-        }
-        if (!_.contains(DATE_PROPS, qParamName)) {
-            dx.fail('checkDateProp must be called with one of [' + DATE_PROPS.join(', ') + '] but got "' + qParamName +
-                '".');
         }
         if (dx.core.util.isNone(model.get(attrName))) {
             return EXCLUDE;
@@ -119,8 +116,8 @@ dx.core.data._initFilters = function(context) {
      * UNKNOWN.
      * The returned promise is either resolved with INCLUDE or rejected with EXCLUDE.
      */
-    function checkQueryParam(qParamVal, qParamName, model) {
-        var qpSchema = model._dxSchema.list.parameters[qParamName],
+    function checkQueryParam(qParamVal, qParamName, model, rootSchemaDef) {
+        var qpSchema = rootSchemaDef.list.parameters[qParamName],
             deferred = $.Deferred(),
             mapsTo = qpSchema.mapsTo;
 
@@ -171,6 +168,26 @@ dx.core.data._initFilters = function(context) {
         return deferred.promise();
     }
 
+    function getRootedSchema(model) {
+        function upwardFind(schema, schemaName) {
+            if (dx.core.util.isNone(schema)) {
+                dx.fail('Malformed type. Root schema type not found.');
+            }
+
+            if (schema.name === schemaName) {
+                return schema;
+            }
+
+            return upwardFind(schema.parentSchema, schemaName);
+        }
+
+        if (!model._dxSchema.rootTypeName) {
+            dx.fail('Trying to filter a type that has no root type.');
+        }
+
+        return upwardFind(model._dxSchema, model._dxSchema.rootTypeName);
+    }
+
     /*
      * This is the filter to rule all filters. It will filter models for a given collection based on the schema
      * definition and annotations. This may be used as a standalone filter or as a helper for another filter, usually
@@ -184,11 +201,17 @@ dx.core.data._initFilters = function(context) {
      */
     function uberFilter(collection, model, resultHandler, skipParams) {
         var qParams = collection.getQueryParameters() || {};
-        var schemaDef = model._dxSchema.list.parameters;
+        var schemaDef = getRootedSchema(model);
+        var listParams = schemaDef.list.parameters;
+
+        // If the schema definition for list says there are no parameters, then the model can always be included
+        if (_.isEmpty(schemaDef.list.parameters)) {
+            resultHandler(INCLUDE);
+        }
 
         // Find all of the query params that we don't know how to deal with
-        var excludeParams = _.filter(_.keys(schemaDef), function(paramName) {
-            return schemaDef[paramName].excludeFromFilter;
+        var excludeParams = _.filter(_.keys(listParams), function(paramName) {
+            return listParams[paramName].excludeFromFilter;
         });
 
         qParams = _.omit(qParams, excludeParams);
@@ -198,7 +221,7 @@ dx.core.data._initFilters = function(context) {
          * If a type could have pageSize, we may need to return UNKNOWN. Otherwise we can keep going in the filter.
          * Note that we don't care about paging params when dealing with creation listeners.
          */
-        if (_.has(schemaDef, 'pageSize') && collection instanceof Backbone.Collection) {
+        if (_.has(listParams, 'pageSize') && collection instanceof Backbone.Collection) {
             var pageSizeResult = checkPageSize(qParams);
             if (pageSizeResult === UNKNOWN) {
                 return resultHandler(pageSizeResult);
@@ -210,7 +233,7 @@ dx.core.data._initFilters = function(context) {
             return resultHandler(INCLUDE);
         }
         var promises = _.map(qParams, function(qParamVal, qParamName) {
-            return checkQueryParam(qParamVal, qParamName, model);
+            return checkQueryParam(qParamVal, qParamName, model, schemaDef);
         });
 
         /*
@@ -244,7 +267,7 @@ dx.core.data._initFilters = function(context) {
         EXCLUDE: EXCLUDE,
         INCLUDE: INCLUDE,
         UNKNOWN: UNKNOWN,
-        Notification: genericFilter,
+        Notification: uberFilter,
         _checkSameProps: checkSameProps,
         _genericFilter: genericFilter,
         _uberFilter: uberFilter

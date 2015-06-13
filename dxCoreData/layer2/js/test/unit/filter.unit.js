@@ -46,17 +46,121 @@ describe('dx.core.data filters', function() {
         });
     });
 
+    describe('uberFilter()', function() {
+        var target;
+
+        beforeEach(function() {
+            filterResult = 'unset';
+            var s0 = {
+                name: 'NoParams',
+                root: '/noparams',
+                properties: {
+                    canHandle: { type: 'string' }
+                },
+                list: {
+                }
+            };
+            var s1 = {
+                name: 'RootedType',
+                root: '/everythingisawesome',
+                properties: {
+                    canHandle: { type: 'string' }
+                },
+                list: {
+                    parameters: {
+                        canHandle: {
+                            type: 'string',
+                            mapsTo: 'canHandle'
+                        }
+                    }
+                }
+            };
+            var s2 = {
+                name: 'ChildType',
+                extends: {
+                    $ref: 's1'
+                }
+            };
+            var s3 = {
+                name: 'Rootless'
+            };
+            target = {};
+            var schemas = dx.core.data._prepareSchemas({s0: s0, s1: s1, s2: s2, s3: s3});
+
+            initDxData(schemas, target);
+        });
+
+        it('will always include models for collections with no query parameters', function() {
+            var collection = target._newServerCollection('NoParams');
+            var model = target._newClientModel('NoParams');
+
+            target._filters._uberFilter(collection, model, resultHandler);
+
+            expect(filterResult).toBe(target._filters.INCLUDE);
+        });
+
+        it('will filter a rooted model', function() {
+            var collection = target._newServerCollection('RootedType');
+            collection._queryParameters = {
+                canHandle: 'one'
+            };
+            var model = target._newClientModel('RootedType');
+            model.set('canHandle', 'one');
+
+            target._filters._uberFilter(collection, model, resultHandler);
+
+            expect(filterResult).toBe(target._filters.INCLUDE);
+        });
+
+        it('will filter a child of a rooted model', function() {
+            var collection = target._newServerCollection('RootedType');
+            collection._queryParameters = {
+                canHandle: 'one'
+            };
+            var model = target._newClientModel('ChildType');
+            model.set('canHandle', 'one');
+
+            target._filters._uberFilter(collection, model, resultHandler);
+
+            expect(filterResult).toBe(target._filters.INCLUDE);
+        });
+
+        it('(whitebox) will throw an error if asked to filter an object that has no root', function() {
+            var collection = target._newServerCollection('RootedType');
+            var model = target._newClientModel('Rootless');
+
+            expect(function() {
+                target._filters._uberFilter(collection, model, resultHandler);
+            }).toDxFail('Trying to filter a type that has no root type.');
+        });
+
+        it('(whitebox) will throw an error if asked to filter an object whose root doesn\'t exist', function() {
+            var collection = target._newServerCollection('RootedType');
+            collection._queryParameters = {
+                canHandle: 'one'
+            };
+            var model = target._newClientModel('RootedType');
+            model.set('canHandle', 'one');
+            model._dxSchema.rootTypeName = 'Bogus';
+
+            expect(function() {
+                target._filters._uberFilter(collection, model, resultHandler);
+            }).toDxFail('Malformed type. Root schema type not found.');
+        });
+
+    });
+
     describe('auto generating filters', function() {
         it('skips query parameters marked as "excludeFromFilter"', function() {
             var schema = {
                 name: 'TestType',
                 root: '/everythingisawesome',
                 properties: {
-                    cantHandleThis: { 'type': 'string' }
+                    cantHandleThis: { type: 'string' }
                 },
                 list: {
                     parameters: {
-                        cantHandleThis: { 'type': 'string' }
+                        cantHandleThis: { type: 'string' }
                     }
                 }
             };
@@ -94,11 +198,11 @@ describe('dx.core.data filters', function() {
                         name: 'TestType',
                         root: '/everythingisawesome',
                         properties: {
-                            someProp: { 'type': 'string' }
+                            someProp: { type: 'string' }
                         },
                         list: {
                             parameters: {
-                                someProp: { 'type': 'string' }
+                                someProp: { type: 'string' }
                             }
                         }
                     };
@@ -163,11 +267,11 @@ describe('dx.core.data filters', function() {
                         name: 'TestType',
                         root: '/everythingisawesome',
                         properties: {
-                            aProp: { 'type': 'string' }
+                            aProp: { type: 'string' }
                         },
                         list: {
                             parameters: {
-                                bProp: { 'type': 'string' }
+                                bProp: { type: 'string' }
                             }
                         }
                     };
@@ -181,7 +285,7 @@ describe('dx.core.data filters', function() {
                     };
 
                     target = {};
-                    schemas = dx.core.data._prepareSchemas({'s': schema}, qpAnnotations);
+                    schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
                 });
 
                 it('includes an object when the values match', function() {
@@ -227,7 +331,7 @@ describe('dx.core.data filters', function() {
                         },
                         list: {
                             parameters: {
-                                aParam: { 'type': 'string' }
+                                aParam: { type: 'string' }
                             }
                         }
                     };
@@ -246,7 +350,7 @@ describe('dx.core.data filters', function() {
                         properties: {
                             reference: { type: 'string', format: 'objectReference' },
                             type: { type: 'string', required: true, format: 'type' },
-                            someProp: { 'type': 'string' }
+                            someProp: { type: 'string' }
                         }
                     };
 
@@ -367,8 +471,8 @@ describe('dx.core.data filters', function() {
                     properties: {},
                     list: {
                         parameters: {
-                            pageSize: { 'type': 'integer' },
-                            pageOffset: { 'type': 'integer' }
+                            pageSize: { type: 'integer' },
+                            pageOffset: { type: 'integer' }
                         }
                     }
                 };
@@ -377,7 +481,7 @@ describe('dx.core.data filters', function() {
             it('ignores paging for notification listeners', function() {
                 var target = {};
                 var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ 's': schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
 
                 initDxData(schemas, target);
 
@@ -400,18 +504,18 @@ describe('dx.core.data filters', function() {
                     name: 'WithoutPaging',
                     root: '/enemysgate',
                     properties: {
-                        otherParam: { 'type': 'string' }
+                        otherParam: { type: 'string' }
                     },
                     list: {
                         parameters: {
-                            otherParam: { 'type': 'string' }
+                            otherParam: { type: 'string' }
                         }
                     }
                 };
 
                 var target = {};
                 var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ 's': schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithoutPaging');
@@ -430,7 +534,7 @@ describe('dx.core.data filters', function() {
             it('does not return UNKNOWN if pageSize is 0', function() {
                 var target = {};
                 var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ 's': schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -449,7 +553,7 @@ describe('dx.core.data filters', function() {
             it('returns UNKNOWN if pageSize is not 0', function() {
                 var target = {};
                 var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ 's': schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -467,7 +571,7 @@ describe('dx.core.data filters', function() {
             it('returns UNKNOWN if pageSize is not defined', function() {
                 var target = {};
                 var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ 's': schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -489,14 +593,14 @@ describe('dx.core.data filters', function() {
                     name: 'TestType',
                     root: '/enemysgate',
                     properties: {
-                        updateDate: { 'type': 'string', 'format': 'date' }
+                        updateDate: { type: 'string', format: 'date' }
                     },
                     list: {
                         parameters: {
-                            fromDate: { 'type': 'string', 'format': 'date' },
-                            startDate: { 'type': 'string', 'format': 'date' },
-                            toDate: { 'type': 'string', 'format': 'date' },
-                            endDate: { 'type': 'string', 'format': 'date' }
+                            fromDate: { type: 'string', format: 'date' },
+                            startDate: { type: 'string', format: 'date' },
+                            toDate: { type: 'string', format: 'date' },
+                            endDate: { type: 'string', format: 'date' }
                         }
                     }
                 };
@@ -674,7 +778,7 @@ describe('dx.core.data filters', function() {
                     },
                     list: {
                         parameters: {
-                            toDate: { 'type': 'string', 'format': 'date' }
+                            toDate: { type: 'string', format: 'date' }
                         }
                     }
                 };
@@ -693,7 +797,7 @@ describe('dx.core.data filters', function() {
                     properties: {
                         reference: { type: 'string', format: 'objectReference' },
                         type: { type: 'string', required: true, format: 'type' },
-                        dateProp: { 'type': 'string', 'format': 'date' }
+                        dateProp: { type: 'string', format: 'date' }
                     }
                 };
 
@@ -723,7 +827,7 @@ describe('dx.core.data filters', function() {
                 });
 
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({'s': schema, 'a': anotherType, 'f': finalType},
+                var schemas = dx.core.data._prepareSchemas({s: schema, a: anotherType, f: finalType},
                     qpAnnotations);
 
                 initDxData(schemas, target);
