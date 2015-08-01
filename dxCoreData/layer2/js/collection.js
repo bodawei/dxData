@@ -244,10 +244,10 @@ dx.core.data._generateCollectionConstructors = function(schemas, context) {
 
         var filter = context._filters[rootType];
         if (!filter) {
-            if (this._dxInfo.paramDefs.dxFilterMode === 'none') {
+            if (self._dxInfo.paramDefs.dxFilterMode === dx.core.constants.LIST_TYPES.CUSTOM) {
                 dxSet.call(self, model, options);
                 return;
-            } else if (this._dxInfo.paramDefs.dxFilterMode === 'uber') {
+            } else if (self._dxInfo.paramDefs.dxFilterMode === dx.core.constants.LIST_TYPES.UBER) {
                 filter = context._filters._uberFilter;
             }
         }
@@ -365,7 +365,8 @@ dx.core.data._generateCollectionConstructors = function(schemas, context) {
         var rootType = this._dxInfo.baseType;
 
         // No filter function. Complain so someone writes one, and blindly add the model
-        if (dx.core.util.isNone(context._filters[rootType]) && self._dxInfo.paramDefs.dxFilterMode === 'custom') {
+        if (dx.core.util.isNone(context._filters[rootType]) &&
+            self._dxInfo.paramDefs.dxFilterMode === dx.core.constants.LIST_TYPES.CUSTOM) {
             dx.fail('No filter function found for collections of type ' + rootType + '. Add one to ' +
                  ' dx.core.data._filters. In the mean time, all models will be added to the collection.');
         }

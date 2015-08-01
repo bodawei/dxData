@@ -390,7 +390,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                     if (newValue instanceof Date) {
                         finalAttrs[newName] = new Date(newValue.getTime());
                     } else {
-                        finalAttrs[newName] = dx.core.data.util.engineTimeToDate(newValue);
+                        finalAttrs[newName] = new Date(newValue);
                     }
                     break;
                 case 'array':
@@ -1640,7 +1640,7 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
             });
         } else if (_.isObject(value)) {
             if (value instanceof Date) {
-                result = dx.core.data.util.dateToEngineTime(value);
+                result = value.toJSON();
             } else {
                 result = {};
                 _.each(value, function(propValue, key) {

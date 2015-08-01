@@ -143,8 +143,8 @@ describe('dx.core.data._cache', function() {
         });
 
         it('will return the same model when called repeatedly', function() {
-            expect(target._cache.getCachedSingleton('SingletonType')).
-                toBe(target._cache.getCachedSingleton('SingletonType'));
+            expect(target._cache.getCachedSingleton('SingletonType'))
+                .toBe(target._cache.getCachedSingleton('SingletonType'));
         });
 
         it('will fetch the contents the first time the model is created', function() {
@@ -317,8 +317,8 @@ describe('dx.core.data._cache', function() {
         it('will return the same instance when called multiple times', function() {
             target._cache.getCachedModelFromProperties(SIMPLE_MODEL);
 
-            expect(target._cache.getCachedModel('MODEL-1', 'Simple')).
-                toBe(target._cache.getCachedModel('MODEL-1', 'Simple'));
+            expect(target._cache.getCachedModel('MODEL-1', 'Simple'))
+                .toBe(target._cache.getCachedModel('MODEL-1', 'Simple'));
         });
 
         it('will cache multiple models.', function() {

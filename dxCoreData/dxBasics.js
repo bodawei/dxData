@@ -83,6 +83,11 @@ dx.core.constants = {
     INEQUALITY_TYPES: {
         STRICT: 'STRICT',
         NON_STRICT: 'NON-STRICT'
+    },
+    LIST_TYPES: {
+        NONE:   'NONE',
+        UBER:   'UBER',
+        CUSTOM: 'CUSTOM'
     }
 };
 

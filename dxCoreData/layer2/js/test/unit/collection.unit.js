@@ -95,6 +95,36 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 name: { type: 'string' }
             }
         };
+        var noqp = {
+            name: 'NoQueryParams',
+            root: '/noqueryparams',
+            list: {
+                parameters: {
+                }
+            },
+            properties: {
+                type: { type: 'string' },
+                reference: { type: 'string' },
+                name: { type: 'string' }
+            }
+        };
+        var wmp = {
+            name: 'WithMapsTo',
+            root: '/withmapsto',
+            list: {
+                parameters: {
+                    name: {
+                        type: 'string',
+                        mapsTo: 'name'
+                    }
+                }
+            },
+            properties: {
+                type: { type: 'string' },
+                reference: { type: 'string' },
+                name: { type: 'string' }
+            }
+        };
         var rootChild = {
             name: 'ChildOfRoot',
             'extends' : {
@@ -102,7 +132,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             }
         };
 
-        schemas = dx.core.data._prepareSchemas({u: unRooted, p: rooted, c: rootChild});
+        schemas = dx.core.data._prepareSchemas({u: unRooted, p: rooted, c: rootChild, n: noqp, wmp: wmp});
         dx.core.data._initCache(target);
         dx.core.data._initFilters(target);
         target._filters.HasRoot = function(collection, model, handler) {
@@ -117,7 +147,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         it('has one constructor for each schema with a list operation', function() {
             dx.core.data._generateCollectionConstructors(schemas, target, target);
 
-            expect(_.size(target._collectionConstructors)).toBe(1);
+            expect(_.size(target._collectionConstructors)).toBe(3);
             expect(target._collectionConstructors.HasRoot).toBeDefined();
         });
     });
@@ -694,7 +724,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                                 type: 'string'
                             }
                         },
-                        return: {
+                        'return': {
                             type: 'string'
                         }
                     }
@@ -1260,8 +1290,8 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             });
 
             expect(errorSpy.mostRecentCall.args[0].get('error').get('details')).toEqual('Communication Error');
-            expect(errorSpy.mostRecentCall.args[0].get('error').get('commandOutput')).
-                toEqual('HTTP Error: 404\nStatus text: OOPS\nResponse text: <html><body>Bogus, man</body></html>');
+            expect(errorSpy.mostRecentCall.args[0].get('error').get('commandOutput'))
+                .toEqual('HTTP Error: 404\nStatus text: OOPS\nResponse text: <html><body>Bogus, man</body></html>');
         });
 
         it('triggers an error event when encountering a status404/ErrorResult', function() {
@@ -1831,6 +1861,68 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             collection.$$list();
             collection._dxAddOrRemove(target._newClientModel('HasRoot'));
             expect(collection.length).toBe(1);
+        });
+
+        describe('with no query parameters and no filter function', function() {
+            var successSpy;
+
+            beforeEach(function() {
+                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                    options.success({
+                        type: 'ListResult',
+                        result: [ {
+                            type: 'NoQueryParams',
+                            reference: 'REF-1',
+                            name: 'fred'
+                        } ]
+                    });
+                });
+                collection = target._newServerCollection('NoQueryParams');
+                successSpy = jasmine.createSpy('successSpy');
+                collection.$$list({}, {
+                    success: successSpy
+                });
+            });
+
+            it('will add the model automatically because there are no query parameters possible', function() {
+                collection._dxAddOrRemove(target._newClientModel('NoQueryParams'));
+
+                expect(collection.length).toBe(2);
+            });
+
+        });
+
+        describe('with no query parameters and the uber filter function', function() {
+            var successSpy;
+
+            beforeEach(function() {
+                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                    options.success({
+                        type: 'ListResult',
+                        result: [ {
+                            type: 'WithMapsTo',
+                            reference: 'REF-1',
+                            name: 'fred'
+                        } ]
+                    });
+                });
+                collection = target._newServerCollection('WithMapsTo');
+                successSpy = jasmine.createSpy('successSpy');
+                collection.$$list({
+                    name: 'fred'
+                }, {
+                    success: successSpy
+                });
+            });
+
+            it('will add the model automatically because there are no query parameters possible', function() {
+                var client = target._newClientModel('WithMapsTo');
+                client.set('name', 'fred');
+                collection._dxAddOrRemove(client);
+
+                expect(collection.length).toBe(2);
+            });
+
         });
 
         describe('with query parameters and a filter function', function() {

@@ -127,11 +127,9 @@ function ModelSubscriberStore() {
                 if (_.isEmpty(subscriber._events)) {
                     toRemove.push(subscriber);
                 }
-            } else {
+            } else if (!subscriber.inUse) {
                 // it is a creation Listener
-                if (!subscriber.inUse) {
-                    toRemove.push(subscriber);
-                }
+                toRemove.push(subscriber);
             }
         });
 
