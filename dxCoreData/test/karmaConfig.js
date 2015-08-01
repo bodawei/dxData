@@ -67,13 +67,13 @@ module.exports = function(config) {
         colors: true,               // enable / disable colors in the output (reporters and logs)
         logLevel: config.LOG_ERROR, // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
         autoWatch: false,           // enable / disable watching file and executing tests whenever any file changes
-        browsers: ['PhantomJS'],
+        browsers: ['Chrome'],
         captureTimeout: 20000,      // If browser does not capture in given timeout [ms], kill it
         // https://github.com/karma-runner/karma-ie-launcher/issues/8
         browserDisconnectTimeout: 10000,
         browserDisconnectTolerance: 2,
         browserNoActivityTimeout: 10000,
-        singleRun: true,             // if true, it capture browsers, run tests and exit
+        singleRun: false,             // if true, it capture browsers, run tests and exit
     });
 };
 

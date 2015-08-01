@@ -37,11 +37,34 @@ function toDxFail(expected) {
 }
 
 /*
+ * A matcher that allows one to check if a subset of the properties specified match those of the test result.
+ * That is, suppose the test result returns:
+ *    {
+ *        a: true,
+ *        b: 2,
+ *        c: 'three'
+ *    }
+ * but for your test you only care about whether a and b match.  Thus, you could say:
+ *    expect(resultObject).toEqualProps({ a: true, b: 2});
+ *
+ * and this would pass. In contrast these would not:
+ *    expect(resultObject).toEqualProps({ a: true, d: 4});
+ *    expect(resultObject).toEqualProps({ a: true, b: 'six'});
+ * Note: This does not at this time do this recursively.
+ */
+function toHaveProps(expected) {
+    var self = this;
+
+    return _.matches(expected)(self.actual);
+}
+
+/*
  * Delphix custom jasmine setup.
  */
 beforeEach(function() {
     this.addMatchers({
-        toDxFail: toDxFail
+        toDxFail: toDxFail,
+        toHaveProps: toHaveProps
     });
 });
 
