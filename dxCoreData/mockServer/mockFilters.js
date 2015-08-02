@@ -1,18 +1,4 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
@@ -59,11 +45,6 @@ function followDataMapping(object, mapsTo, parsedSchemas) {
 
     var currObj = object;
     _.each(parts, function(part) {
-        if (part.charAt(0) !== '$') {
-            dx.fail('Can only chain object references.');
-        }
-
-        part = part.substr(1);
         var type = parsedSchemas[currObj.type].properties[part].referenceTo;
 
         var newObj = dx.test.mockServer.getObject(currObj[part], type);
@@ -119,13 +100,13 @@ function checkDateProp(qParamVal, qParamName, objectSchema, object, parsedSchema
 
     // Since we are at the mockServer level, the query parameters passed in may be timestamps, not Date objects
     if (!_.isDate(qParamVal)) {
-        qParamVal = dx.core.data.util.engineTimeToDate(qParamVal);
+        qParamVal = new Date(qParamVal);
     }
 
     // Handle the case where this is a timestamp string as well as a Date object
     var objAttrVal = finalObj[finalAttrName];
     if (_.isString(objAttrVal)) {
-        objAttrVal = dx.core.data.util.engineTimeToDate(objAttrVal);
+        objAttrVal = new Date(objAttrVal);
     }
 
     if (dx.core.util.isNone(objAttrVal)) {
@@ -136,10 +117,8 @@ function checkDateProp(qParamVal, qParamName, objectSchema, object, parsedSchema
         if (objAttrVal.getTime() < qParamVal.getTime()) {
             return false;
         }
-    } else { // toDate or endDate
-        if (objAttrVal.getTime() > qParamVal.getTime()) {
-            return false;
-        }
+    } else if (objAttrVal.getTime() > qParamVal.getTime()) { // toDate or endDate
+        return false;
     }
 
     if (inequalityType === dx.core.constants.INEQUALITY_TYPES.STRICT && objAttrVal.getTime() === qParamVal.getTime()) {
@@ -213,14 +192,6 @@ function checkProps(qParamNamesToCheck, qParams, object, objectSchema, parsedSch
 function uberFilter(collection, qParams, collectionType, parsedSchemas) {
     parsedSchemas = parsedSchemas || dx.core.data.parsedSchemas;
     var objectSchema = parsedSchemas[collectionType];
-    var schemaDef = objectSchema.list.parameters;
-
-    // Find all of the query params that we don't know how to deal with
-    var excludeParams = _.filter(_.keys(schemaDef), function(paramName) {
-        return schemaDef[paramName].excludeFromFilter;
-    });
-
-    qParams = _.omit(qParams, excludeParams);
 
     return _.filter(collection, function(object) {
         return checkProps(_.keys(qParams), qParams, object, objectSchema, parsedSchemas);
