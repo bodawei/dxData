@@ -815,7 +815,7 @@ describe('dx.core.data filters', function() {
                 };
                 var mockFinalType = {
                     type: 'FinalType',
-                    dateProp: dx.core.data.util.dateToEngineTime(dateObj)
+                    dateProp: dateObj
                 };
 
                 spyOn(jQuery, 'ajax').andCallFake(function(options) {
