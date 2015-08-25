@@ -1,4 +1,18 @@
 /*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
@@ -405,8 +419,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 model.$$update({
                     requiredTrue: 'newRequiredValue'
                 });
-                expect(ajaxSpy.mostRecentCall.args[0].data).
-                    toEqual('{"requiredTrue":"newRequiredValue","updateRequired":"required"}');
+                expect(ajaxSpy.mostRecentCall.args[0].data)
+                    .toEqual('{"requiredTrue":"newRequiredValue","updateRequired":"required"}');
             });
 
             it('will send all optional values passed to update, but not readonly ones', function() {
@@ -422,8 +436,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     updateReadonly: '5',
                     updateUnspecified: '6'
                 });
-                expect(ajaxSpy.mostRecentCall.args[0].data).
-                    toEqual('{"requiredTrue":"1","requiredFalse":"2","updateRequired":"3","updateOptional":"4"}');
+                expect(ajaxSpy.mostRecentCall.args[0].data)
+                    .toEqual('{"requiredTrue":"1","requiredFalse":"2","updateRequired":"3","updateOptional":"4"}');
             });
 
             it('will not send non-required values passed to update, but that have not changed', function() {
@@ -529,8 +543,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     updateOptional: null
                 });
 
-                expect(ajaxSpy.mostRecentCall.args[0].data).
-                    toEqual('{"requiredTrue":null,"requiredFalse":null,"updateRequired":null,"updateOptional":null}');
+                expect(ajaxSpy.mostRecentCall.args[0].data)
+                    .toEqual('{"requiredTrue":null,"requiredFalse":null,"updateRequired":null,"updateOptional":null}');
             });
 
             it('will not send null for a type which can be null but isn\'t', function() {
@@ -586,8 +600,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     other: 'placeholder'
                 });
 
-                expect(ajaxSpy.mostRecentCall.args[0].data).
-                    toEqual('{"other":"placeholder","requiredTrue":"value1","updateRequired":"value3"}');
+                expect(ajaxSpy.mostRecentCall.args[0].data)
+                    .toEqual('{"other":"placeholder","requiredTrue":"value1","updateRequired":"value3"}');
             });
 
             it('will accept "" as a return value', function() {
@@ -750,8 +764,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                         requiredTrue: 'someValue'
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data).
-                        toEqual('{"requiredTrue":"someValue","updateRequired":"updateRequired"}');
+                    expect(ajaxSpy.mostRecentCall.args[0].data)
+                        .toEqual('{"requiredTrue":"someValue","updateRequired":"updateRequired"}');
                 });
 
                 it('won\'t send optional sub-embedded when they have no new data, even when they have required values',
@@ -773,8 +787,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                             }
                         });
 
-                        expect(ajaxSpy.mostRecentCall.args[0].data).
-                            toEqual('{"requiredTrue":"r","updateRequired":"r","embedded":{"type":"EmbeddedType",' +
+                        expect(ajaxSpy.mostRecentCall.args[0].data)
+                            .toEqual('{"requiredTrue":"r","updateRequired":"r","embedded":{"type":"EmbeddedType",' +
                             '"embRequiredTrue":"required","embUpdateRequired":"er"}}');
                     });
 
@@ -1324,8 +1338,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.mostRecentCall.args[0].data).
-                    toEqual('{"createRequired":"one","embedded":{"createRequired":"eleven"}}');
+                expect(jQuery.ajax.mostRecentCall.args[0].data)
+                    .toEqual('{"createRequired":"one","embedded":{"createRequired":"eleven"}}');
             });
 
             it('will send create required and optional attrs if they are non-null (but not readonly ones)', function() {
@@ -1388,8 +1402,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.mostRecentCall.args[0].data).
-                    toEqual('{"createRequired":"one","createOptional":"second","embedded":' +
+                expect(jQuery.ajax.mostRecentCall.args[0].data)
+                    .toEqual('{"createRequired":"one","createOptional":"second","embedded":' +
                     '{"createRequired":"eleven","createOptional":"twelve"}}');
             });
 

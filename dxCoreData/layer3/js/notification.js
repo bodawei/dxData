@@ -132,6 +132,8 @@ dx.core.data._setupNotificationSystem = function(context) {
     }
 
     function fetchNotifications() {
+        timeout = undefined;
+
         notification.$$list({
             timeout: '' + TIMEOUT_SEC * 1000,
             channel: notificationChannel
@@ -142,7 +144,7 @@ dx.core.data._setupNotificationSystem = function(context) {
                     try {
                         processNotifications(notification);
                     } finally {
-                        setTimeout(fetchNotifications, 0);
+                        fetchNotifications();
                     }
                 }
             },
@@ -185,19 +187,19 @@ dx.core.data._setupNotificationSystem = function(context) {
         if (notification) {
             notification = undefined;
         }
-        clearTimeout(timeout);
+        if (timeout) {
+            clearTimeout(timeout);
+        }
         stopped = true;
     }
 
     context = context || dx.core.data;
     context.notification = context.notification || {};
-
     _.extend(context.notification, {
         _getRetryTimeout: _getRetryTimeout,
         start: start,
         isStarted: isStarted,
         stop: stop
-        
     });
 };
 

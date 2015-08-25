@@ -151,43 +151,6 @@ describe('dx.core.data filters', function() {
     });
 
     describe('auto generating filters', function() {
-        it('skips query parameters marked as "excludeFromFilter"', function() {
-            var schema = {
-                name: 'TestType',
-                root: '/everythingisawesome',
-                properties: {
-                    cantHandleThis: { type: 'string' }
-                },
-                list: {
-                    parameters: {
-                        cantHandleThis: { type: 'string' }
-                    }
-                }
-            };
-            var qpAnnotations = {
-                TestType: {
-                    cantHandleThis: {
-                        excludeFromFilter: true
-                    }
-                }
-            };
-
-            var target = {};
-            var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
-
-            initDxData(schemas, target);
-            var collection = target._newServerCollection('TestType');
-            var model = target._newClientModel('TestType');
-            model.set('cantHandleThis', 'whatever');
-
-            collection._queryParameters = {
-                cantHandleThis: 'beyonce'
-            };
-
-            target._filters._uberFilter(collection, model, resultHandler);
-
-            expect(filterResult).toBe(target._filters.INCLUDE);
-        });
 
         describe('simple properties', function() {
             var schemas, target;
@@ -202,14 +165,16 @@ describe('dx.core.data filters', function() {
                         },
                         list: {
                             parameters: {
-                                someProp: { type: 'string' }
+                                someProp: {
+                                    type: 'string',
+                                    mapsTo: 'someProp'
+                                }
                             }
                         }
                     };
-                    var qpAnnotations = {};
 
                     target = {};
-                    schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                    schemas = dx.core.data._prepareSchemas({s: schema});
                 });
 
                 it('fails if no mapsTo property is defined', function() {
@@ -271,21 +236,16 @@ describe('dx.core.data filters', function() {
                         },
                         list: {
                             parameters: {
-                                bProp: { type: 'string' }
-                            }
-                        }
-                    };
-
-                    var qpAnnotations = {
-                        TestType: {
-                            bProp: {
-                                mapsTo: 'aProp'
+                                bProp: {
+                                    type: 'string',
+                                    mapsTo: 'aProp'
+                                }
                             }
                         }
                     };
 
                     target = {};
-                    schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                    schemas = dx.core.data._prepareSchemas({s: schema});
                 });
 
                 it('includes an object when the values match', function() {
@@ -331,7 +291,10 @@ describe('dx.core.data filters', function() {
                         },
                         list: {
                             parameters: {
-                                aParam: { type: 'string' }
+                                aParam: {
+                                    type: 'string',
+                                    mapsTo: 'anotherObj.finalObj.someProp'
+                                }
                             }
                         }
                     };
@@ -354,14 +317,6 @@ describe('dx.core.data filters', function() {
                         }
                     };
 
-                    var qpAnnotations = {
-                        TestType: {
-                            aParam: {
-                                mapsTo: '$anotherObj.$finalObj.someProp'
-                            }
-                        }
-                    };
-
                     target = {};
                     schemas = dx.core.data._prepareSchemas({
                         s: schema,
@@ -370,7 +325,7 @@ describe('dx.core.data filters', function() {
                         call: dx.test.dataMocks.callResultSchema,
                         api: dx.test.dataMocks.apiErrorSchema,
                         e: dx.test.dataMocks.errorResultSchema
-                    }, qpAnnotations);
+                    });
 
                     var mockAnotherType = {
                         type: 'AnotherType',
@@ -410,23 +365,6 @@ describe('dx.core.data filters', function() {
                     dx.test.mockServer.respond();
 
                     expect(filterResult).toBe(target._filters.EXCLUDE);
-                });
-
-                it('fails if all but the last segment of the chain are not prefixed with "$"', function() {
-                    schemas.TestType.list.parameters.aParam.mapsTo = '$anotherObj.finalObj.someProp';
-
-                    initDxData(schemas, target);
-                    collection = target._newServerCollection('TestType');
-                    model = target._newClientModel('TestType');
-                    model.set('anotherObj', 'AnotherType-1');
-
-                    collection._queryParameters = {
-                        aParam: 'val'
-                    };
-
-                    expect(function() {
-                        target._filters._uberFilter(collection, model, resultHandler);
-                    }).toDxFail('Can only chain object references: finalObj.');
                 });
 
                 it('includes an object when the values match', function() {
@@ -480,8 +418,7 @@ describe('dx.core.data filters', function() {
 
             it('ignores paging for notification listeners', function() {
                 var target = {};
-                var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
 
@@ -508,14 +445,16 @@ describe('dx.core.data filters', function() {
                     },
                     list: {
                         parameters: {
-                            otherParam: { type: 'string' }
+                            otherParam: {
+                                type: 'string',
+                                mapsTo: 'otherParam'
+                            }
                         }
                     }
                 };
 
                 var target = {};
-                var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithoutPaging');
@@ -533,8 +472,7 @@ describe('dx.core.data filters', function() {
 
             it('does not return UNKNOWN if pageSize is 0', function() {
                 var target = {};
-                var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -552,8 +490,7 @@ describe('dx.core.data filters', function() {
 
             it('returns UNKNOWN if pageSize is not 0', function() {
                 var target = {};
-                var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -570,8 +507,7 @@ describe('dx.core.data filters', function() {
 
             it('returns UNKNOWN if pageSize is not defined', function() {
                 var target = {};
-                var qpAnnotations = {};
-                var schemas = dx.core.data._prepareSchemas({ s: schema }, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -597,10 +533,30 @@ describe('dx.core.data filters', function() {
                     },
                     list: {
                         parameters: {
-                            fromDate: { type: 'string', format: 'date' },
-                            startDate: { type: 'string', format: 'date' },
-                            toDate: { type: 'string', format: 'date' },
-                            endDate: { type: 'string', format: 'date' }
+                            fromDate: {
+                                type: 'string',
+                                format: 'date',
+                                mapsTo: 'updateDate',
+                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                            },
+                            startDate: {
+                                type: 'string',
+                                format: 'date',
+                                mapsTo: 'updateDate',
+                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                            },
+                            toDate: {
+                                type: 'string',
+                                format: 'date',
+                                mapsTo: 'updateDate',
+                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                            },
+                            endDate: {
+                                type: 'string',
+                                format: 'date',
+                                mapsTo: 'updateDate',
+                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                            }
                         }
                     }
                 };
@@ -609,15 +565,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('throws an error when no "mapsTo" property is found', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate'
-                        }
-                    }
-                };
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
                 delete schemas.TestType.list.parameters.fromDate.mapsTo;
 
                 initDxData(schemas, target);
@@ -634,15 +583,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('throws an error when no "inequalityType" property is found', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate'
-                        }
-                    }
-                };
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
                 delete schemas.TestType.list.parameters.fromDate.inequalityType;
 
                 initDxData(schemas, target);
@@ -659,16 +601,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('includes an object when it occurs on the fromDate and inequalityType is NON-STRICT', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
-                        }
-                    }
-                };
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -686,17 +620,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('includes an object when it occurs on the toDate and inequalityType is NON-STRICT', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        toDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
-                        }
-                    }
-                };
-
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -714,17 +639,9 @@ describe('dx.core.data filters', function() {
             });
 
             it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
+                schema.list.parameters.fromDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -742,17 +659,9 @@ describe('dx.core.data filters', function() {
             });
 
             it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        toDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
+                schema.list.parameters.toDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -778,7 +687,12 @@ describe('dx.core.data filters', function() {
                     },
                     list: {
                         parameters: {
-                            toDate: { type: 'string', format: 'date' }
+                            toDate: {
+                                type: 'string',
+                                format: 'date',
+                                mapsTo: 'anotherObj.finalObj.dateProp',
+                                inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
+                            }
                         }
                     }
                 };
@@ -800,15 +714,6 @@ describe('dx.core.data filters', function() {
                         dateProp: { type: 'string', format: 'date' }
                     }
                 };
-
-                var qpAnnotations = {
-                    TestType: {
-                        toDate: {
-                            mapsTo: '$anotherObj.$finalObj.dateProp',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
                 var mockAnotherType = {
                     type: 'AnotherType',
                     finalObj: 'FinalType-1'
@@ -827,8 +732,7 @@ describe('dx.core.data filters', function() {
                 });
 
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema, a: anotherType, f: finalType},
-                    qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema, a: anotherType, f: finalType});
 
                 initDxData(schemas, target);
 
@@ -847,21 +751,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('handles alternate names "startDate" and "endDate"', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        startDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
-                        },
-                        endDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
-                        }
-                    }
-                };
-
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -880,21 +771,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('includes an object when it occurs between the from and toDate', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        },
-                        toDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -913,17 +791,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('excludes an object when it occurs before the fromDate', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -941,17 +810,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('excludes an object when it occurs after the toDate', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        toDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -969,21 +829,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('excludes an object when the from and the to date are reversed', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        },
-                        toDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -1002,17 +849,8 @@ describe('dx.core.data filters', function() {
             });
 
             it('excludes an object with no date', function() {
-                var qpAnnotations = {
-                    TestType: {
-                        fromDate: {
-                            mapsTo: 'updateDate',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
                 var target = {};
-                var schemas = dx.core.data._prepareSchemas({s: schema}, qpAnnotations);
+                var schemas = dx.core.data._prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 

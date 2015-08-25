@@ -13,7 +13,7 @@
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
 /*global dx, _ */
@@ -26,15 +26,14 @@ dx.namespace('dx.core.data');
 
 /*
  * Do top-level processing of each schema. This involves:
- *  1) Extend the schemas with any query param annotations that are provided.
- *  2) If the schema has no name, replace it with a name, based on the schemaKey, that can be used as a Javascript
+ *  1) If the schema has no name, replace it with a name, based on the schemaKey, that can be used as a Javascript
  *     identifier.
- *  3) Replace the extends schemaKey (if present) with the name of the parent schema.
- *  4) Add a parentSchema property with a reference to the parent schema, if any.
- *  5) Add the name of the closest ancestor schema type that had a root property.
- *  6) Inherit the parent's root property, if this itself doesn't have one.
+ *  2) Replace the extends schemaKey (if present) with the name of the parent schema.
+ *  3) Add a parentSchema property with a reference to the parent schema, if any.
+ *  4) Add the name of the closest ancestor schema type that had a root property.
+ *  5) Inherit the parent's root property, if this itself doesn't have one.
  */
-function processSchema(schema, schemaKey, sourceSchemas, queryParamAnnotations, newSchemas, preserveUnneeded) {
+function processSchema(schema, schemaKey, sourceSchemas, newSchemas, preserveUnneeded) {
     /*
      * Most schemas have a name. However, not all do.  We must nevertheless expose those schemas as they have root
      * operations on them. Thus, we convert the key into a form that can be used to identify them.
@@ -56,7 +55,7 @@ function processSchema(schema, schemaKey, sourceSchemas, queryParamAnnotations, 
     var parentSchema = schema.extends;
     if (parentSchema) {
         schema.parentSchema = processSchema(sourceSchemas[parentSchema.$ref], parentSchema.$ref,
-            sourceSchemas, queryParamAnnotations, newSchemas);
+            sourceSchemas, newSchemas);
         parentSchema.$ref = schemaKeyToTypeName(parentSchema.$ref, sourceSchemas);
         parentSchema = schema.parentSchema;
 
@@ -73,8 +72,6 @@ function processSchema(schema, schemaKey, sourceSchemas, queryParamAnnotations, 
 
     processProperties(schema, parentSchema, sourceSchemas, preserveUnneeded);
     processOperations(schema, parentSchema, sourceSchemas);
-
-    addQParamAnnotations(schema, queryParamAnnotations);
 
     return schema;
 }
@@ -93,34 +90,11 @@ function schemaKeyToTypeName(schemaKey, schemas) {
         return schemas[schemaKey].name;
     }
 
-    var newString = schemaKey.replace(/\.json$/, '').
-        replace(/-/g, '_').
-        replace(/\//g, '');
+    var newString = schemaKey.replace(/\.json$/, '')
+        .replace(/-/g, '_')
+        .replace(/\//g, '');
 
     return newString;
-}
-
-/*
- * Copy query param annotations onto the schema, and add defaults where applicable.
- */
-function addQParamAnnotations(schema, queryParamAnnotations) {
-    if (!schema.list) {
-        return;
-    }
-
-    _.each(schema.list.parameters, function(qParam, qParamName) {
-        var annotations = queryParamAnnotations[schema.name] || {};
-        var qParamAnnotation = annotations[qParamName] || {};
-
-        // If mapsTo isn't specified, the query param maps to the object property of the same name
-        if (!_.isString(qParamAnnotation.mapsTo)) {
-            if (schema.properties && schema.properties[qParamName]) {
-                qParamAnnotation.mapsTo = qParamName;
-            }
-        }
-
-        _.extend(qParam, qParamAnnotation);
-    });
 }
 
 /*
@@ -423,46 +397,8 @@ function convertTypeReference(propData, sourceSchemas) {
 }
 
 /*
- * Basic validation of the queryParamAnnotations. This includes checking that the 'mapsTo' are chains of valid schema
- * properties.
- * Note that this expects the passed in 'schemas' to already be processed.
- */
-function checkQPAnnotations(schemas, queryParamAnnotations) {
-    _.each(queryParamAnnotations, function(value, key) {
-        _.each(value, function(qParam) {
-            if (!_.isString(qParam.mapsTo)) {
-                return;
-            }
-
-            var segs = qParam.mapsTo.split('.');
-            var numSegs = segs.length;
-
-            var currType = key;
-            var currSchema = schemas[currType];
-            _.each(segs, function(seg, idx) {
-                if (idx !== numSegs - 1) {
-                    if (seg.charAt(0) !== '$') {
-                        dx.fail('Can only chain object references (evaluating "' + seg + '" in "' + qParam.mapsTo +
-                            '").');
-                    }
-                    seg = seg.slice(1);
-                }
-
-                var prop = currSchema.properties[seg];
-                if (!prop) {
-                    dx.fail('Property "' + seg + '" not found for type ' + currType);
-                }
-
-                currType = prop.referenceTo;
-                currSchema = schemas[currType];
-            });
-        });
-    });
-}
-
-/*
  * Walk through each list operation, and add a dxFilterMode property to each. The values are:
- *    none: There are no query parameters, no no filter is needed
+ *    none: There are no query parameters, no filter is needed
  *    uber: Every parameter has a mapsTo property, so the uberFilter can be used
  *    custom: Not enough information. A custom filter will be needed.
  */
@@ -470,15 +406,17 @@ function markListOperations(schemas) {
     _.each(schemas, function(schema) {
         if (schema.list) {
             if (_.isEmpty(schema.list.parameters)) {
-                schema.list.dxFilterMode = 'none';
+                schema.list.dxFilterMode = dx.core.constants.LIST_TYPES.NONE;
             } else {
                 var missingMapsTo = false;
-                _.each(schema.list.parameters, function(param) {
+                _.any(schema.list.parameters, function(param) {
                     if (!param.mapsTo) {
                         missingMapsTo = true;
+                        return true;
                     }
                 });
-                schema.list.dxFilterMode = missingMapsTo ? 'custom' : 'uber';
+                schema.list.dxFilterMode = missingMapsTo ? dx.core.constants.LIST_TYPES.CUSTOM :
+                    dx.core.constants.LIST_TYPES.UBER;
             }
         }
     });
@@ -511,33 +449,15 @@ function markListOperations(schemas) {
  * below.
  *
  * schemas:               The set of schemas to be prepared.  This is the only parameter that must be provided.
- * queryParamAnnotations: The set of 'annotations' to add to schema query parameters. This expects annotations to come
- *                        in the form:
- *                        {
- *                           Type1: {
- *                               qParam1: {
- *                                   annotation1: val1,
- *                                   annotation2: val2,
- *                                   ...
- *                               },
- *                               ...
- *                           },
- *                           ...
- *                        }
- *
  * copySchemas:           If truthy, this will make a copy of the provided schemas before making changes to them.
  *                        Otherwise the original schema objects will be altered.
  * preserveUnneeded:      If truthy, properties like 'description' that aren't needed will not be deleted.
  */
-function prepareSchemas(schemas, queryParamAnnotations, copySchemas, preserveUnneeded) {
+function prepareSchemas(schemas, copySchemas, preserveUnneeded) {
     var newSchemas = {};
 
     if (!_.isObject(schemas)) {
         dx.fail('Must provide a schemas object.');
-    }
-
-    if (!_.isUndefined(queryParamAnnotations) && !_.isObject(queryParamAnnotations)) {
-        dx.fail('queryParamAnnotations is defined but not an object.');
     }
 
     // Always copy the schemas at this time, as it caused model-generator to be unhappy.
@@ -545,17 +465,9 @@ function prepareSchemas(schemas, queryParamAnnotations, copySchemas, preserveUnn
         schemas = dx.core.util.deepClone(schemas);
     }
 
-    queryParamAnnotations = queryParamAnnotations || {};
-
     _.each(schemas, function(value, key) {
-        processSchema(value, key, schemas, queryParamAnnotations, newSchemas, preserveUnneeded);
+        processSchema(value, key, schemas, newSchemas, preserveUnneeded);
     });
-
-    /*
-     * Do some simple checks on the queryParamAnnotations to make sure they are valid. This is done after processing
-     * the schemas for the convenience of working with the processed, rather than raw, schemas.
-     */
-    checkQPAnnotations(newSchemas, queryParamAnnotations);
     
     /*
      * Finally, add a flag to each list operation to determine whether it can be generically filtered, or whether

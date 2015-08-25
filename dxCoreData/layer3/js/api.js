@@ -50,7 +50,7 @@ dx.namespace('dx.core.data');
  *                                     screen. This is mainly useful if you have an operation error handler which,
  *                                     after examining the ErrorResult model, you still wish to show it to the user.
  */
-dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations) {
+dx.core.data.setupDataSystem = function(schemas, context) {
     /*
      * Returns a new client model.
      *
@@ -95,7 +95,7 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
         _.extend(settings, {
             context: context
         });
-        var creationListener = new context.CreationListener(settings);
+        var creationListener = new dx.core.data.CreationListener(settings);
         context._modelSubscribersStore.add(creationListener);
         return creationListener;
     }
@@ -233,7 +233,7 @@ dx.core.data.setupDataSystem = function(schemas, context, queryParamAnnotations)
      * Start the real work here. Initialize everything 'below' us.
      */
     context = context || this;
-    var parsedSchemas = dx.core.data._prepareSchemas(schemas, queryParamAnnotations);
+    var parsedSchemas = dx.core.data._prepareSchemas(schemas);
     var enums = dx.core.data._prepareEnums(parsedSchemas);
     dx.core.data._initCache(context);
     dx.core.data._initFilters(context);

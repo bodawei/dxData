@@ -52,5 +52,6 @@ if (!Function.prototype.bind) {
 
 
 dx.test.mockServer = new dx.test.MockServer(dx.test.CORE_SCHEMAS);
+dx.test.mockServer._filters = dx.test._filters;
 dx.test.mockServer.start();
 dx.test.assert = expect;

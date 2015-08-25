@@ -1715,7 +1715,6 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
                 } else {
                     embJson = jsonIzeForUpdate(subProps, updateEmbedded, baseEmbedded, required);
                 }
-
                 if (!_.isUndefined(embJson)) {
                     jsonUpdatePayload[key] = embJson;
                     propCount++;

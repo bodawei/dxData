@@ -30,28 +30,22 @@ describe('dx.core.data._prepareSchemas', function() {
         }).toDxFail(new Error('Must provide a schemas object.'));
     });
 
-    it('throws an error if queryParamAnnotations are provided but are not an object', function() {
-        expect(function() {
-            dx.core.data._prepareSchemas({}, 'not an object');
-        }).toDxFail(new Error('queryParamAnnotations is defined but not an object.'));
-    });
-
     it('makes a copy of schema objects if copySchemas is true', function() {
         var schema = {
-            'name': 'aSchema'
+            name: 'aSchema'
         };
 
-        var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema}, {}, true);
+        var newSchemas = dx.core.data._prepareSchemas({aKey: schema}, true);
 
         expect(newSchemas.aSchema).not.toBe(schema);
     });
 
     xit('does not make a copy of schema objects if copySchemas is false', function() {
         var schema = {
-            'name': 'aSchema'
+            name: 'aSchema'
         };
 
-        var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema}, {}, false);
+        var newSchemas = dx.core.data._prepareSchemas({aKey: schema}, false);
 
         expect(newSchemas.aSchema).toBe(schema);
     });
@@ -63,7 +57,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 description: 'This is a description'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema}, {}, false, false);
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema}, false, false);
 
             expect(newSchemas.aSchema.description).toBeUndefined();
         });
@@ -74,7 +68,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 description: 'This is a description'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema}, {}, false, true);
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema}, false, true);
 
             expect(newSchemas.aSchema.description).toBe('This is a description');
         });
@@ -89,7 +83,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema}, {}, false, false);
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema}, false, false);
 
             expect(newSchemas.aSchema.properties.first.description).toBeUndefined();
         });
@@ -104,7 +98,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema}, {}, false, true);
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema}, false, true);
 
             expect(newSchemas.aSchema.properties.first.description).toBe('This is a description');
         });
@@ -113,10 +107,10 @@ describe('dx.core.data._prepareSchemas', function() {
     describe('_dxSchemas name', function() {
         it('creates a schema named after the schema name', function() {
             var schema = {
-                'name': 'aSchema'
+                name: 'aSchema'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema});
 
             expect(newSchemas.aSchema).toBeDefined();
         });
@@ -125,7 +119,7 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema});
 
             expect(newSchemas.aKey).toBeDefined();
         });
@@ -143,10 +137,10 @@ describe('dx.core.data._prepareSchemas', function() {
     describe('schema.name', function() {
         it('is set to the name provided in the schema, if present', function() {
             var schema = {
-                'name': 'aSchema'
+                name: 'aSchema'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema});
 
             expect(newSchemas.aSchema.name).toBe('aSchema');
         });
@@ -155,7 +149,7 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKey' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKey: schema});
 
             expect(newSchemas.aKey.name).toBe('aKey');
         });
@@ -178,12 +172,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schemaB = {
                 name: 'bSchema',
-                'extends' : {
+                extends: {
                     $ref: 'aKeyName'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'b': schemaB, 'aKeyName' : schemaA});
+            var newSchemas = dx.core.data._prepareSchemas({b: schemaB, aKeyName: schemaA});
 
             expect(newSchemas.bSchema.parentSchema).toBe(newSchemas.aSchema);
         });
@@ -193,12 +187,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schemaB = {
                 name: 'bSchema',
-                'extends' : {
+                extends: {
                     $ref: 'aKeyName'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schemaA, 'b': schemaB});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schemaA, b: schemaB});
 
             expect(newSchemas.bSchema.parentSchema).toBe(newSchemas.aKeyName);
         });
@@ -211,12 +205,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schemaB = {
                 name: 'bSchema',
-                'extends' : {
+                extends: {
                     $ref: 'aKeyName'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'b': schemaB, 'aKeyName' : schemaA});
+            var newSchemas = dx.core.data._prepareSchemas({b: schemaB, aKeyName: schemaA});
 
             expect(newSchemas.bSchema.extends.$ref).toBe('aSchema');
         });
@@ -226,12 +220,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schemaB = {
                 name: 'bSchema',
-                'extends' : {
+                extends: {
                     $ref: 'aKeyName'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schemaA, 'b': schemaB});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schemaA, b: schemaB});
 
             expect(newSchemas.bSchema.extends.$ref).toBe('aKeyName');
         });
@@ -243,17 +237,17 @@ describe('dx.core.data._prepareSchemas', function() {
                 root: 'some/random/string'
             };
             var child = {
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
             var grandChild = {
-                'extends': {
+                extends: {
                     $ref: 'b'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': child, 'c': grandChild});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: child, c: grandChild});
 
             expect(newSchemas.c.root).toBe('some/random/string');
         });
@@ -264,17 +258,17 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var child = {
                 root: 'some/other/string',
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
             var grandChild = {
-                'extends': {
+                extends: {
                     $ref: 'b'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': child, 'c': grandChild});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: child, c: grandChild});
 
             expect(newSchemas.c.root).toBe('some/other/string');
         });
@@ -287,23 +281,23 @@ describe('dx.core.data._prepareSchemas', function() {
             root: 'some/random/string'
         };
         var child = {
-            'extends': {
+            extends: {
                 $ref: 'a'
             }
         };
         var altChild = {
             root: 'some/other/path',
-            'extends': {
+            extends: {
                 $ref: 'a'
             }
         };
         var grandChild = {
-            'extends': {
+            extends: {
                 $ref: 'b'
             }
         };
         var altGrandChild = {
-            'extends': {
+            extends: {
                 $ref: 'b2'
             }
         };
@@ -352,24 +346,24 @@ describe('dx.core.data._prepareSchemas', function() {
             var schemaA = {
                 name: 'A',
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: 'string',
                         'default': 'one'
                     }
                 }
             };
 
-            newSchemas = dx.core.data._prepareSchemas({'a' : schemaA, 'b': schema});
+            newSchemas = dx.core.data._prepareSchemas({a: schemaA, b: schema});
         }
 
         it('overrides the properties from parent types with child types', function() {
             buildSchemas({
                 name: 'OverrideB',
-                'extends': {
-                    '$ref': 'a'
+                extends: {
+                    $ref: 'a'
                 },
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: 'number',
                         'default': 34.5
                     }
@@ -386,11 +380,11 @@ describe('dx.core.data._prepareSchemas', function() {
         it('preserves distinct parent and child types', function() {
             buildSchemas({
                 name: 'NonOverrideB',
-                'extends': {
-                    '$ref': 'a'
+                extends: {
+                    $ref: 'a'
                 },
                 properties: {
-                    'bProp' : {
+                    bProp: {
                         type: 'number',
                         'default': 'two'
                     }
@@ -414,11 +408,11 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var emptyC = {
                 name: 'EmptyC',
-                'extends': {
-                    '$ref': 'e1'
+                extends: {
+                    $ref: 'e1'
                 }
             };
-            var newSchemas = dx.core.data._prepareSchemas({'e1' : emptyP, 'e2': emptyC});
+            var newSchemas = dx.core.data._prepareSchemas({e1: emptyP, e2: emptyC});
 
             var schema = newSchemas.EmptyC;
 
@@ -429,7 +423,7 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
                 name: 'A',
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: 'array',
                         items: {
                             type: 'object',
@@ -440,7 +434,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'a' : schema});
+                dx.core.data._prepareSchemas({a: schema});
             }).toDxFail(new Error('Could not find a schema entry for NOTHERE'));
         });
 
@@ -448,7 +442,7 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
                 name: 'A',
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: 'array',
                         items: {
                             type: 'object',
@@ -458,7 +452,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
 
             expect(newSchemas.A.properties.aProp.items.$ref).toEqual('A');
         });
@@ -467,7 +461,7 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
                 name: 'A',
                 properties: {
-                    'aProp': {
+                    aProp: {
                         type: 'array',
                         items: {
                             type: 'object',
@@ -477,7 +471,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({ 'aKeyName': schema });
+            var newSchemas = dx.core.data._prepareSchemas({ aKeyName: schema });
 
             expect(newSchemas.A.properties.aProp.items.referenceTo).toEqual('A');
         });
@@ -486,7 +480,7 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
                 name: 'A',
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: 'string',
                         format: 'objectReference',
                         referenceTo: 'aKeyName'
@@ -494,7 +488,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
 
             expect(newSchemas.A.properties.aProp.referenceTo).toEqual('A');
         });
@@ -503,14 +497,14 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
                 name: 'A',
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: 'object',
                         $ref: 'aKeyName'
                     }
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
 
             expect(newSchemas.A.properties.aProp.$ref).toEqual('A');
         });
@@ -519,7 +513,7 @@ describe('dx.core.data._prepareSchemas', function() {
             var schema = {
                 name: 'A',
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: ['object', 'string', 'boolean', 'array', 'number'],
                         $ref: 'aKeyName',
                         format: 'objectReference',
@@ -532,7 +526,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
 
             expect(newSchemas.A.properties.aProp.$ref).toEqual('A');
             expect(newSchemas.A.properties.aProp.referenceTo).toEqual('A');
@@ -542,18 +536,18 @@ describe('dx.core.data._prepareSchemas', function() {
         it('adds parent properties to child type, even when child has nothing to start with', function() {
             var schema = {
                 properties: {
-                    'aProp' : {
+                    aProp: {
                         type: 'string'
                     }
                 }
             };
             var childSchema = {
-                'extends': {
+                extends: {
                     $ref: 'p'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'p' : schema, 'c': childSchema});
+            var newSchemas = dx.core.data._prepareSchemas({p: schema, c: childSchema});
 
             expect(newSchemas.c.properties.aProp.type).toEqual('string');
         });
@@ -568,7 +562,7 @@ describe('dx.core.data._prepareSchemas', function() {
                     sendPayload: {
                         payload: {
                             type: 'object',
-                            '$ref': 't'
+                            $ref: 't'
                         }
                     },
                     emptyPayload: {
@@ -578,7 +572,7 @@ describe('dx.core.data._prepareSchemas', function() {
                     validateAsPayload: {
                         payload: {
                             type: 'object',
-                            '$ref': 't'
+                            $ref: 't'
                         },
                         validateAs: 'create'
                     },
@@ -618,7 +612,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 name: 'AType'
             };
 
-            return dx.core.data._prepareSchemas({'payload' : schema1, 'params': schema2, 't': schema3});
+            return dx.core.data._prepareSchemas({payload: schema1, params: schema2, t: schema3});
         }
 
         it('throws an error if operations found on a non-root object', function() {
@@ -629,7 +623,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail(new Error('Found operations on a non-root schema.'));
         });
 
@@ -646,7 +640,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail(new Error('Found both a payload and a parameters for the operation opOne.'));
         });
 
@@ -662,7 +656,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 name: 'A'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
             expect(newSchemas.A.operations).toBeUndefined();
         });
 
@@ -681,15 +675,15 @@ describe('dx.core.data._prepareSchemas', function() {
         it('is created with a source-operation when source schema has one', function() {
             var newSchemas = makeOperations();
 
-            expect(newSchemas.Payload.operations.parentOperation.dxOperations.childOperation).
-                toBeDefined();
+            expect(newSchemas.Payload.operations.parentOperation.dxOperations.childOperation)
+                .toBeDefined();
         });
 
         it('is created without picking up other objects as child operations in the definition', function() {
             var newSchemas = makeOperations();
 
-            expect(newSchemas.Payload.operations.parentOperation.dxOperations.nonOperation).
-                toBeUndefined();
+            expect(newSchemas.Payload.operations.parentOperation.dxOperations.nonOperation)
+                .toBeUndefined();
         });
 
         it('is created as a parameters operation when there is one in the schema', function() {
@@ -720,7 +714,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schema2 = {
                 root: '/someOtherURL',
-                'extends': {
+                extends: {
                     $ref: 'p'
                 },
                 operations: {
@@ -730,7 +724,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'p' : schema, 'c': schema2});
+                dx.core.data._prepareSchemas({p: schema, c: schema2});
             }).toDxFail(new Error('Both p and c have operations. This isn\'t supported.'));
         });
 
@@ -740,14 +734,14 @@ describe('dx.core.data._prepareSchemas', function() {
                 operations: {
                     opOne: {
                         payload: {
-                            'type': 'object',
-                            '$ref': 'aKeyName'
+                            type: 'object',
+                            $ref: 'aKeyName'
                         }
                     }
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
 
             expect(newSchemas.aKeyName.operations.opOne.payload.$ref).toEqual('aKeyName');
         });
@@ -759,16 +753,16 @@ describe('dx.core.data._prepareSchemas', function() {
                     opOne: {
                         parameters: {
                             p1: {
-                                'type': 'string',
-                                'format': 'objectReference',
-                                'referenceTo': 'aKeyName'
+                                type: 'string',
+                                format: 'objectReference',
+                                referenceTo: 'aKeyName'
                             }
                         }
                     }
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
 
             expect(newSchemas.aKeyName.operations.opOne.parameters.p1.referenceTo).toEqual('aKeyName');
         });
@@ -781,16 +775,16 @@ describe('dx.core.data._prepareSchemas', function() {
                     withReturn: {
                         payload: {
                             type: 'object',
-                            '$ref': 't'
+                            $ref: 't'
                         },
                         'return': {
                             type: 'object',
-                            '$ref': 't'
+                            $ref: 't'
                         }
                     }
                 }
             };
-            var newSchemas = dx.core.data._prepareSchemas({'t' : schema1});
+            var newSchemas = dx.core.data._prepareSchemas({t : schema1});
 
             expect(newSchemas.Payload.operations.withReturn.return.$ref).toEqual('Payload');
         });
@@ -803,7 +797,7 @@ describe('dx.core.data._prepareSchemas', function() {
                     withTypelessReturn: {
                         payload: {
                             type: 'object',
-                            '$ref': 't'
+                            $ref: 't'
                         },
                         'return': {
                             type: 'object'
@@ -811,7 +805,7 @@ describe('dx.core.data._prepareSchemas', function() {
                     }
                 }
             };
-            var newSchemas = dx.core.data._prepareSchemas({'t' : schema1});
+            var newSchemas = dx.core.data._prepareSchemas({t : schema1});
 
             expect(newSchemas.Payload.operations.withTypelessReturn.return.$ref).toEqual(undefined);
         });
@@ -824,19 +818,19 @@ describe('dx.core.data._prepareSchemas', function() {
                     withArrayReturn: {
                         payload: {
                             type: 'object',
-                            '$ref': 'payload'
+                            $ref: 'payload'
                         },
                         'return': {
                             type: 'array',
                             items: {
                                 type: 'object',
-                                '$ref': 'payload'
+                                $ref: 'payload'
                             }
                         }
                     }
                 }
             };
-            var newSchemas = dx.core.data._prepareSchemas({'payload' : schema1});
+            var newSchemas = dx.core.data._prepareSchemas({payload: schema1});
 
             expect(newSchemas.Payload.operations.withArrayReturn.return.items.$ref).toEqual('Payload');
         });
@@ -849,7 +843,7 @@ describe('dx.core.data._prepareSchemas', function() {
                     withTypelessArrayReturn: {
                         payload: {
                             type: 'object',
-                            '$ref': 'payload'
+                            $ref: 'payload'
                         },
                         'return': {
                             type: 'array',
@@ -860,7 +854,7 @@ describe('dx.core.data._prepareSchemas', function() {
                     }
                 }
             };
-            var newSchemas = dx.core.data._prepareSchemas({'payload' : schema1});
+            var newSchemas = dx.core.data._prepareSchemas({payload: schema1});
 
             expect(newSchemas.Payload.operations.withTypelessArrayReturn.return.items.$ref).toEqual(undefined);
         });
@@ -874,12 +868,12 @@ describe('dx.core.data._prepareSchemas', function() {
                 }
             };
             var child = {
-                'extends': {
+                extends: {
                     $ref: 'p'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'p' : schema1, 'c': child});
+            var newSchemas = dx.core.data._prepareSchemas({p: schema1, c: child});
 
             expect(newSchemas.p.operations.one).toBeDefined();
             expect(newSchemas.c.operations.one).toBeDefined();
@@ -899,7 +893,7 @@ describe('dx.core.data._prepareSchemas', function() {
                     sendPayload: {
                         payload: {
                             type: 'object',
-                            '$ref': 'params'
+                            $ref: 'params'
                         }
                     }
                 }
@@ -910,14 +904,14 @@ describe('dx.core.data._prepareSchemas', function() {
                 rootOperations: {
                     sendParameters: {
                         parameters: {
-                            'param1': {
+                            param1: {
                                 type: 'string'
                             }
                         }
                     }
                 }
             };
-            return dx.core.data._prepareSchemas({'payload' : schema1, 'params': schema2});
+            return dx.core.data._prepareSchemas({payload: schema1, params: schema2});
         }
 
         it('throws an error if rootOperations found on a non-root object', function() {
@@ -931,7 +925,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail();
         });
 
@@ -962,7 +956,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail();
         });
 
@@ -972,7 +966,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 name: 'A'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
             expect(newSchemas.A.create).toBeUndefined();
         });
 
@@ -984,12 +978,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schema2 = {
                 name: 'B',
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': schema2});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: schema2});
             expect(newSchemas.B.create).not.toBeDefined();
         });
     });
@@ -1003,7 +997,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail();
         });
 
@@ -1013,7 +1007,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 name: 'A'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
             expect(newSchemas.A.update).toBeUndefined();
         });
 
@@ -1025,12 +1019,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schema2 = {
                 name: 'B',
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': schema2});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: schema2});
             expect(newSchemas.B.update).toBeDefined();
         });
 
@@ -1047,12 +1041,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schema2 = {
                 name: 'B',
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': schema2});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: schema2});
             expect(newSchemas.B.update.payload.$ref).toEqual('A');
         });
     });
@@ -1066,7 +1060,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail();
         });
 
@@ -1076,7 +1070,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 name: 'A'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
             expect(newSchemas.A.delete).toBeUndefined();
         });
 
@@ -1088,12 +1082,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schema2 = {
                 name: 'B',
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': schema2});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: schema2});
             expect(newSchemas.B.delete).toBeDefined();
         });
     });
@@ -1107,7 +1101,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail();
         });
 
@@ -1117,7 +1111,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 name: 'A'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
             expect(newSchemas.A.read).toBeUndefined();
         });
 
@@ -1129,12 +1123,12 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schema2 = {
                 name: 'B',
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': schema2});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: schema2});
             expect(newSchemas.B.read).toBeDefined();
         });
     });
@@ -1148,7 +1142,7 @@ describe('dx.core.data._prepareSchemas', function() {
             };
 
             expect(function() {
-                dx.core.data._prepareSchemas({'aKeyName' : schema});
+                dx.core.data._prepareSchemas({aKeyName: schema});
             }).toDxFail();
         });
 
@@ -1158,7 +1152,7 @@ describe('dx.core.data._prepareSchemas', function() {
                 name: 'A'
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'aKeyName' : schema});
+            var newSchemas = dx.core.data._prepareSchemas({aKeyName: schema});
             expect(newSchemas.A.list).toBeUndefined();
         });
 
@@ -1170,126 +1164,74 @@ describe('dx.core.data._prepareSchemas', function() {
             };
             var schema2 = {
                 name: 'B',
-                'extends': {
+                extends: {
                     $ref: 'a'
                 }
             };
 
-            var newSchemas = dx.core.data._prepareSchemas({'a' : schema, 'b': schema2});
+            var newSchemas = dx.core.data._prepareSchemas({a: schema, b: schema2});
             expect(newSchemas.B.list).not.toBeDefined();
         });
-    });
 
-    describe('queryParamAnnotations', function() {
-        var schema = {
-            root: '/myRoot',
-            name: 'A',
-            properties: {
-                chain: { format: 'objectReference', referenceTo: 'b', type: 'string' },
-                bParam: { type: 'integer' }
-            },
-            list: {
-                parameters: {
-                    aParam: { type: 'string' },
-                    bParam: { type: 'integer' }
-                }
-            }
-        };
-        var nextSchema = {
-            root: '/nextRoot',
-            name: 'Next',
-            properties: {
-                of: { format: 'objectReference', referenceTo: 'c', type: 'string' }
-            }
-        };
-        var finalSchema = {
-            root: '/finalRoot',
-            name: 'Final',
-            properties: {
-                things: { type: 'string' }
-            }
-        };
-        var newSchemas;
-
-        beforeEach(function() {
-            var annotations = {
-                A: {
-                    aParam: {
-                        mapsTo: '$chain.$of.things',
-                        inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT,
-                        fake: true
-                    }
-                }
-            };
-
-            newSchemas = dx.core.data._prepareSchemas({ 'a' : schema, 'b': nextSchema, 'c': finalSchema }, annotations);
-        });
-
-        it('copies the annotations onto the query parameters in the schema', function() {
-            dx.test.assert(newSchemas.A.list.parameters.aParam.type).toBe('string');
-
-            expect(newSchemas.A.list.parameters.aParam.mapsTo).toBe('$chain.$of.things');
-            expect(newSchemas.A.list.parameters.aParam.fake).toBe(true);
-            expect(newSchemas.A.list.parameters.aParam.inequalityType).toBe(dx.core.constants.INEQUALITY_TYPES.STRICT);
-        });
-
-        it('adds "mapsTo" if not provided which defaults to the name of the query parameter', function() {
-            dx.test.assert(newSchemas.A.list.parameters.bParam.type).toBe('integer');
-
-            expect(newSchemas.A.list.parameters.bParam.mapsTo).toBe('bParam');
-        });
-
-        it('does not add default "mapsTo" if the there is no matching property in the schema', function() {
-            var altSchema = {
+        it('annotates the list operation with filterMode of none when there are no query parameters', function() {
+            var schema = {
                 root: '/myRoot',
                 name: 'A',
-                properties: {},
+                list: {}
+            };
+
+            var newSchemas = dx.core.data._prepareSchemas({a: schema});
+
+            expect(newSchemas.A.list.dxFilterMode).toEqual(dx.core.constants.LIST_TYPES.NONE);
+        });
+
+        it('annotates the list operation with filterMode of custom when a query parameter has no mapsTo', function() {
+            var schema = {
+                root: '/myRoot',
+                name: 'A',
                 list: {
                     parameters: {
-                        aParam: { type: 'string' },
-                        bParam: { type: 'integer' }
+                        noMapsTo: {
+                            type: 'string'
+                        }
                     }
                 }
             };
-            var annotations = {};
-            newSchemas = dx.core.data._prepareSchemas({ 'a' : altSchema }, annotations);
 
-            expect(newSchemas.A.list.parameters.aParam.mapsTo).toBeUndefined();
+            var newSchemas = dx.core.data._prepareSchemas({a: schema});
+
+            expect(newSchemas.A.list.dxFilterMode).toEqual(dx.core.constants.LIST_TYPES.CUSTOM);
         });
 
-        describe('validation', function() {
-            it('fails if a reference in a "mapsTo" chain is not prefixed with a "$"', function() {
-                var annotations = {
-                    A: {
-                        aParam: {
-                            mapsTo: 'chain.of.things',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT,
-                            fake: true
+        it('annotates the list operation with filterMode of uber when all query parameters have mapsTo', function() {
+            var schema = {
+                root: '/myRoot',
+                name: 'A',
+                properties: {
+                    one: {
+                        type: 'string'
+                    },
+                    two: {
+                        type: 'string'
+                    }
+                },
+                list: {
+                    parameters: {
+                        first: {
+                            type: 'string',
+                            mapsTo: 'one'
+                        },
+                        second: {
+                            type: 'string',
+                            mapsTo: 'two'
                         }
                     }
-                };
+                }
+            };
 
-                expect(function() {
-                    newSchemas = dx.core.data._prepareSchemas({ 'a' : schema, 'b': nextSchema, 'c': finalSchema },
-                        annotations);
-                }).toDxFail('Can only chain object references (evaluating "chain" in "chain.of.things").');
-            });
+            var newSchemas = dx.core.data._prepareSchemas({a: schema});
 
-            it('fails if a property in the "mapsTo" chain cannot be resolved', function() {
-                var annotations = {
-                    A: {
-                        aParam: {
-                            mapsTo: '$chain.$of.notthings',
-                            inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
-                        }
-                    }
-                };
-
-                expect(function() {
-                    newSchemas = dx.core.data._prepareSchemas({ 'a' : schema, 'b': nextSchema, 'c': finalSchema },
-                        annotations);
-                }).toDxFail('Property "notthings" not found for type Final');
-            });
+            expect(newSchemas.A.list.dxFilterMode).toEqual(dx.core.constants.LIST_TYPES.UBER);
         });
     });
 
@@ -1309,7 +1251,7 @@ describe('dx.core.data._prepareEnums', function() {
                 properties: {
                     propertyName: {
                         type: 'string',
-                        'enum': ['value1', 'value2', 'value3']
+                        enum: ['value1', 'value2', 'value3']
                     }
                 }
             }
@@ -1333,7 +1275,7 @@ describe('dx.core.data._prepareEnums', function() {
                 properties: {
                     propertyName: {
                         type: 'integer',
-                        'enum': [1, 2, 3]
+                        enum: [1, 2, 3]
                     }
                 }
             }
@@ -1343,9 +1285,9 @@ describe('dx.core.data._prepareEnums', function() {
         expect(enums).toEqual({
             TypeName: {
                 propertyName: {
-                    '1': 1,
-                    '2': 2,
-                    '3': 3
+                    1: 1,
+                    2: 2,
+                    3: 3
                 }
             }
         });
@@ -1357,7 +1299,7 @@ describe('dx.core.data._prepareEnums', function() {
                 properties: {
                     propertyName: {
                         type: 'number',
-                        'enum': [0.1, 2.34, 3.96]
+                        enum: [0.1, 2.34, 3.96]
                     }
                 }
             }
@@ -1367,9 +1309,9 @@ describe('dx.core.data._prepareEnums', function() {
         expect(enums).toEqual({
             TypeName: {
                 propertyName: {
-                    '0.1': 0.1,
-                    '2.34': 2.34,
-                    '3.96': 3.96
+                    0.1: 0.1,
+                    2.34: 2.34,
+                    3.96: 3.96
                 }
             }
         });
@@ -1383,7 +1325,7 @@ describe('dx.core.data._prepareEnums', function() {
                         type: 'array',
                         items: {
                             type: 'string',
-                            'enum': ['value1', 'value2', 'value3']
+                            enum: ['value1', 'value2', 'value3']
                         }
                     }
                 }
@@ -1410,7 +1352,7 @@ describe('dx.core.data._prepareEnums', function() {
                     parameters: {
                         parameterName: {
                             type: 'string',
-                            'enum': ['value1', 'value2', 'value3']
+                            enum: ['value1', 'value2', 'value3']
                         }
                     }
                 }
@@ -1438,7 +1380,7 @@ describe('dx.core.data._prepareEnums', function() {
                         parameters: {
                             parameterName: {
                                 type: 'string',
-                                'enum': ['value1', 'value2', 'value3']
+                                enum: ['value1', 'value2', 'value3']
                             }
                         }
                     }
@@ -1467,7 +1409,7 @@ describe('dx.core.data._prepareEnums', function() {
                         parameters: {
                             parameterName: {
                                 type: 'string',
-                                'enum': ['value1', 'value2', 'value3']
+                                enum: ['value1', 'value2', 'value3']
                             }
                         }
                     }

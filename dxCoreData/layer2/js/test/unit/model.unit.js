@@ -1,4 +1,18 @@
 /*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
  * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
@@ -1772,8 +1786,8 @@ describe('dx.core.data.generateModelConstructors', function() {
 
             expect(errorSpy).toHaveBeenCalled();
             expect(errorSpy.mostRecentCall.args[0].get('error').get('details')).toEqual('Communication Error');
-            expect(errorSpy.mostRecentCall.args[0].get('error').get('commandOutput')).
-                toEqual('HTTP Error: 404\nStatus text: OOPS\nResponse text: <html><body>Bogus, man</body></html>');
+            expect(errorSpy.mostRecentCall.args[0].get('error').get('commandOutput'))
+                .toEqual('HTTP Error: 404\nStatus text: OOPS\nResponse text: <html><body>Bogus, man</body></html>');
         });
 
         it('triggers a badReference event if an 404 error occurs', function() {

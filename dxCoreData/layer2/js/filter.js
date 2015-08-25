@@ -95,10 +95,8 @@ dx.core.data._initFilters = function(context) {
             if (model.get(attrName).getTime() < qParamVal.getTime()) {
                 return EXCLUDE;
             }
-        } else { // toDate or endDate
-            if (model.get(attrName).getTime() > qParamVal.getTime()) {
-                return EXCLUDE;
-            }
+        } else if (model.get(attrName).getTime() > qParamVal.getTime()) { // toDate or endDate
+            return EXCLUDE;
         }
 
         if (qpSchema.inequalityType === dx.core.constants.INEQUALITY_TYPES.STRICT &&
@@ -151,12 +149,7 @@ dx.core.data._initFilters = function(context) {
                     }
                 } else {
                     // recursive case - continue following path segments.
-                    var currPart = pathSegs.shift();
-
-                    if (currPart.charAt(0) !== '$') {
-                        dx.fail('Can only chain object references: ' + currPart + '.');
-                    }
-
+                    var currPart = '$' + pathSegs.shift();
                     var newModel = currModel.get(currPart);
                     followNextSeg(newModel);
                 }
@@ -209,12 +202,6 @@ dx.core.data._initFilters = function(context) {
             resultHandler(INCLUDE);
         }
 
-        // Find all of the query params that we don't know how to deal with
-        var excludeParams = _.filter(_.keys(listParams), function(paramName) {
-            return listParams[paramName].excludeFromFilter;
-        });
-
-        qParams = _.omit(qParams, excludeParams);
         qParams = _.omit(qParams, skipParams);
 
         /*
