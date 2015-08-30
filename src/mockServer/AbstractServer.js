@@ -144,7 +144,7 @@ function PseudoXhr(result) {
     });
 }
 
-// dxCoreData calls this under error circumstances to check the data type of the return
+// dxData calls this under error circumstances to check the data type of the return
 PseudoXhr.prototype.getResponseHeader = function getResponseHeader(header) {
     var self = this;
 

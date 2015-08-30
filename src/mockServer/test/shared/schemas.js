@@ -24,7 +24,7 @@
 dx.namespace('dx.test');
 
 /*
- * Core dxCoreData schemas.  This is a subset of the Delphix Schemas, with certain dependencies removed so that we can
+ * Core dxData schemas.  This is a subset of the Delphix Schemas, with certain dependencies removed so that we can
  * use this subset without dragging in hundreds of other types.
  */
 dx.test.CORE_SCHEMAS = {

@@ -7,12 +7,12 @@ dxData is a system for communicating data between a client and a server.  It inv
 the client and the server code is always in lockstep agreement, preventing code from inadvertently diverging, and helping to support the previous
 two principles.
 
-In this repository is a JavaScript library (dxCoreData) which provides the client side of this interaction pattern, and a base set of schemas (definitions of common data types).
+In this repository is a JavaScript library (dxData) which provides the client side of this interaction pattern, and a base set of schemas (definitions of common data types).
 Both are general enough that you can build your own types and operations on top of them and reap the other benefits the dxData system provides.
 
 All of the principles involved here are language and implementation neutral, and it is fairly easy to build new clients (and servers) to embody them.
 To this end, there is also a demo application included as part of this repository which has simple server written in Python that demonstrates the ideas
-involved here, and uses dxCoreData on the client side.  A client developer can see that with no special effort on their part, they can get reactive data
+involved here, and uses dxData on the client side.  A client developer can see that with no special effort on their part, they can get reactive data
 showing up in their application.
 
 ## Layout of the directory
@@ -32,10 +32,10 @@ showing up in their application.
 2. Install [Python 2.7.x](https://www.python.org/downloads/)
 3. Run `npm install` in the demo directory
 4. Run grunt in the demo directory
-  * This will build some files and then start up a web server
+  * This will build some files
   * Grunt is installed locally in the demo directory. So you can run it with `node node_modules/grunt-cli/bin/grunt`. You may want to install it globally (npm install -g grunt-cli) so you can run it more easily.
   * For Windows users, see [Does Grunt work on Windows](http://gruntjs.com/frequently-asked-questions) (short answer: yes, but you may want to avoid cygwin).
-5. Run the server with `python python/server.py` in the demo directory
+5. Run the server with `grunt server` in the demo directory
 6. Visit http://localhost:8888 from one (or, preferably, multiple) browsers
 
 ## Using the demo

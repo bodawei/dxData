@@ -22,14 +22,47 @@
 
 module.exports = function(grunt) {
     grunt.initConfig({
+        pkg: grunt.file.readJSON('package.json'),
         karma: {
             unit: {
-                configFile: 'dxCoreData/test/karmaConfig.js'
+                configFile: 'testSetup/karmaConfig.js'
+            }
+        },
+        browserify: {
+            options: {
+                browserifyOptions: {
+                    debug: true
+                }
+            },
+            'dist-lib': {
+                files: {
+                    'dist/dxData.js': ['src/dxBasics.js', 'src/layer*/js/*.js']
+                }
+            },
+            'dist-mockServer': {
+                files: {
+                    'dist/dxDataMockServer.js': ['src/mockServer/*.js']
+                }
+            }
+        },
+        extract_sourcemap: {
+            options: { 'removeSourcesContent': true },
+            'dist-lib': {
+                files: {
+                    'dist': ['dist/dxData.js']
+                }
+            },
+            'dist-mockServer': {
+                files: {
+                    'dist/': ['dist/dxDataMockServer.js']
+                }
             }
         }
     });
 
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-extract-sourcemap');
 
-    grunt.registerTask('default', ['karma']);
+    grunt.registerTask('default', ['karma', 'browserify:dist-lib', 'extract_sourcemap:dist-lib', 'browserify:dist-mockServer', 'extract_sourcemap:dist-mockServer']);
 }

@@ -44,12 +44,20 @@ module.exports = function(grunt) {
         },
         
         /*
-         * Copy the dxCoreData files from the main distribution into this demo directory
+         * Copy the dxData distributions from the main distribution into this demo directory
          */
         copy: {
-            main: {
-                src: '../dxCoreData/**/*',
-                dest: 'gen/workaroundDoubleDot/'
+            'dist-lib': {
+                expand: true,
+                cwd: '../dist/',
+                src: '*',
+                dest: 'gen/',
+            },
+            'debug': {
+                expand: true,
+                cwd: '../',
+                src: 'src/**',
+                dest: 'gen/',
             }
         },
         
@@ -82,6 +90,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
     
-    grunt.registerTask('default', ['clean', 'concat', 'shell:pythonSchemas', 'copy']);
+    grunt.registerTask('default', ['clean', 'concat', 'shell:pythonSchemas', 'copy:dist-lib', 'copy:debug']);
     grunt.registerTask('server', ['shell:runWebServer']);
 }

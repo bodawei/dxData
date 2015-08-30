@@ -27,15 +27,15 @@ files = [
     'node_modules/jquery/dist/jquery.js',
     'node_modules/underscore/underscore.js',
     'node_modules/backbone/backbone.js',
-    'dxCoreData/test/jasmineSetup.js',
-    'dxCoreData/dxBasics.js',
-    'dxCoreData/layer1/**/*.js',
-    'dxCoreData/layer2/**/*.js',
-    'dxCoreData/layer3/**/*.js',
-    'dxCoreData/test/delphixSchema.js',
-    'dxCoreData/test/bootstrap-dxcoredata.js',
-    'dxCoreData/mockServer/**/*.js',
-    'dxCoreData/test/bootstrap-mock.js',
+    'testSetup/jasmineSetup.js',
+    'src/dxBasics.js',
+    'src/layer1/**/*.js',
+    'src/layer2/**/*.js',
+    'src/layer3/**/*.js',
+    'testSetup/delphixSchema.js',
+    'testSetup/bootstrap-dxcoredata.js',
+    'src/mockServer/**/*.js',
+    'testSetup/bootstrap-mock.js',
 ];
 
 preprocessors = {};
@@ -57,11 +57,11 @@ module.exports = function(config) {
         preprocessors: preprocessors,
         reporters: ['progress', 'junit'], // test results reporter to use. possible values: 'dots', 'progress', 'junit'
         junitReporter: {
-            outputFile: basePath + '/out/' + testType + 'TestResults.xml'
+            outputFile: basePath + '/build/' + testType + 'TestResults.xml'
         },
         coverageReporter: {
             type : 'html',
-            dir : basePath + '/out/' + testType + 'TestCoverage/'
+            dir : basePath + '/build/' + testType + 'TestCoverage/'
         },
         port: 9876,                 // web server port
         colors: true,               // enable / disable colors in the output (reporters and logs)

@@ -21,7 +21,7 @@
 'use strict';
 
 /*
- * Misc "common code" needed by the dxCoreData code
+ * Misc "common code" needed by the dxData code
  */
 (function() {
 
