@@ -16,11 +16,9 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, _ */
+/*global _ */
 
 'use strict';
-
-dx.namespace('dx.test._filters');
 
 /*
  * Defines a set of filter helper functions for delphix schema root types to be used by the Mock Server.
@@ -41,7 +39,6 @@ dx.namespace('dx.test._filters');
  *
  * Note: These filters should be kept in sync with level2-filters.
  */
-(function() {
 
 var DATE_PROPS = ['fromDate', 'startDate', 'toDate', 'endDate'];
 
@@ -251,12 +248,10 @@ function maybeAddPagingToFilter(type, filterFunc, context) {
     };
 }
 
-_.extend(dx.test._filters, {
+module.exports = _filters, {
     _uberFilter: uberFilter,
     makeUberFilter: makeUberFilter,
     missingObject: missingObject,
     checkProps: checkProps,
     maybeAddPagingToFilter: maybeAddPagingToFilter
-});
-
-})();
+};

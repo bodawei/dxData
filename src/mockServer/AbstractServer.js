@@ -16,11 +16,11 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, _ */
+/*global $, _ */
 
 'use strict';
 
-dx.namespace('dx.test');
+var ServerCore = require('./ServerCore.js');
 
 /*
  * This is an abstract supertype which provides common behavior for starting and stopping a mock server as well as
@@ -35,7 +35,6 @@ dx.namespace('dx.test');
  *
  * This provides a set of routines for subtypes to use to process and ultimately deliver results to the callers.
  */
-(function() {
 
 var JSON_MIME_TYPE = 'application/json';
 var TEXT_MIME_TYPE = 'text/plain';
@@ -370,7 +369,7 @@ function AbstractServer(schemas) {
         dx.fail('Must pass a map of schemas when constructing a server.');
     }
 
-    var server = new dx.test.ServerCore(schemas);
+    var server = new ServerCore(schemas);
 
     _.extend(server, {
         _pendingLongpolls: [],
@@ -390,6 +389,4 @@ function AbstractServer(schemas) {
     return server;
 }
 
-dx.test.AbstractServer = AbstractServer;
-
-})();
+module.exports = AbstractServer;

@@ -16,11 +16,9 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, _ */
+/*global _ */
 
 'use strict';
-
-dx.namespace('dx.test');
 
 /*
  * ServerCore provides support for all the data management required of a Delphix Schema-based server (storing objects,
@@ -137,7 +135,6 @@ dx.namespace('dx.test');
  * url isn't supported by the server, then the return value is equivalent to new Result(server.UNKNOWN_URL_STATUS,
  * undefined);
  */
-(function() {
 
 var OBJECT_OPERATION_REGX = new RegExp('(^.*)/([^/]+)/([^/]+)(\\?[^/]+)?$');   // anything/objref/operation?params
 var OBJECT_READ_UPDATE_DELETE_REGEX = new RegExp('(^.*)/([^/]+)$');       // anything/something
@@ -1107,6 +1104,4 @@ function ServerCore(schemas) {
     });
 }
 
-dx.test.ServerCore = ServerCore;
-
-})();
+module.exports = ServerCore;

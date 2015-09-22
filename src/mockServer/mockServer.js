@@ -16,11 +16,11 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, _ */
+/*global $, _ */
 
 'use strict';
 
-dx.namespace('dx.test');
+var AbstractServer = require('./AbstractServer.js');
 
 /*
  * Defines a MockServer which responds to $.ajax calls, and then stores results until a caller/test calls respond().
@@ -29,7 +29,7 @@ dx.namespace('dx.test');
  * An example use is:
  *
  *    it('does something wonderful', function() {
- *        var mockServer = new dx.test.MockServer(MY_SCHEMAS);
+ *        var mockServer = new MockServer(MY_SCHEMAS);
  *        mockServer.start();
  *
  *        var promise = dx.core.data.getServerModelPromise('CONTAINER-1', 'Container');
@@ -62,7 +62,6 @@ dx.namespace('dx.test');
  * there are items in the stash, the responseFilter will be called with the response object set to undefined.  This
  * allows you to have the opportunity to work with the stash despite the absence of pending responses.
  */
-(function() {
 
 /*
  * Response is the "public interface" to results that is given to respond() callers that pass in a filter function.
@@ -284,7 +283,7 @@ function MockServer(schemas) {
         dx.fail('Must pass a map of schemas when constructing a server.');
     }
 
-    var server = new dx.test.AbstractServer(schemas);
+    var server = new AbstractServer(schemas);
     var serverReset = server.reset;
 
     _.extend(server, {
@@ -305,5 +304,4 @@ function MockServer(schemas) {
     return server;
 }
 
-dx.test.MockServer = MockServer;
-})();
+module.exports = MockServer;

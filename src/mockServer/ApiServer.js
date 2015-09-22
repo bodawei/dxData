@@ -16,11 +16,11 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, _ */
+/*global dk, $, _ */
 
 'use strict';
 
-dx.namespace('dx.test');
+var AbstractServer = require('./AbstractServer.js');
 
 /*
  * ApiServer is a server is meant to be run in an interactive session within a browser. For example, you may want to
@@ -32,12 +32,11 @@ dx.namespace('dx.test');
  * This also will deliver results from the server core asynchronously.
  *
  * To use ApiServer, simply do the following:
- *    var server = new dx.test.ApiServer(schemas);
+ *    var server = new ApiServer(schemas);
  *    server.start();
  *
  * It is best if this is done before anything else has started interacting with the network.
  */
-(function() {
 
 /*
  * If the MockServer can't figure out what to do with this call, hand it off to the real server.
@@ -65,7 +64,7 @@ function ApiServer(schemas) {
         dx.fail('Must call ApiServer() with new.');
     }
 
-    var server = new dx.test.AbstractServer(schemas);
+    var server = new AbstractServer(schemas);
     server._handleUnknownUrl = _.partial(handleUnknownUrl, server);
     server._handleResult = _.partial(handleResult, server);
 
@@ -81,6 +80,4 @@ function ApiServer(schemas) {
     return server;
 }
 
-dx.test.ApiServer = ApiServer;
-
-})();
+module.exports = ApiServer;

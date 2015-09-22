@@ -43,6 +43,11 @@ module.exports = function(grunt) {
                 files: {
                     'dist/dxDataMockServer.js': ['src/mockServer/*.js']
                 }
+            },
+            'dist-types': {
+                files: {
+                    'dist/dxDataTypes.js': ['src/modules/dxData.js']
+                }
             }
         },
         extract_sourcemap: {
@@ -56,6 +61,11 @@ module.exports = function(grunt) {
                 files: {
                     'dist/': ['dist/dxDataMockServer.js']
                 }
+            },
+            'dist-types': {
+                files: {
+                    'dist/': ['dist/dxDataTypes.js']
+                }
             }
         }
     });
@@ -64,5 +74,13 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-extract-sourcemap');
 
-    grunt.registerTask('default', ['karma', 'browserify:dist-lib', 'extract_sourcemap:dist-lib', 'browserify:dist-mockServer', 'extract_sourcemap:dist-mockServer']);
+    grunt.registerTask('default', [
+        'browserify:dist-lib',
+        'extract_sourcemap:dist-lib',
+        'browserify:dist-mockServer',
+        'extract_sourcemap:dist-mockServer',
+        'browserify:dist-types',
+        'extract_sourcemap:dist-types',
+        'karma'
+    ]);
 }
