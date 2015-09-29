@@ -33,7 +33,7 @@ files = [
     'src/layer2/**/*.js',
     'src/layer3/**/*.js',
     'testSetup/delphixSchema.js',
-    'testSetup/bootstrap-dxcoredata.js',
+    'testSetup/bootstrap-dxdata.js',
     'src/mockServer/**/*.js',
     'testSetup/bootstrap-mock.js',
 ];
@@ -41,7 +41,7 @@ files = [
 preprocessors = {
     'src/mockServer/**/*.js': [ 'browserify' ],
     'src/layer*/**/*.js': ['browserify'],
-    'testSetup/bootstrap-dxcoredata.js': ['browserify'],
+    'testSetup/bootstrap-dxdata.js': ['browserify'],
     'testSetup/bootstrap-mock.js': [ 'browserify' ],
 };
 

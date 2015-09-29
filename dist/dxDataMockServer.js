@@ -1790,6 +1790,7 @@ function checkProps(qParamNamesToCheck, qParams, object, objectSchema, parsedSch
  * uberFilter.
  */
 function uberFilter(collection, qParams, collectionType, parsedSchemas) {
+    parsedSchemas = parsedSchemas || dx.core.data.parsedSchemas;
     var objectSchema = parsedSchemas[collectionType];
 
     return _.filter(collection, function(object) {
