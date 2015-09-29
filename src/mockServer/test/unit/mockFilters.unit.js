@@ -21,11 +21,16 @@
 
 'use strict';
 
-describe('dx.test.mockServer collection filters', function() {
+var schemaStuff = require('../../../layer1/schema.js');
+var _filters = require('../../mockFilters.js');
+var MockServer = require('../../MockServer.js');
+var dxData = require('../../../modules/dxData.js');
+
+ddescribe('dx.test.mockServer collection filters', function() {
 
     describe('auto generating filters', function() {
         var collection,
-            uberFilter = dx.test._filters._uberFilter;
+            uberFilter = _filters._uberFilter;
 
         describe('simple properties', function() {
 
@@ -53,7 +58,7 @@ describe('dx.test.mockServer collection filters', function() {
                         sameProp: 'val'
                     }];
 
-                    schemas = dx.core.data._prepareSchemas({s: schema});
+                    schemas = schemaStuff.prepareSchemas({s: schema});
                 });
 
                 it('fails if no mapsTo property is defined', function() {
@@ -113,7 +118,7 @@ describe('dx.test.mockServer collection filters', function() {
                         aProp: 'val'
                     }];
 
-                    schemas = dx.core.data._prepareSchemas({s: schema});
+                    schemas = schemaStuff.prepareSchemas({s: schema});
                 });
 
                 it('includes an object when the values match', function() {
@@ -186,7 +191,7 @@ describe('dx.test.mockServer collection filters', function() {
 
                     collection = [ mockTestType ];
 
-                    schemas = dx.core.data._prepareSchemas({s: schema, a: anotherType, f: finalType});
+                    schemas = schemaStuff.prepareSchemas({s: schema, a: anotherType, f: finalType});
                 });
 
                 it('fails if an object reference in the chain can\'t be resolved', function() {
@@ -286,12 +291,11 @@ describe('dx.test.mockServer collection filters', function() {
                     });
                 }
                 
-                client = {};
-                dx.core.data.setupDataSystem(testSchemas, client);
+                client = new dxData.DataSystem(testSchemas);
                 client._filters.Fault = client._filters._uberFilter;
 
-                server = new dx.test.MockServer(testSchemas);
-                server._filters.Fault = dx.test._filters.maybeAddPagingToFilter('Fault', dx.test._filters._uberFilter, client);
+                server = new MockServer(testSchemas);
+                server._filters.Fault = _filters.maybeAddPagingToFilter('Fault', _filters._uberFilter, client);
                 server.start();
                 
                 server.createObjects({
@@ -467,7 +471,7 @@ describe('dx.test.mockServer collection filters', function() {
             });
 
             it('throws an error when no "mapsTo" property is found', function() {
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
                 delete schemas.TestType.list.parameters.fromDate.mapsTo;
 
                 var qParams = {
@@ -480,7 +484,7 @@ describe('dx.test.mockServer collection filters', function() {
             });
 
             it('throws an error when no "inequalityType" property is found', function() {
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
                 delete schemas.TestType.list.parameters.fromDate.inequalityType;
 
                 var qParams = {
@@ -496,7 +500,7 @@ describe('dx.test.mockServer collection filters', function() {
                 var qParams = {
                     fromDate: dateObj
                 };
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -508,7 +512,7 @@ describe('dx.test.mockServer collection filters', function() {
                     toDate: dateObj
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -522,7 +526,7 @@ describe('dx.test.mockServer collection filters', function() {
                     fromDate: dateObj
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -535,7 +539,7 @@ describe('dx.test.mockServer collection filters', function() {
                     toDate: dateObj
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -610,7 +614,7 @@ describe('dx.test.mockServer collection filters', function() {
                     toDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema, a: anotherType, f: finalType});
+                var schemas = schemaStuff.prepareSchemas({s: schema, a: anotherType, f: finalType});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -623,7 +627,7 @@ describe('dx.test.mockServer collection filters', function() {
                     endDate: dateObj
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -635,7 +639,7 @@ describe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() - 1)
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -647,7 +651,7 @@ describe('dx.test.mockServer collection filters', function() {
                     toDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -660,7 +664,7 @@ describe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() - 1)
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -672,7 +676,7 @@ describe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -684,7 +688,7 @@ describe('dx.test.mockServer collection filters', function() {
                     toDate: new Date(dateObj.getTime() - 1)
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -697,7 +701,7 @@ describe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 
@@ -711,7 +715,7 @@ describe('dx.test.mockServer collection filters', function() {
                     fromDate: dateObj
                 };
 
-                var schemas = dx.core.data._prepareSchemas({s: schema});
+                var schemas = schemaStuff.prepareSchemas({s: schema});
 
                 var result = uberFilter(collection, qParams, 'TestType', schemas);
 

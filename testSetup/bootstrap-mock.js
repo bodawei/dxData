@@ -49,9 +49,8 @@ if (!Function.prototype.bind) {
         return fBound;
     };
 }
-
-
-dx.test.mockServer = new dx.test.MockServer(dx.test.CORE_SCHEMAS);
+var MockServer = require('../src/modules/dxData.js').MockServer;
+dx.test.mockServer = new MockServer(dx.test.CORE_SCHEMAS);
 dx.test.mockServer._filters = dx.test._filters;
 dx.test.mockServer.start();
 dx.test.assert = expect;

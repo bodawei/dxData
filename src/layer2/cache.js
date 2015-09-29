@@ -20,10 +20,6 @@
 
 'use strict';
 
-dx.namespace('dx.core.data');
-
-(function() {
-
 function dumpEventListners(eventLadenObject) {
     var functionNameRegEx = /.*function *([^ \(]*) *\(/;
     _.each(eventLadenObject._events, function(listenerArray, eventName) {
@@ -463,7 +459,7 @@ function ModelStore(context) {
  * where private (to the data system) caching routines reside. The intent here is to make sure that if needed multiple
  * data systems can co-exist.
  */
-dx.core.data._initCache = function(context) {
+function initCache(context) {
     /*
      * Return a singleton of the specified type. If it doesn't already exist, a new model is created, cached, and
      * returned.  If 'update' is true, then this will fetch new data for the model.
@@ -798,4 +794,4 @@ dx.core.data._initCache = function(context) {
     };
 };
 
-})();
+module.exports = initCache;

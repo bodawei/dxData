@@ -20,8 +20,6 @@
 
 'use strict';
 
-dx.namespace('dx.core.data');
-
 /*
  * Defines general purpose filter routines. These can be used to build type-specific filters.
  *
@@ -36,9 +34,8 @@ dx.namespace('dx.core.data');
  * The potentially asynchronous call to resultHandler is necessary since some query parameters will require retrieval
  * of models to make their determination.
  */
-(function() {
 
-dx.core.data._initFilters = function(context) {
+function initFilters(context) {
     var EXCLUDE = 'EXCLUDE';
     var INCLUDE = 'INCLUDE';
     var UNKNOWN = 'UNKNOWN';
@@ -261,4 +258,4 @@ dx.core.data._initFilters = function(context) {
     });
 };
 
-})();
+module.exports = initFilters;

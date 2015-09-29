@@ -20,10 +20,6 @@
 
 'use strict';
 
-dx.namespace('dx.core.data');
-
-(function() {
-
 /*
  * This takes a set of schemas (modified by _prepareSchemas), and creates a set of Backbone Model constructor functions
  * (and, by implication, functionality upon the models). This also creates a set of 'root operation' functions.
@@ -144,7 +140,7 @@ dx.namespace('dx.core.data');
  *     context: The object to put the resulting constructors (_modelConstructors) on. If not specified, puts them on
  *              'this'.
  */
-dx.core.data._generateModelConstructors = function(schemas, context) {
+function generateModelConstructors(schemas, context) {
 
     // Note: 'context' is the only true 'global' within this closure. Please don't add others.
 
@@ -1895,4 +1891,4 @@ dx.core.data._generateModelConstructors = function(schemas, context) {
     }
 };
 
-})();
+module.exports = generateModelConstructors;

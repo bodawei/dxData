@@ -38,7 +38,12 @@ files = [
     'testSetup/bootstrap-mock.js',
 ];
 
-preprocessors = {};
+preprocessors = {
+    'src/mockServer/**/*.js': [ 'browserify' ],
+    'src/layer*/**/*.js': ['browserify'],
+    'testSetup/bootstrap-dxcoredata.js': ['browserify'],
+    'testSetup/bootstrap-mock.js': [ 'browserify' ],
+};
 
 // list of files to exclude
 exclude = [
@@ -51,7 +56,7 @@ exclude = [
 module.exports = function(config) {
     config.set({
         basePath : basePath,
-        frameworks: ['jasmine'],
+        frameworks: ['jasmine', 'browserify'],
         files: files,
         exclude: exclude,
         preprocessors: preprocessors,
@@ -74,6 +79,9 @@ module.exports = function(config) {
         browserDisconnectTolerance: 2,
         browserNoActivityTimeout: 10000,
         singleRun: true,             // if true, it capture browsers, run tests and exit
+        browserify: {
+            debug: true,
+        }
     });
 };
 

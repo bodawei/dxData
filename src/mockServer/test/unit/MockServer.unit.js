@@ -21,7 +21,9 @@
 
 'use strict';
 
-describe('MockServer', function() {
+var MockServer = require('../../MockServer.js');
+
+ddescribe('MockServer', function() {
     var jQueryAjax;
 
     beforeEach(function() {
@@ -39,18 +41,18 @@ describe('MockServer', function() {
 
         it('throw`s an error if not called with new', function() {
             expect(function() {
-                dx.test.MockServer(dx.test.CORE_SCHEMAS);
+                MockServer(dx.test.CORE_SCHEMAS);
             }).toDxFail('Must call MockServer() with new.');
         });
 
         it('throws an error if not called with schemas', function() {
             expect(function() {
-                new dx.test.MockServer();
+                new MockServer();
             }).toDxFail('Must pass a map of schemas when constructing a server.');
         });
 
         it('constructs something with the primary MockServer functions', function() {
-            var server = new dx.test.MockServer(dx.test.CORE_SCHEMAS);
+            var server = new MockServer(dx.test.CORE_SCHEMAS);
 
             expect(server.start).toBeDefined();
             expect(server.stop).toBeDefined();
@@ -66,7 +68,7 @@ describe('MockServer', function() {
         var errorSpy;
 
         beforeEach(function() {
-            server = new dx.test.MockServer(_.extend({
+            server = new MockServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -320,7 +322,7 @@ describe('MockServer', function() {
         var successSpy;
 
         beforeEach(function() {
-            server = new dx.test.MockServer(_.extend({
+            server = new MockServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -413,7 +415,7 @@ describe('MockServer', function() {
         var successSpy;
 
         beforeEach(function() {
-            server = new dx.test.MockServer(_.extend({
+            server = new MockServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -679,7 +681,7 @@ describe('MockServer', function() {
         var successSpy;
 
         beforeEach(function() {
-            server = new dx.test.MockServer(_.extend({
+            server = new MockServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -921,7 +923,7 @@ describe('MockServer', function() {
             debugMode = dx.core.debugMode;
             dx.core.debugMode = true;
 
-            server = new dx.test.MockServer(_.extend({
+            server = new MockServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -1002,7 +1004,7 @@ describe('MockServer', function() {
 
         beforeEach(function() {
             jasmine.Clock.useMock();
-            server = new dx.test.MockServer(_.extend({
+            server = new MockServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',

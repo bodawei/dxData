@@ -21,7 +21,9 @@
 
 'use strict';
 
-describe('AbstractServer', function() {
+var AbstractServer = require('../../AbstractServer.js');
+
+ddescribe('AbstractServer', function() {
     var jQueryAjax;
 
     beforeEach(function() {
@@ -39,19 +41,19 @@ describe('AbstractServer', function() {
 
         it('throw`s an error if not called with new', function() {
             expect(function() {
-                dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+                AbstractServer(dx.test.CORE_SCHEMAS);
             }).toDxFail('Must call AbstractServer() with new.');
         });
 
         it('throws an error if not called with schemas', function() {
             expect(function() {
-                new dx.test.AbstractServer();
+                new AbstractServer();
             }).toDxFail('Must pass a map of schemas when constructing a server.');
         });
 
         it('throws an error if schemas do not include a Notification type', function() {
             expect(function() {
-                new dx.test.AbstractServer({
+                new AbstractServer({
                     '/foo.json': {
                         name: 'SimpleType'
                     }
@@ -60,7 +62,7 @@ describe('AbstractServer', function() {
         });
 
         it('constructs something with the primary AbstractServer functions', function() {
-            var server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            var server = new AbstractServer(dx.test.CORE_SCHEMAS);
 
             expect(server.start).toBeDefined();
             expect(server.stop).toBeDefined();
@@ -73,7 +75,7 @@ describe('AbstractServer', function() {
         var server;
 
         beforeEach(function() {
-            server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            server = new AbstractServer(dx.test.CORE_SCHEMAS);
         });
 
         it('starting replaces the jQuery ajax function', function() {
@@ -94,8 +96,8 @@ describe('AbstractServer', function() {
         });
 
         it('can be called multiple times with the different servers', function() {
-            var server2 = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
-            var server3 = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            var server2 = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var server3 = new AbstractServer(dx.test.CORE_SCHEMAS);
             expect(function() {
                 server.start();
                 server2.start();
@@ -113,7 +115,7 @@ describe('AbstractServer', function() {
         var server;
 
         beforeEach(function() {
-            server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            server = new AbstractServer(dx.test.CORE_SCHEMAS);
         });
 
         it('restores the jquery ajax function', function() {
@@ -137,7 +139,7 @@ describe('AbstractServer', function() {
         });
 
         it('restores the previous $.ajax', function() {
-            var server2 = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            var server2 = new AbstractServer(dx.test.CORE_SCHEMAS);
 
             server.start();
             server2.start();
@@ -147,7 +149,7 @@ describe('AbstractServer', function() {
         });
 
         it('will throw an error if one tries to stop without starting', function() {
-            var newServer = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            var newServer = new AbstractServer(dx.test.CORE_SCHEMAS);
 
             expect(function() {
                 newServer.stop();
@@ -155,7 +157,7 @@ describe('AbstractServer', function() {
         });
 
         it('will throw an error if one tries to stop it out of sequence', function() {
-            var newServer = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            var newServer = new AbstractServer(dx.test.CORE_SCHEMAS);
             server.start();
             newServer.start();
 
@@ -172,7 +174,7 @@ describe('AbstractServer', function() {
         var server;
 
         beforeEach(function() {
-            server = new dx.test.AbstractServer(_.extend({
+            server = new AbstractServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -303,7 +305,7 @@ describe('AbstractServer', function() {
     describe('_handleResult()', function() {
 
         it('throws an error if called directly (it must be overridden)', function() {
-            var server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            var server = new AbstractServer(dx.test.CORE_SCHEMAS);
 
             expect(function() {
                 server._handleResult({});
@@ -315,7 +317,7 @@ describe('AbstractServer', function() {
     describe('_handleUnknownUrl()', function() {
 
         it('throws an error if called directly (it must be overridden)', function() {
-            var server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            var server = new AbstractServer(dx.test.CORE_SCHEMAS);
 
             expect(function() {
                 server._handleUnknownUrl({});
@@ -328,7 +330,7 @@ describe('AbstractServer', function() {
         var server;
 
         beforeEach(function() {
-            server = new dx.test.AbstractServer(_.extend({
+            server = new AbstractServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -411,7 +413,7 @@ describe('AbstractServer', function() {
         var result;
 
         beforeEach(function() {
-            server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
+            server = new AbstractServer(dx.test.CORE_SCHEMAS);
             result = jasmine.createSpyObj('result', ['success', 'error']);
             result.statusCode = 200;
         });
@@ -594,7 +596,7 @@ describe('AbstractServer', function() {
             debugMode = dx.core.debugMode;
             dx.core.debugMode = true;
 
-            server = new dx.test.AbstractServer(_.extend({
+            server = new AbstractServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',

@@ -21,7 +21,11 @@
 
 'use strict';
 
-describe('dx.core.data.generateModelConstructors - set', function() {
+var schemaStuff = require('../../../layer1/schema.js');
+var initCache = require('../../cache.js');
+var generateModelConstructors = require('../../model.js');
+
+ddescribe('generateModelConstructors - set', function() {
     var target;
 
     describe('set()', function() {
@@ -55,14 +59,14 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                     $ref: 'r'
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: schema,
                 s: simpleOther,
                 r: another,
                 c: anotherChild
             });
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            initCache(target);
+            generateModelConstructors(schemas, target);
             return target._newClientModel('t');
         }
 
@@ -763,15 +767,15 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 };
 
                 target = {};
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schemaStuff.prepareSchemas({
                     p: parent,
                     c: child,
                     g: grandChild,
                     other: o1,
                     other2: o2
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._generateModelConstructors(schemas, target);
+                initCache(target);
+                generateModelConstructors(schemas, target);
                 model = target._newServerModel('PType');
             });
 
@@ -916,12 +920,12 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 };
 
                 target = {};
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schemaStuff.prepareSchemas({
                     p: parent,
                     c: child
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._generateModelConstructors(schemas, target);
+                initCache(target);
+                generateModelConstructors(schemas, target);
                 model = target._newServerModel('PType');
                 expect(model.$anOp).toBeUndefined();
 
@@ -1014,15 +1018,15 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 };
 
                 target = {};
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schemaStuff.prepareSchemas({
                     typed: typedObject,
                     p: parent,
                     other: o1,
                     other2: o2,
                     other3: o3
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._generateModelConstructors(schemas, target);
+                initCache(target);
+                generateModelConstructors(schemas, target);
                 model = target._newServerModel('PType');
                 ajaxSpy = spyOn(jQuery, 'ajax');
             });
@@ -1418,14 +1422,14 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 };
 
                 target = {};
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schemaStuff.prepareSchemas({
                     c: containing,
                     cs: containingSub,
                     emb: embedded,
                     emb2: embeddedSub
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._generateModelConstructors(schemas, target);
+                initCache(target);
+                generateModelConstructors(schemas, target);
             });
 
             it('can change the type of a client model on set', function() {

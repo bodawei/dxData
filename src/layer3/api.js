@@ -20,9 +20,13 @@
 
 'use strict';
 
-dx.namespace('dx.core.data');
-
-(function() {
+var schema = require('../layer1/schema.js');
+var initCache = require('../layer2/cache.js');
+var initFilters = require('../layer2/filter.js');
+var generateModelConstructors = require('../layer2/model.js');
+var generateCollectionConstructors = require('../layer2/collection.js');
+var CreationListener = require('../layer2/creationListener.js');
+var setupNotificationSystem = require('./notification.js');
 
 /*
  * This defines the public API of the Delphix Data System. It relies heavily on the infrastructure built in the
@@ -50,7 +54,7 @@ dx.namespace('dx.core.data');
  *                                     screen. This is mainly useful if you have an operation error handler which,
  *                                     after examining the ErrorResult model, you still wish to show it to the user.
  */
-dx.core.data.setupDataSystem = function(schemas, context) {
+function DataSystem(schemas) {
     /*
      * Returns a new client model.
      *
@@ -95,7 +99,7 @@ dx.core.data.setupDataSystem = function(schemas, context) {
         _.extend(settings, {
             context: context
         });
-        var creationListener = new dx.core.data.CreationListener(settings);
+        var creationListener = new CreationListener(settings);
         context._modelSubscribersStore.add(creationListener);
         return creationListener;
     }
@@ -232,14 +236,15 @@ dx.core.data.setupDataSystem = function(schemas, context) {
     /*
      * Start the real work here. Initialize everything 'below' us.
      */
-    context = context || this;
-    var parsedSchemas = dx.core.data._prepareSchemas(schemas);
-    var enums = dx.core.data._prepareEnums(parsedSchemas);
-    dx.core.data._initCache(context);
-    dx.core.data._initFilters(context);
-    dx.core.data._generateModelConstructors(parsedSchemas, context);
-    dx.core.data._generateCollectionConstructors(parsedSchemas, context);
-    dx.core.data._setupNotificationSystem(context);
+    var context = this; // called by constructor
+    var parsedSchemas = schema.prepareSchemas(schemas);
+    var enums = schema.prepareEnums(parsedSchemas);
+    initCache(context);
+    initFilters(context);
+    generateModelConstructors(parsedSchemas, context);
+    generateCollectionConstructors(parsedSchemas, context);
+
+    setupNotificationSystem(context);
 
     _.extend(context, {
         parsedSchemas: parsedSchemas,
@@ -258,4 +263,4 @@ dx.core.data.setupDataSystem = function(schemas, context) {
     });
 };
 
-})();
+module.exports = DataSystem;

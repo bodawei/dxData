@@ -21,7 +21,13 @@
 
 'use strict';
 
-describe('dx.core.data._generateCollectionConstructors', function() {
+var schema = require('../../../layer1/schema.js');
+var initCache = require('../../cache.js');
+var generateModelConstructors = require('../../model.js');
+var generateCollectionConstructors = require('../../collection.js');
+var initFilters = require('../../filter.js');
+
+ddescribe('generateCollectionConstructors', function() {
     var SimpleModelConstructor = Backbone.Model.extend({});
     var target;
     var collection;
@@ -132,20 +138,20 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             }
         };
 
-        schemas = dx.core.data._prepareSchemas({u: unRooted, p: rooted, c: rootChild, n: noqp, wmp: wmp});
-        dx.core.data._initCache(target);
-        dx.core.data._initFilters(target);
+        schemas = schema.prepareSchemas({u: unRooted, p: rooted, c: rootChild, n: noqp, wmp: wmp});
+        initCache(target);
+        initFilters(target);
         target._filters.HasRoot = function(collection, model, handler) {
             handler(target._filters.INCLUDE);
         };
-        dx.core.data._generateModelConstructors(schemas, target);
-        dx.core.data._generateCollectionConstructors(schemas, target);
+        generateModelConstructors(schemas, target);
+        generateCollectionConstructors(schemas, target);
         collection = target._newServerCollection('HasRoot');
     });
 
     describe('constructors', function() {
         it('has one constructor for each schema with a list operation', function() {
-            dx.core.data._generateCollectionConstructors(schemas, target, target);
+            generateCollectionConstructors(schemas, target, target);
 
             expect(_.size(target._collectionConstructors)).toBe(3);
             expect(target._collectionConstructors.HasRoot).toBeDefined();
@@ -309,7 +315,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                     }
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schema.prepareSchemas({
                 p: listType,
                 n: noParams,
                 r: reqType,
@@ -318,8 +324,8 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema
             });
-            dx.core.data._initCache(target);
-            dx.core.data._initFilters(target);
+            initCache(target);
+            initFilters(target);
             target._filters.hasList = function(collection, model, handler) {
                 handler(dx.core.data._filters.INCLUDE);
             };
@@ -329,8 +335,8 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             target._filters.NoParams = function(collection, model, handler) {
                 handler(dx.core.data._filters.INCLUDE);
             };
-            dx.core.data._generateModelConstructors(schemas, target);
-            dx.core.data._generateCollectionConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
+            generateCollectionConstructors(schemas, target);
             collection = new target._newServerCollection('hasList');
         });
 
@@ -593,18 +599,18 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 }
 
             };
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schema.prepareSchemas({
                 l: listType,
                 p: parent,
                 c: otherChild
             });
-            dx.core.data._initCache(target);
-            dx.core.data._initFilters(target);
+            initCache(target);
+            initFilters(target);
             target._filters.ParentType = function(collection, model, handler) {
                 handler(dx.core.data._filters.INCLUDE);
             };
-            dx.core.data._generateModelConstructors(schemas, target);
-            dx.core.data._generateCollectionConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
+            generateCollectionConstructors(schemas, target);
             collection = new target._newServerCollection('ChildTypeWithList');
 
             spyOn(jQuery, 'ajax').andCallFake(function(options) {
@@ -646,16 +652,16 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                     }
                 };
 
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schema.prepareSchemas({
                     l: listType
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._initFilters(target);
+                initCache(target);
+                initFilters(target);
                 target._filters.NoRefProperty = function(collection, model, handler) {
                     handler(dx.core.data._filters.INCLUDE);
                 };
-                dx.core.data._generateModelConstructors(schemas, target);
-                dx.core.data._generateCollectionConstructors(schemas, target);
+                generateModelConstructors(schemas, target);
+                generateCollectionConstructors(schemas, target);
                 collection = new target._newServerCollection('NoRefProperty');
 
                 spyOn(jQuery, 'ajax').andCallFake(function(options) {
@@ -729,13 +735,13 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                         }
                     }
                 };
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schema.prepareSchemas({
                     l: bogusType
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._initFilters(target);
-                dx.core.data._generateModelConstructors(schemas, target);
-                dx.core.data._generateCollectionConstructors(schemas, target);
+                initCache(target);
+                initFilters(target);
+                generateModelConstructors(schemas, target);
+                generateCollectionConstructors(schemas, target);
                 collection = new target._newServerCollection('BogusType');
             });
 
@@ -785,16 +791,16 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                         }
                     }
                 };
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schema.prepareSchemas({
                     p: pagedType
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._initFilters(target);
+                initCache(target);
+                initFilters(target);
                 target._filters.PagedType = function() {
                     return target._filters.UNKNOWN;
                 };
-                dx.core.data._generateModelConstructors(schemas, target);
-                dx.core.data._generateCollectionConstructors(schemas, target);
+                generateModelConstructors(schemas, target);
+                generateCollectionConstructors(schemas, target);
                 collection = new target._newServerCollection('PagedType');
 
                 collection.$$list({ pageSize: 3 });
@@ -1348,16 +1354,16 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 }
             };
             var target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schema.prepareSchemas({
                 p: noRef
             });
-            dx.core.data._initCache(target);
-            dx.core.data._initFilters(target);
+            initCache(target);
+            initFilters(target);
             target._filters.NoRef = function(collection, model, handler) {
                 handler(dx.core.data._filters.INCLUDE);
             };
-            dx.core.data._generateModelConstructors(schemas, target);
-            dx.core.data._generateCollectionConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
+            generateCollectionConstructors(schemas, target);
             collection = new target._newServerCollection('NoRef');
             var ajaxSpy = spyOn(jQuery, 'ajax');
             ajaxSpy.andCallFake(function(options) {
@@ -1468,20 +1474,20 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schema.prepareSchemas({
                 p: listType,
                 o: dx.test.dataMocks.okResultSchema,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema
             });
-            dx.core.data._initCache(target);
-            dx.core.data._initFilters(target);
+            initCache(target);
+            initFilters(target);
             target._filters.hasList = function(collection, model, handler) {
                 handler(target._filters.INCLUDE);
             };
-            dx.core.data._generateModelConstructors(schemas, target);
-            dx.core.data._generateCollectionConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
+            generateCollectionConstructors(schemas, target);
             collection = new target._collectionConstructors.hasList();
         });
 

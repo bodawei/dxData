@@ -248,7 +248,7 @@ function maybeAddPagingToFilter(type, filterFunc, context) {
     };
 }
 
-module.exports = _filters, {
+module.exports = {
     _uberFilter: uberFilter,
     makeUberFilter: makeUberFilter,
     missingObject: missingObject,

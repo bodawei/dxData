@@ -20,10 +20,6 @@
 
 'use strict';
 
-dx.namespace('dx.core.data');
-
-(function() {
-
 /*
  * Do top-level processing of each schema. This involves:
  *  1) If the schema has no name, replace it with a name, based on the schemaKey, that can be used as a Javascript
@@ -570,9 +566,7 @@ function prepareEnums(schemas) {
     return enums;
 }
 
-_.extend(dx.core.data, {
-    _prepareSchemas: prepareSchemas,
-    _prepareEnums: prepareEnums
-});
-
-})();
+module.exports = {
+    prepareSchemas: prepareSchemas,
+    prepareEnums: prepareEnums
+};

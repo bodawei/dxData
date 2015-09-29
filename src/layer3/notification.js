@@ -20,8 +20,6 @@
 
 'use strict';
 
-dx.namespace('dx.core.data');
-
 /*
  * This notification system receives updates from the server about objects that have been created, deleted or updated.
  * This system, in turn, converts those notifications into calls to the underlying cache system so all models and
@@ -31,9 +29,7 @@ dx.namespace('dx.core.data');
  * To use the notification system, simply call the start() function at the start of your program. To stop receiving
  * notifications, call stop(). You can also call isStarted() to verify whether the notification system is turned on.
  */
-(function() {
-
-dx.core.data._setupNotificationSystem = function(context) {
+function setupNotificationSystem(context) {
 
     /*
      * We use long polling to fetch notifications. We want to make sure our timeout is less than the browser timeout,
@@ -203,4 +199,4 @@ dx.core.data._setupNotificationSystem = function(context) {
     });
 };
 
-})();
+module.exports = setupNotificationSystem;

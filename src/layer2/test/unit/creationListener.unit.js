@@ -21,19 +21,28 @@
 
 'use strict';
 
-describe('level2 creation listener', function() {
+var schema = require('../../../layer1/schema.js');
+var initCache = require('../../cache.js');
+var initFilters = require('../../filter.js');
+var generateModelConstructors = require('../../model.js');
+var generateCollectionConstructors = require('../../collection.js');
+var CreationListener = require('../../creationListener.js');
+
+ddescribe('level2 creation listener', function() {
     var context = {};
+
     beforeEach(function() {
         var schemaType = {
             root: '/someURL',
             name: 'Type',
             list: {}
         };
-        var schemas = dx.core.data._prepareSchemas({r: schemaType});
-        dx.core.data._initCache(context);
-        dx.core.data._initFilters(context);
-        dx.core.data._generateModelConstructors(schemas, context);
-        dx.core.data._generateCollectionConstructors(schemas, context);
+        context = {};
+        var schemas = schema.prepareSchemas({r: schemaType});
+        initCache(context);
+        initFilters(context);
+        generateModelConstructors(schemas, context);
+        generateCollectionConstructors(schemas, context);
     });
 
     it('invokes the callback on notifications', function() {
@@ -41,7 +50,7 @@ describe('level2 creation listener', function() {
             handler(context._filters.INCLUDE);
         };
         var models = [];
-        var creationListener = new dx.core.data.CreationListener({
+        var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function(model) {
                 models.push(model);
@@ -58,7 +67,7 @@ describe('level2 creation listener', function() {
 
     it('supports undefined queryParameters', function() {
         context._filters.Type = function() {};
-        var creationListener = new dx.core.data.CreationListener({
+        var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
             disposeCallback: function() {},
@@ -69,7 +78,7 @@ describe('level2 creation listener', function() {
 
     it('supports defined queryParameters', function() {
         context._filters.Type = function() {};
-        var creationListener = new dx.core.data.CreationListener({
+        var creationListener = new CreationListener({
             typeName: 'Type',
             queryParams: {
                 user: 'USER-2'
@@ -88,7 +97,7 @@ describe('level2 creation listener', function() {
             handler(context._filters.EXCLUDE);
         };
         var callbackSpy = jasmine.createSpy('callback');
-        var creationListener = new dx.core.data.CreationListener({
+        var creationListener = new CreationListener({
             typeName: 'Type',
             callback: callbackSpy,
             disposeCallback: function() {},
@@ -103,7 +112,7 @@ describe('level2 creation listener', function() {
         context._filters.Type = function(collection, model, handler) {
             handler(context._filters.UNKNOWN);
         };
-        var creationListener = new dx.core.data.CreationListener({
+        var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
             disposeCallback: function() {},
@@ -118,7 +127,7 @@ describe('level2 creation listener', function() {
         context._filters.Type = function(collection, model, handler) {
             handler('Bogus');
         };
-        var creationListener = new dx.core.data.CreationListener({
+        var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
             disposeCallback: function() {},
@@ -131,7 +140,7 @@ describe('level2 creation listener', function() {
 
     it('throws an error if called with a non-function as the callback parameter', function() {
         expect(function() {
-            new dx.core.data.CreationListener({
+            new CreationListener({
                 typeName: 'Type',
                 callback: 5,
                 context: context
@@ -141,7 +150,7 @@ describe('level2 creation listener', function() {
 
     it('marks self as no longer in use on disposal', function() {
         context._filters.Type = function() {};
-        var creationListener = new dx.core.data.CreationListener({
+        var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
             context: context

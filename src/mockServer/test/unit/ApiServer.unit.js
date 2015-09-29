@@ -21,7 +21,9 @@
 
 'use strict';
 
-describe('ApiServer', function() {
+var ApiServer = require('../../ApiServer.js');
+
+ddescribe('ApiServer', function() {
     var jQueryAjax;
 
     beforeEach(function() {
@@ -39,18 +41,18 @@ describe('ApiServer', function() {
 
         it('throws an error if not called with new', function() {
             expect(function() {
-                dx.test.ApiServer(dx.test.CORE_SCHEMAS);
+                ApiServer(dx.test.CORE_SCHEMAS);
             }).toDxFail('Must call ApiServer() with new.');
         });
 
         it('throws an error if not called with schemas', function() {
             expect(function() {
-                new dx.test.ApiServer();
+                new ApiServer();
             }).toDxFail('Must pass a map of schemas when constructing a server.');
         });
 
         it('constructs something with the start() and stop() functions', function() {
-            var server = new dx.test.ApiServer(dx.test.CORE_SCHEMAS);
+            var server = new ApiServer(dx.test.CORE_SCHEMAS);
 
             expect(server.start).toBeDefined();
             expect(server.stop).toBeDefined();
@@ -63,7 +65,7 @@ describe('ApiServer', function() {
         it('calls the mock server when the url is known', function() {
             jasmine.Clock.useMock();
             var successSpy = jasmine.createSpy('successSpy');
-            var server = new dx.test.ApiServer(_.extend({
+            var server = new ApiServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -95,7 +97,7 @@ describe('ApiServer', function() {
         it('calls the the real ajax function when the url is not known', function() {
             var mockAjax = jasmine.createSpy('mockAjax');
             $.ajax = mockAjax;
-            var server = new dx.test.ApiServer(dx.test.CORE_SCHEMAS);
+            var server = new ApiServer(dx.test.CORE_SCHEMAS);
             server.start();
 
             $.ajax({
@@ -115,7 +117,7 @@ describe('ApiServer', function() {
         var server;
 
         beforeEach(function() {
-            server = new dx.test.ApiServer(_.extend({
+            server = new ApiServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',
@@ -207,7 +209,7 @@ describe('ApiServer', function() {
         var successSpy;
 
         beforeEach(function() {
-            server = new dx.test.ApiServer(_.extend({
+            server = new ApiServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
                     name: 'Container',

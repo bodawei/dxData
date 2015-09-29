@@ -21,7 +21,9 @@
 
 'use strict';
 
-describe('dx.core.data', function() {
+var dxData = require('../../../modules/dxData.js');
+
+ddescribe('DataSystem instance', function() {
     var SimpleModel = Backbone.Model.extend({});
 
     describe('newClientModel()', function() {
@@ -32,7 +34,7 @@ describe('dx.core.data', function() {
                 name: 'AType'
             };
 
-            dx.core.data.setupDataSystem({t: type}, client);
+            client = new dxData.DataSystem({t: type});
         });
 
         it('throws error if passed no parameter', function() {
@@ -96,13 +98,13 @@ describe('dx.core.data', function() {
             }, dx.test.CORE_SCHEMAS);
 
             client = {};
-            dx.core.data.setupDataSystem(schemas, client);
+            client = new dxData.DataSystem(schemas);
             client._filters.AType = function(collection, model, handler) {
-                handler(dx.core.data._filters.INCLUDE);
+                handler(dxData._filters.INCLUDE);
             };
 
-            server = new dx.test.MockServer(schemas);
-            server._filters = _.clone(dx.test._filters);
+            server = new dxData.MockServer(schemas);
+            server._filters = _.clone(dxData._filters);
             server._filters.AType = server._filters._genericFilter;
             server.start();
         });
@@ -288,7 +290,7 @@ describe('dx.core.data', function() {
                 }
             };
 
-            dx.core.data.setupDataSystem({t: rootless, r: rooted, c: child}, target);
+            target = new dxData.DataSystem({t: rootless, r: rooted, c: child});
         });
 
         it('throws error if not passed parameters', function() {
@@ -365,14 +367,13 @@ describe('dx.core.data', function() {
                 }
             }, dx.test.CORE_SCHEMAS);
 
-            client = {};
-            dx.core.data.setupDataSystem(schemas, client);
+            client = new dxData.DataSystem(schemas);
             client._filters.Rooted = function(collection, model, handler) {
-                handler(dx.core.data._filters.INCLUDE);
+                handler(dxData._filters.INCLUDE);
             };
 
-            server = new dx.test.MockServer(schemas);
-            server._filters = _.clone(dx.test._filters);
+            server = new dxData.MockServer(schemas);
+            server._filters = _.clone(dxData._filters);
             server._filters.Rooted = server._filters._genericFilter;
             server.start();
         });
@@ -485,10 +486,9 @@ describe('dx.core.data', function() {
             }, dx.test.CORE_SCHEMAS);
 
             singleton = undefined;
-            client = {};
-            dx.core.data.setupDataSystem(schemas, client);
+            client = new dxData.DataSystem(schemas);
 
-            server = new dx.test.MockServer(schemas);
+            server = new dxData.MockServer(schemas);
             server.start();
         });
 
@@ -627,8 +627,7 @@ describe('dx.core.data', function() {
         var target;
 
         beforeEach(function() {
-            target = {};
-            dx.core.data.setupDataSystem({
+            target = new dxData.DataSystem({
                 o: dx.test.dataMocks.okResultSchema,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
@@ -701,10 +700,9 @@ describe('dx.core.data', function() {
                 }
             }, dx.test.CORE_SCHEMAS);
 
-            client = {};
-            dx.core.data.setupDataSystem(schemas, client);
+            client = new dxData.DataSystem(schemas);
 
-            server = new dx.test.MockServer(schemas);
+            server = new dxData.MockServer(schemas);
             server.start();
 
             successSpy = jasmine.createSpy('success');
@@ -863,14 +861,13 @@ describe('dx.core.data', function() {
 
         beforeEach(function() {
             spyOn(dx, 'warn');
-            client = {};
-            dx.core.data.setupDataSystem({
+            client = new dxData.DataSystem({
                 o: dx.test.dataMocks.okResultSchema,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema,
                 n: dx.test.dataMocks.notificationSchema
-            }, client);
+            });
         });
 
         it('reports a stringified version of the ErroResult to dx.warn', function() {
@@ -927,13 +924,12 @@ describe('dx.core.data', function() {
                 name: 'NoRoot'
             };
 
-            client = {};
-            dx.core.data.setupDataSystem({
+            client = new dxData.DataSystem({
                 g: grandparent,
                 p: parent,
                 c: child,
                 n: noRoot
-            }, client);
+            });
         });
 
        it('throws an error when called with no parameter', function() {
@@ -997,9 +993,9 @@ describe('dx.core.data', function() {
                 }
             }, dx.test.CORE_SCHEMAS);
 
-            dx.core.data.setupDataSystem(schemas, client);
+            client = new dxData.DataSystem(schemas);
 
-            server = new dx.test.MockServer(schemas);
+            server = new dxData.MockServer(schemas);
             server.start();
             server.createObjects([{ type: 'CousinType', reference: 'COUSIN-1'}]);
 

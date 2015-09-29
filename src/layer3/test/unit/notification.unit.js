@@ -21,7 +21,10 @@
 
 'use strict';
 
-describe('notification processor', function() {
+var dxData = require('../../../modules/dxData.js');
+var setupNotificationSystem = require('../../../layer3/notification.js');
+
+ddescribe('notification processor', function() {
     var server;
     var client;
 
@@ -69,13 +72,12 @@ describe('notification processor', function() {
                 }
             }
         }, dx.test.CORE_SCHEMAS);
-        server = new dx.test.MockServer(schemas);
-        server._filters = _.clone(dx.test._filters);
+        server = new dxData.MockServer(schemas);
+        server._filters = _.clone(dxData._filters);
         server._filters.Group = server._filters._uberFilter;
         server.start();
 
-        client = {};
-        dx.core.data.setupDataSystem(schemas, client);
+        client = new dxData.DataSystem(schemas);
         client._filters.Group = client._filters._uberFilter;
     });
 
@@ -84,10 +86,10 @@ describe('notification processor', function() {
         server.stop();
     });
 
-    describe('_setupNotificationSystem()', function() {
+    describe('setupNotificationSystem()', function() {
         it('establishes the notification system on a specified context', function() {
             var context = {};
-            dx.core.data._setupNotificationSystem(context);
+            setupNotificationSystem(context);
 
             expect(context.notification.start).toBeDefined();
         });

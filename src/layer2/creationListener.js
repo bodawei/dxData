@@ -20,10 +20,6 @@
 
 'use strict';
 
-dx.namespace('dx.core.data');
-
-(function() {
-
 /*
  * Creation listeners provide access to notification updates for API server objects creation in the form
  * of level2 models.
@@ -91,8 +87,4 @@ function isListableType(typeName, context) {
     return !!context._collectionConstructors[typeName];
 }
 
-_.extend(dx.core.data, {
-    CreationListener: CreationListener
-});
-
-})();
+module.exports = CreationListener;

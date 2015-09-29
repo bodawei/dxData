@@ -21,7 +21,9 @@
 
 'use strict';
 
-describe('ServerCore', function() {
+var ServerCore = require('../../ServerCore.js');
+
+ddescribe('ServerCore', function() {
     var server;
 
     var STANDARD_CONTAINER = {
@@ -32,7 +34,7 @@ describe('ServerCore', function() {
     };
 
     beforeEach(function() {
-        server = new dx.test.ServerCore(_.extend({
+        server = new ServerCore(_.extend({
             './system-info.json': {
                 root: '/api/systeminfo',
                 name: 'SystemInfo',
@@ -261,13 +263,13 @@ describe('ServerCore', function() {
 
         it('requires schemas when constructed', function() {
             expect(function() {
-                new dx.test.ServerCore();
+                new ServerCore();
             }).toDxFail('Must pass a map of schemas when constructing a ServerCore.');
         });
 
         it('must be called with new', function() {
             expect(function() {
-                dx.test.ServerCore();
+                ServerCore();
             }).toDxFail('Must call ServerCore() with new.');
         });
 

@@ -21,10 +21,9 @@
 
 'use strict';
 
-/*
- *
- */
-describe('ServerCore (handlers)', function() {
+var ServerCore = require('../../ServerCore.js');
+
+ddescribe('ServerCore (handlers)', function() {
     var server;
 
     var STANDARD_CONTAINER = {
@@ -35,7 +34,7 @@ describe('ServerCore (handlers)', function() {
     };
 
     beforeEach(function() {
-        server = new dx.test.ServerCore(_.extend({
+        server = new ServerCore(_.extend({
             './system-info.json': {
                 root: '/api/systeminfo',
                 name: 'SystemInfo',

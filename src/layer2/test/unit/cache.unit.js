@@ -21,7 +21,14 @@
 /*eslint-env jasmine */
 /*global dx, $, Backbone */
 
-describe('dx.core.data._cache', function() {
+var schema = require('../../../layer1/schema.js');
+var initCache = require('../../cache.js');
+var generateModelConstructors = require('../../model.js');
+var generateCollectionConstructors = require('../../collection.js');
+var initFilters = require('../../filter.js');
+var CreationListener = require('../../creationListener.js');
+
+ddescribe('cache', function() {
     var target;
     var SIMPLE_MODEL = {
         type: 'Simple',
@@ -53,7 +60,7 @@ describe('dx.core.data._cache', function() {
     }
 
     function makeCreationListener() {
-        return new dx.core.data.CreationListener({
+        return new CreationListener({
             typeName: 'Simple',
             callback: function() {},
             disposeCallback: function() {},
@@ -100,7 +107,7 @@ describe('dx.core.data._cache', function() {
             root: '/somewhereelse'
         };
 
-        var schemas = dx.core.data._prepareSchemas({
+        var schemas = schema.prepareSchemas({
             s: singleton,
             o: ordinary,
             n: nonCachable,
@@ -109,13 +116,13 @@ describe('dx.core.data._cache', function() {
             api: dx.test.dataMocks.apiErrorSchema,
             e: dx.test.dataMocks.errorResultSchema
         });
-        dx.core.data._initFilters(target);
-        dx.core.data._initCache(target);
+        initFilters(target);
+        initCache(target);
         target._filters.Simple = function(collection, model, handler) {
             handler(target._filters.INCLUDE);
         };
-        dx.core.data._generateModelConstructors(schemas, target);
-        dx.core.data._generateCollectionConstructors(schemas, target);
+        generateModelConstructors(schemas, target);
+        generateCollectionConstructors(schemas, target);
         ajaxSpy = spyOn($, 'ajax');
     });
 
@@ -399,7 +406,7 @@ describe('dx.core.data._cache', function() {
 
         it('will not notify the creation listener if the model changed', function() {
             var callbackSpy = jasmine.createSpy('callbackSpy');
-            var creationListener = new dx.core.data.CreationListener({
+            var creationListener = new CreationListener({
                 typeName: 'Simple',
                 context: target,
                 callback: callbackSpy
@@ -786,7 +793,7 @@ describe('dx.core.data._cache', function() {
             spyOn(dx, 'info').andCallFake(function(line) {
                 lines = lines + line + '\n';
             });
-            var creationListener = new dx.core.data.CreationListener({
+            var creationListener = new CreationListener({
                 typeName: 'Simple',
                 context: target,
                 callback: function() {},

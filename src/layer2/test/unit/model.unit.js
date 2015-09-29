@@ -21,7 +21,12 @@
 
 'use strict';
 
-describe('dx.core.data.generateModelConstructors', function() {
+var schemaStuff = require('../../../layer1/schema.js');
+var initCache = require('../../cache.js');
+var generateModelConstructors = require('../../model.js');
+var initFilters = require('../../filter.js');
+
+ddescribe('generateModelConstructors', function() {
     var target = {};
 
     var allTypes = {
@@ -116,8 +121,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                 name: 'aType'
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: type});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: type});
+            generateModelConstructors(schemas, target);
 
             expect(target._modelConstructors.aType).toBeDefined();
         });
@@ -134,8 +139,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: type});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: type});
+            generateModelConstructors(schemas, target);
         });
 
         it('is set to "reference"', function() {
@@ -187,8 +192,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: schema, s: schema2});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: schema, s: schema2});
+            generateModelConstructors(schemas, target);
         });
 
         it('can create a new server model', function() {
@@ -230,12 +235,12 @@ describe('dx.core.data.generateModelConstructors', function() {
         var model;
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: allTypes,
                 simpleEmbeddedType: simpleEmbeddedType,
                 referenceType: simpleReferenceType
             });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
 
             model = target._newClientModel('AllTypes');
         });
@@ -320,9 +325,9 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: schema});
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: schema});
+            initCache(target);
+            generateModelConstructors(schemas, target);
 
             model = target._newClientModel('TypeWithReference');
         });
@@ -399,9 +404,9 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: schema});
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: schema});
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('TypeWithReference');
             model.set('sibling', 'SIBLING-1');
 
@@ -440,9 +445,9 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: schema});
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: schema});
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('TypeWithReference');
             model.set('sibling', 'SIBLING-1');
 
@@ -463,13 +468,13 @@ describe('dx.core.data.generateModelConstructors', function() {
         var model;
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: allTypes,
                 simpleEmbeddedType: simpleEmbeddedType,
                 referenceType: simpleReferenceType
             });
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            initCache(target);
+            generateModelConstructors(schemas, target);
 
             model = target._newClientModel('AllTypes');
         });
@@ -550,8 +555,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: schema});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: schema});
+            generateModelConstructors(schemas, target);
 
             model = target._newClientModel('TypeWithReference');
         });
@@ -605,12 +610,12 @@ describe('dx.core.data.generateModelConstructors', function() {
         var model;
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: allTypes,
                 simpleEmbeddedType: simpleEmbeddedType,
                 referenceType: simpleReferenceType
             });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
 
             model = target._newClientModel('AllTypes');
         });
@@ -791,8 +796,8 @@ describe('dx.core.data.generateModelConstructors', function() {
         var model;
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({t: allTypes, simpleEmbeddedType: simpleEmbeddedType});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: allTypes, simpleEmbeddedType: simpleEmbeddedType});
+            generateModelConstructors(schemas, target);
 
             model = target._newClientModel('AllTypes');
         });
@@ -937,8 +942,8 @@ describe('dx.core.data.generateModelConstructors', function() {
 
         it('will do nothing harmful if called on a type with no properties', function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({t: {}});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: {}});
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
 
             model.clear();
@@ -953,12 +958,12 @@ describe('dx.core.data.generateModelConstructors', function() {
 
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: allTypes,
                 simpleEmbeddedType: simpleEmbeddedType,
                 referenceType: simpleReferenceType
             });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('AllTypes');
         });
 
@@ -1094,8 +1099,8 @@ describe('dx.core.data.generateModelConstructors', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({t: type});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: type});
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('TestType');
         });
 
@@ -1144,8 +1149,8 @@ describe('dx.core.data.generateModelConstructors', function() {
         var model;
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({t: allTypes, simpleEmbeddedType: simpleEmbeddedType});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({t: allTypes, simpleEmbeddedType: simpleEmbeddedType});
+            generateModelConstructors(schemas, target);
 
             model = target._newClientModel('AllTypes');
         });
@@ -1238,8 +1243,8 @@ describe('dx.core.data.generateModelConstructors', function() {
             var another = {
                 name: 'UnrelatedType'
             };
-            var schemas = dx.core.data._prepareSchemas({p: parent, c: child, r: another});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({p: parent, c: child, r: another});
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('ChildType');
         });
 
@@ -1282,8 +1287,8 @@ describe('dx.core.data.generateModelConstructors', function() {
             var parent = {
                 name: 'ParentType'
             };
-            var schemas = dx.core.data._prepareSchemas({p: parent});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({p: parent});
+            generateModelConstructors(schemas, target);
         });
 
         it('returns false if model is a client model', function() {
@@ -1303,11 +1308,11 @@ describe('dx.core.data.generateModelConstructors', function() {
 
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: allTypes,
                 simpleEmbeddedType: simpleEmbeddedType
             });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
         });
 
         it('will throw an error when called on a server model', function() {
@@ -1333,11 +1338,11 @@ describe('dx.core.data.generateModelConstructors', function() {
 
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: allTypes,
                 simpleEmbeddedType: simpleEmbeddedType
             });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
         });
 
         it('will throw an error when called on a server model', function() {
@@ -1363,11 +1368,11 @@ describe('dx.core.data.generateModelConstructors', function() {
 
         beforeEach(function() {
             target = {};
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 t: allTypes,
                 simpleEmbeddedType: simpleEmbeddedType
             });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
         });
 
         it('will throw an error when called on a server model', function() {
@@ -1411,15 +1416,15 @@ describe('dx.core.data.generateModelConstructors', function() {
                 name: 'NoRoot'
             };
 
-            var parsedSchemas = dx.core.data._prepareSchemas({
+            var parsedSchemas = schemaStuff.prepareSchemas({
                 g: grandparent,
                 p: parent,
                 c: child,
                 n: noRoot
             });
-            dx.core.data._initCache(target);
-            dx.core.data._initFilters(target);
-            dx.core.data._generateModelConstructors(parsedSchemas, target);
+            initCache(target);
+            initFilters(target);
+            generateModelConstructors(parsedSchemas, target);
         });
 
        it('throws an error when called with no parameter', function() {
@@ -1461,13 +1466,13 @@ describe('dx.core.data.generateModelConstructors', function() {
                 name: 'ParentType',
                 properties: { reference: { type: 'string' } }
             };
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 p: parent,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema
             });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('ParentType');
             model._dxIsReady = false;   // fake it so it looks enough like a server model
         });
@@ -1834,9 +1839,9 @@ describe('dx.core.data.generateModelConstructors', function() {
             var embedded = {
                 name: 'Embedded'
             };
-            var schemas = dx.core.data._prepareSchemas({p: type, e: embedded});
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({p: type, e: embedded});
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('AType');
             readySpy = jasmine.createSpy('readySpy');
             spyOn(jQuery, 'ajax').andCallFake(function(options) {
@@ -1978,15 +1983,15 @@ describe('dx.core.data.generateModelConstructors', function() {
                     }
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({
+            var schemas = schemaStuff.prepareSchemas({
                 p: type,
                 o: dx.test.dataMocks.okResultSchema,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 err: dx.test.dataMocks.errorResultSchema
             });
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('AType');
             errorSpy = jasmine.createSpy('errorSpy');
             spyOn(jQuery, 'ajax').andCallFake(function(options) {

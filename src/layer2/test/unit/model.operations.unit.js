@@ -21,7 +21,11 @@
 
 'use strict';
 
-describe('dx.core.data.generateModelConstructors - operations', function() {
+var schemaStuff = require('../../../layer1/schema.js');
+var initCache = require('../../cache.js');
+var generateModelConstructors = require('../../model.js');
+
+ddescribe('generateModelConstructors - operations', function() {
     var target;
 
     /*
@@ -51,14 +55,14 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     $ref: 't'
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({t: schema, c: childType,
+            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType,
                 o: dx.test.dataMocks.okResultSchema,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema
             });
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
         });
 
@@ -371,7 +375,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 if (returnType) {
                     schema.operations.noPayload.return = returnType;
                 }
-                var schemas = dx.core.data._prepareSchemas({
+                var schemas = schemaStuff.prepareSchemas({
                     t: schema,
                     ok: okResult,
                     d1: dummy1,
@@ -379,8 +383,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     smt: serverModelType,
                     woa: withObjectsAndArrays
                 });
-                dx.core.data._initCache(target);
-                dx.core.data._generateModelConstructors(schemas, target);
+                initCache(target);
+                generateModelConstructors(schemas, target);
                 model = target._newClientModel('t');
             }
 
@@ -758,13 +762,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({t: schema, c: childType, C: container,
+            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, C: container,
                 a: yetAnotherType, o: otherType, k: okResult,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema });
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
         });
 
@@ -905,8 +909,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             var yetAnotherType = {
                 name: 'YetAnotherType'
             };
-            var schemas = dx.core.data._prepareSchemas({o: opt, y: yetAnotherType});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({o: opt, y: yetAnotherType});
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('WithOptional');
             model.set('reference', 'REF-1');
 
@@ -947,8 +951,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({o: opt, y: yetAnotherType});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({o: opt, y: yetAnotherType});
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('WithOptional');
             model.set('reference', 'REF-1');
 
@@ -992,8 +996,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             };
 
-            var schemas = dx.core.data._prepareSchemas({o: opt, y: yetAnotherType});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({o: opt, y: yetAnotherType});
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('WithOptional');
             model.set('reference', 'REF-1');
             var payload = target._newClientModel('YetAnotherType');
@@ -1101,12 +1105,12 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({t: schema, c: childType, o: okResult,
+            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, o: okResult,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema });
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
         });
 
@@ -1282,12 +1286,12 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({t: schema, c: childType, o: okResult,
+            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, o: okResult,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema });
-            dx.core.data._initCache(target);
-            dx.core.data._generateModelConstructors(schemas, target);
+            initCache(target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
         });
 
@@ -1565,8 +1569,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({one: schema1, two: schema2, s: testType});
-            dx.core.data._generateModelConstructors(schemas, target);
+            var schemas = schemaStuff.prepareSchemas({one: schema1, two: schema2, s: testType});
+            generateModelConstructors(schemas, target);
             return target._newClientModel('TestType');
         }
 
@@ -1855,11 +1859,11 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 }
             };
-            var schemas = dx.core.data._prepareSchemas({t: schema, c: childType, ok: okResult,
+            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, ok: okResult,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
         });
 
@@ -1975,11 +1979,11 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             };
             target = {};
             ajaxSpy = spyOn(jQuery, 'ajax');
-            var schemas = dx.core.data._prepareSchemas({t: schema, c: childType, ok: okResult,
+            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, ok: okResult,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,
                 e: dx.test.dataMocks.errorResultSchema });
-            dx.core.data._generateModelConstructors(schemas, target);
+            generateModelConstructors(schemas, target);
         });
 
         it('is created when specified in the schema', function() {
@@ -2014,8 +2018,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 };
                 target = {};
-                var schemas = dx.core.data._prepareSchemas({ t: schema });
-                dx.core.data._generateModelConstructors(schemas, target);
+                var schemas = schemaStuff.prepareSchemas({ t: schema });
+                generateModelConstructors(schemas, target);
             });
 
             it('is not put on rootOps if it is defined on a singleton', function() {
