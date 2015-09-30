@@ -26,7 +26,7 @@ var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
 var initFilters = require('../../filter.js');
 
-ddescribe('generateModelConstructors', function() {
+describe('generateModelConstructors', function() {
     var target = {};
 
     var allTypes = {

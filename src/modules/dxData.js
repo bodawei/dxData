@@ -20,11 +20,16 @@
 
 'use strict';
 
+console.log('HI THERE');
+
+console.log(module)
+
 module.exports = {
-    _filters: require('../mockServer/mockFilters.js'),
     ApiServer: require('../mockServer/ApiServer.js'),
     ServerCore: require('../mockServer/ServerCore.js'),
     AbstractServer: require('../mockServer/AbstractServer.js'),
     MockServer: require('../mockServer/MockServer.js'),
     DataSystem: require('../layer3/api.js')
 };
+
+console.log(module)

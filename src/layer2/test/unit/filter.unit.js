@@ -21,11 +21,12 @@
 
 'use strict';
 
-var schema = require('../../../layer1/schema.js');
+var schemaSupport = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var initFilters = require('../../filter.js');
 var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
+var CreationListener = require('../../creationListener.js');
 
 describe('filters', function() {
     var collection;
@@ -91,7 +92,7 @@ describe('filters', function() {
                 name: 'Rootless'
             };
             target = {};
-            var schemas = schema.prepareSchemas({s0: s0, s1: s1, s2: s2, s3: s3});
+            var schemas = schemaSupport.prepareSchemas({s0: s0, s1: s1, s2: s2, s3: s3});
 
             initDxData(schemas, target);
         });
@@ -180,7 +181,7 @@ describe('filters', function() {
                     };
 
                     target = {};
-                    schemas = schema.prepareSchemas({s: schema});
+                    schemas = schemaSupport.prepareSchemas({s: schema});
                 });
 
                 it('fails if no mapsTo property is defined', function() {
@@ -251,7 +252,7 @@ describe('filters', function() {
                     };
 
                     target = {};
-                    schemas = schema.prepareSchemas({s: schema});
+                    schemas = schemaSupport.prepareSchemas({s: schema});
                 });
 
                 it('includes an object when the values match', function() {
@@ -324,7 +325,7 @@ describe('filters', function() {
                     };
 
                     target = {};
-                    schemas = schema.prepareSchemas({
+                    schemas = schemaSupport.prepareSchemas({
                         s: schema,
                         a: anotherType,
                         f: finalType,
@@ -424,11 +425,11 @@ describe('filters', function() {
 
             it('ignores paging for notification listeners', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({ s: schema });
+                var schemas = schemaSupport.prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
 
-                var notificationListener = new dx.core.data.CreationListener({
+                var notificationListener = new CreationListener({
                     typeName: 'WithPaging',
                     callback: function() {},
                     queryParams: {},
@@ -460,7 +461,7 @@ describe('filters', function() {
                 };
 
                 var target = {};
-                var schemas = schema.prepareSchemas({ s: schema });
+                var schemas = schemaSupport.prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithoutPaging');
@@ -478,7 +479,7 @@ describe('filters', function() {
 
             it('does not return UNKNOWN if pageSize is 0', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({ s: schema });
+                var schemas = schemaSupport.prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -496,7 +497,7 @@ describe('filters', function() {
 
             it('returns UNKNOWN if pageSize is not 0', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({ s: schema });
+                var schemas = schemaSupport.prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -513,7 +514,7 @@ describe('filters', function() {
 
             it('returns UNKNOWN if pageSize is not defined', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({ s: schema });
+                var schemas = schemaSupport.prepareSchemas({ s: schema });
 
                 initDxData(schemas, target);
                 var collection = target._newServerCollection('WithPaging');
@@ -572,7 +573,7 @@ describe('filters', function() {
 
             it('throws an error when no "mapsTo" property is found', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
                 delete schemas.TestType.list.parameters.fromDate.mapsTo;
 
                 initDxData(schemas, target);
@@ -590,7 +591,7 @@ describe('filters', function() {
 
             it('throws an error when no "inequalityType" property is found', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
                 delete schemas.TestType.list.parameters.fromDate.inequalityType;
 
                 initDxData(schemas, target);
@@ -608,7 +609,7 @@ describe('filters', function() {
 
             it('includes an object when it occurs on the fromDate and inequalityType is NON-STRICT', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -627,7 +628,7 @@ describe('filters', function() {
 
             it('includes an object when it occurs on the toDate and inequalityType is NON-STRICT', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -647,7 +648,7 @@ describe('filters', function() {
             it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
                 schema.list.parameters.fromDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -667,7 +668,7 @@ describe('filters', function() {
             it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
                 schema.list.parameters.toDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -738,7 +739,7 @@ describe('filters', function() {
                 });
 
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema, a: anotherType, f: finalType});
+                var schemas = schemaSupport.prepareSchemas({s: schema, a: anotherType, f: finalType});
 
                 initDxData(schemas, target);
 
@@ -758,7 +759,7 @@ describe('filters', function() {
 
             it('handles alternate names "startDate" and "endDate"', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -778,7 +779,7 @@ describe('filters', function() {
 
             it('includes an object when it occurs between the from and toDate', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -798,7 +799,7 @@ describe('filters', function() {
 
             it('excludes an object when it occurs before the fromDate', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -817,7 +818,7 @@ describe('filters', function() {
 
             it('excludes an object when it occurs after the toDate', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -836,7 +837,7 @@ describe('filters', function() {
 
             it('excludes an object when the from and the to date are reversed', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 
@@ -856,7 +857,7 @@ describe('filters', function() {
 
             it('excludes an object with no date', function() {
                 var target = {};
-                var schemas = schema.prepareSchemas({s: schema});
+                var schemas = schemaSupport.prepareSchemas({s: schema});
 
                 initDxData(schemas, target);
 

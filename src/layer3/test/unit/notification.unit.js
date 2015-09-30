@@ -24,7 +24,7 @@
 var dxData = require('../../../modules/dxData.js');
 var setupNotificationSystem = require('../../../layer3/notification.js');
 
-ddescribe('notification processor', function() {
+describe('notification processor', function() {
     var server;
     var client;
 
@@ -72,9 +72,11 @@ ddescribe('notification processor', function() {
                 }
             }
         }, dx.test.CORE_SCHEMAS);
-        server = new dxData.MockServer(schemas);
-        server._filters = _.clone(dxData._filters);
-        server._filters.Group = server._filters._uberFilter;
+        server = new dxData.MockServer(schemas, {
+            Group: function(collection, qParams, support) {
+                return support.utils.uberFilter(collection, qParams, support);
+            }
+        });
         server.start();
 
         client = new dxData.DataSystem(schemas);

@@ -23,7 +23,7 @@
 
 var AbstractServer = require('../../AbstractServer.js');
 
-ddescribe('AbstractServer', function() {
+describe('AbstractServer', function() {
     var jQueryAjax;
 
     beforeEach(function() {

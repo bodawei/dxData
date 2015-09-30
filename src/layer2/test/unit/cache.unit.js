@@ -28,7 +28,7 @@ var generateCollectionConstructors = require('../../collection.js');
 var initFilters = require('../../filter.js');
 var CreationListener = require('../../creationListener.js');
 
-ddescribe('cache', function() {
+describe('cache', function() {
     var target;
     var SIMPLE_MODEL = {
         type: 'Simple',

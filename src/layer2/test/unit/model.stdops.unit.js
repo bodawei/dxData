@@ -25,7 +25,7 @@ var schemaStuff = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
 
-ddescribe('generateModelConstructors - operations', function() {
+describe('generateModelConstructors - operations', function() {
     var target;
 
     describe('standard operations', function() {

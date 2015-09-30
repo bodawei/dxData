@@ -23,7 +23,7 @@
 
 var dxData = require('../../../modules/dxData.js');
 
-ddescribe('DataSystem instance', function() {
+describe('DataSystem instance', function() {
     var SimpleModel = Backbone.Model.extend({});
 
     describe('newClientModel()', function() {
@@ -103,9 +103,12 @@ ddescribe('DataSystem instance', function() {
                 handler(dxData._filters.INCLUDE);
             };
 
-            server = new dxData.MockServer(schemas);
-            server._filters = _.clone(dxData._filters);
-            server._filters.AType = server._filters._genericFilter;
+            server = new dxData.MockServer(schemas, {
+                AType: function(collection, qParams, support) {
+                    return support.utils.uberFilter(collection, qParams, support);
+                }
+            });
+
             server.start();
         });
 
@@ -372,9 +375,11 @@ ddescribe('DataSystem instance', function() {
                 handler(dxData._filters.INCLUDE);
             };
 
-            server = new dxData.MockServer(schemas);
-            server._filters = _.clone(dxData._filters);
-            server._filters.Rooted = server._filters._genericFilter;
+            server = new dxData.MockServer(schemas, {
+                Rooted: function(collection, qParams, support) {
+                    return support.utils.uberFilter(collection, qParams, support);
+                }
+            });
             server.start();
         });
 

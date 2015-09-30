@@ -59,13 +59,13 @@ function handleResult(server, result) {
     }, 0);
 }
 
-function ApiServer(schemas) {
+function ApiServer(schemas, filters) {
     var self = this;
     if (!(self instanceof ApiServer)) {
         dx.fail('Must call ApiServer() with new.');
     }
 
-    var server = new AbstractServer(schemas);
+    var server = new AbstractServer(schemas, filters);
     server._handleUnknownUrl = _.partial(handleUnknownUrl, server);
     server._handleResult = _.partial(handleResult, server);
 

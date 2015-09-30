@@ -23,7 +23,7 @@
 
 var ServerCore = require('../../ServerCore.js');
 
-ddescribe('ServerCore (handlers)', function() {
+describe('ServerCore (handlers)', function() {
     var server;
 
     var STANDARD_CONTAINER = {

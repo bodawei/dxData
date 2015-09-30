@@ -275,7 +275,7 @@ function forceRespond(server) {
     server._ajaxCallId = 0;
 }
 
-function MockServer(schemas) {
+function MockServer(schemas, filters) {
     var self = this;
     if (!(self instanceof MockServer)) {
         dx.fail('Must call MockServer() with new.');
@@ -284,7 +284,7 @@ function MockServer(schemas) {
         dx.fail('Must pass a map of schemas when constructing a server.');
     }
 
-    var server = new AbstractServer(schemas);
+    var server = new AbstractServer(schemas, filters);
     var serverReset = server.reset;
 
     _.extend(server, {

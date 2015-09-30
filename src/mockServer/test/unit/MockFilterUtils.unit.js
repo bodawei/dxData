@@ -22,43 +22,51 @@
 'use strict';
 
 var schemaStuff = require('../../../layer1/schema.js');
-var _filters = require('../../mockFilters.js');
+var MockFilterUtils = require('../../MockFilterUtils.js');
 var MockServer = require('../../MockServer.js');
 var dxData = require('../../../modules/dxData.js');
 
-ddescribe('dx.test.mockServer collection filters', function() {
+describe('MockFilterUtils', function() {
+    var collection;
+    var utils;
 
-    describe('auto generating filters', function() {
-        var collection,
-            uberFilter = _filters._uberFilter;
+    describe('uberFilter', function() {
 
-        describe('simple properties', function() {
+        describe('handling of simple properties', function() {
 
             describe('query parameter and object property have the same name', function() {
+                var filterSupport;
                 var schemas;
+                var utils;
 
                 beforeEach(function() {
-                    var schema = {
-                        name: 'TestType',
-                        root: '/everythingisawesome',
-                        properties: {
-                            sameProp: { type: 'string' }
-                        },
-                        list: {
-                            parameters: {
-                                sameProp: {
-                                    type: 'string',
-                                    mapsTo: 'sameProp'
+                    schemas = {
+                        TestType: {
+                            name: 'TestType',
+                            root: '/everythingisawesome',
+                            properties: {
+                                sameProp: { type: 'string' }
+                            },
+                            list: {
+                                parameters: {
+                                    sameProp: {
+                                        type: 'string',
+                                        mapsTo: 'sameProp'
+                                    }
                                 }
                             }
                         }
                     };
-
                     collection = [{
                         sameProp: 'val'
                     }];
 
-                    schemas = schemaStuff.prepareSchemas({s: schema});
+                    utils = new MockFilterUtils(schemas);
+                    filterSupport = {
+                        type: 'TestType',
+                        server: undefined,
+                        filterUtils: utils
+                    }
                 });
 
                 it('fails if no mapsTo property is defined', function() {
@@ -69,7 +77,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     };
 
                     expect(function() {
-                        uberFilter(collection, qParams, 'TestType', schemas);
+                        utils.uberFilter(collection, qParams, filterSupport);
                     }).toDxFail('No mapsTo property found for query parameter sameProp.');
                 });
 
@@ -78,7 +86,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                         sameProp: 'val'
                     };
 
-                    var result = uberFilter(collection, qParams, 'TestType', schemas);
+                    var result = utils.uberFilter(collection, qParams, filterSupport);
 
                     expect(result.length).toBe(1);
                 });
@@ -88,37 +96,43 @@ ddescribe('dx.test.mockServer collection filters', function() {
                         sameProp: 'other'
                     };
 
-                    var result = uberFilter(collection, qParams, 'TestType', schemas);
+                    var result = utils.uberFilter(collection, qParams, filterSupport);
 
                     expect(result.length).toBe(0);
                 });
             });
 
             describe('query parameter and object property have different names', function() {
-                var schemas;
+                var filterSupport;
 
                 beforeEach(function() {
-                    var schema = {
-                        name: 'TestType',
-                        root: '/everythingisawesome',
-                        properties: {
-                            aProp: { type: 'string' }
-                        },
-                        list: {
-                            parameters: {
-                                bProp: {
-                                    type: 'string',
-                                    mapsTo: 'aProp'
+                    var schemas = {
+                        TestType: {
+                            name: 'TestType',
+                            root: '/everythingisawesome',
+                            properties: {
+                                aProp: { type: 'string' }
+                            },
+                            list: {
+                                parameters: {
+                                    bProp: {
+                                        type: 'string',
+                                        mapsTo: 'aProp'
+                                    }
                                 }
                             }
                         }
                     };
-
                     collection = [{
                         aProp: 'val'
                     }];
 
-                    schemas = schemaStuff.prepareSchemas({s: schema});
+                    utils = new MockFilterUtils(schemas);
+                    filterSupport = {
+                        type: 'TestType',
+                        server: undefined,
+                        filterUtils: utils
+                    }
                 });
 
                 it('includes an object when the values match', function() {
@@ -126,7 +140,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                         bProp: 'val'
                     };
 
-                    var result = uberFilter(collection, qParams, 'TestType', schemas);
+                    var result = utils.uberFilter(collection, qParams, filterSupport);
 
                     expect(result.length).toBe(1);
                 });
@@ -136,45 +150,51 @@ ddescribe('dx.test.mockServer collection filters', function() {
                         bProp: 'other'
                     };
 
-                    var result = uberFilter(collection, qParams, 'TestType', schemas);
+                    var result = utils.uberFilter(collection, qParams, filterSupport);
 
                     expect(result.length).toBe(0);
                 });
             });
 
             describe('query parameter maps to a chian of object references', function() {
-                var schemas, mockTestType, mockAnotherType, mockFinalType;
+                var mockTestType;
+                var mockAnotherType;
+                var mockFinalType;
+                var filterSupport;
+                var getObjectSpy;
 
                 beforeEach(function() {
-                    var schema = {
-                        name: 'TestType',
-                        root: '/enemysgate',
-                        properties: {
-                            anotherObj: { type: 'string', format: 'objectReference', referenceTo: 'a' }
-                        },
-                        list: {
-                            parameters: {
-                                aParam: {
-                                    type: 'string',
-                                    mapsTo: 'anotherObj.finalObj.someProp'
+                    var schemas = {
+                        TestType: {
+                            name: 'TestType',
+                            root: '/enemysgate',
+                            properties: {
+                                anotherObj: { type: 'string', format: 'objectReference', referenceTo: 'AnotherType' }
+                            },
+                            list: {
+                                parameters: {
+                                    aParam: {
+                                        type: 'string',
+                                        mapsTo: 'anotherObj.finalObj.someProp'
+                                    }
                                 }
                             }
+                        },
+                        AnotherType: {
+                            name: 'AnotherType',
+                            root: '/somethingclever',
+                            properties: {
+                                finalObj: { type: 'string', format: 'objectReference', referenceTo: 'FinalType' }
+                            }
+                        },
+                        FinalType: {
+                            name: 'FinalType',
+                            root: '/blah',
+                            properties: {
+                                someProp: { type: 'string' }
+                            }
                         }
-                    };
-                    var anotherType = {
-                        name: 'AnotherType',
-                        root: '/somethingclever',
-                        properties: {
-                            finalObj: { type: 'string', format: 'objectReference', referenceTo: 'f' }
-                        }
-                    };
-                    var finalType = {
-                        name: 'FinalType',
-                        root: '/blah',
-                        properties: {
-                            someProp: { type: 'string' }
-                        }
-                    };
+                    }
 
                     mockTestType = {
                         type: 'TestType',
@@ -191,25 +211,33 @@ ddescribe('dx.test.mockServer collection filters', function() {
 
                     collection = [ mockTestType ];
 
-                    schemas = schemaStuff.prepareSchemas({s: schema, a: anotherType, f: finalType});
+                    utils = new MockFilterUtils(schemas);
+                    getObjectSpy = jasmine.createSpy('getObjectSpy');
+                    filterSupport = {
+                        type: 'TestType',
+                        server: {
+                            getObject: getObjectSpy
+                        },
+                        filterUtils: utils
+                    }
                 });
 
                 it('fails if an object reference in the chain can\'t be resolved', function() {
-                    spyOn(dx.test.mockServer, 'getObject').andReturn(undefined);
+                    getObjectSpy.andReturn(undefined);
 
                     var qParams = {
                         aParam: 'val'
                     };
 
                     expect(function() {
-                        uberFilter(collection, qParams, 'TestType', schemas);
+                        utils.uberFilter(collection, qParams, filterSupport);
                     }).toDxFail('The AnotherType (AnotherType-1) does not exist in the mock server and is needed to ' +
                         'filter your $$list operation.');
 
                 });
 
                 it('includes an object when the values match', function() {
-                    spyOn(dx.test.mockServer, 'getObject').andCallFake(function(ref, type) {
+                    getObjectSpy.andCallFake(function(ref, type) {
                         if (type === 'AnotherType') {
                             return mockAnotherType;
                         } else { // type === 'FinalType'
@@ -221,13 +249,13 @@ ddescribe('dx.test.mockServer collection filters', function() {
                         aParam: 'val'
                     };
 
-                    var result = uberFilter(collection, qParams, 'TestType', schemas);
+                    var result = utils.uberFilter(collection, qParams, filterSupport);
 
                     expect(result.length).toBe(1);
                 });
 
                 it('excludes an object when the values don\'t match', function() {
-                    spyOn(dx.test.mockServer, 'getObject').andCallFake(function(ref, type) {
+                    getObjectSpy.andCallFake(function(ref, type) {
                         if (type === 'AnotherType') {
                             return mockAnotherType;
                         } else { // type === 'FinalType'
@@ -239,7 +267,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                         aParam: 'wrong!'
                     };
 
-                    var result = uberFilter(collection, qParams, 'TestType', schemas);
+                    var result = utils.uberFilter(collection, qParams, filterSupport);
 
                     expect(result.length).toBe(0);
                 });
@@ -294,8 +322,12 @@ ddescribe('dx.test.mockServer collection filters', function() {
                 client = new dxData.DataSystem(testSchemas);
                 client._filters.Fault = client._filters._uberFilter;
 
-                server = new MockServer(testSchemas);
-                server._filters.Fault = _filters.maybeAddPagingToFilter('Fault', _filters._uberFilter, client);
+                server = new MockServer(testSchemas, {
+                    Fault: function(collection, qParams, support) {
+                        return support.utils.filterWithPaging(support.utils.uberFilter, collection, qParams, support);
+                    }
+                });
+
                 server.start();
                 
                 server.createObjects({
@@ -421,43 +453,45 @@ ddescribe('dx.test.mockServer collection filters', function() {
         });
 
         describe('dates', function() {
-            var dateObj, collection, schema;
+            var dateObj, collection, schema, filterSupport, utils;
 
             beforeEach(function() {
                 schema = {
-                    name: 'TestType',
-                    root: '/enemysgate',
-                    properties: {
-                        updateDate: {
-                            type: 'string',
-                            format: 'date'
-                        }
-                    },
-                    list: {
-                        parameters: {
-                            fromDate: {
+                    TestType: {
+                        name: 'TestType',
+                        root: '/enemysgate',
+                        properties: {
+                            updateDate: {
                                 type: 'string',
-                                format: 'date',
-                                mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
-                            },
-                            startDate: {
-                                type: 'string',
-                                format: 'date',
-                                mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
-                            },
-                            toDate: {
-                                type: 'string',
-                                format: 'date',
-                                mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
-                            },
-                            endDate: {
-                                type: 'string',
-                                format: 'date',
-                                mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                format: 'date'
+                            }
+                        },
+                        list: {
+                            parameters: {
+                                fromDate: {
+                                    type: 'string',
+                                    format: 'date',
+                                    mapsTo: 'updateDate',
+                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                },
+                                startDate: {
+                                    type: 'string',
+                                    format: 'date',
+                                    mapsTo: 'updateDate',
+                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                },
+                                toDate: {
+                                    type: 'string',
+                                    format: 'date',
+                                    mapsTo: 'updateDate',
+                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                },
+                                endDate: {
+                                    type: 'string',
+                                    format: 'date',
+                                    mapsTo: 'updateDate',
+                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                }
                             }
                         }
                     }
@@ -468,31 +502,36 @@ ddescribe('dx.test.mockServer collection filters', function() {
                 collection = [{
                     updateDate: dateObj
                 }];
+
+                utils = new MockFilterUtils(schema);
+                filterSupport = {
+                    type: 'TestType',
+                    server: undefined,
+                    filterUtils: utils
+                }
             });
 
             it('throws an error when no "mapsTo" property is found', function() {
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-                delete schemas.TestType.list.parameters.fromDate.mapsTo;
+                delete schema.TestType.list.parameters.fromDate.mapsTo;
 
                 var qParams = {
                     fromDate: dateObj
                 };
 
                 expect(function() {
-                    uberFilter(collection, qParams, 'TestType', schemas);
+                    utils.uberFilter(collection, qParams, filterSupport);
                 }).toDxFail('No mapsTo property found for query parameter fromDate');
             });
 
             it('throws an error when no "inequalityType" property is found', function() {
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-                delete schemas.TestType.list.parameters.fromDate.inequalityType;
+                delete schema.TestType.list.parameters.fromDate.inequalityType;
 
                 var qParams = {
                     fromDate: dateObj
                 };
 
                 expect(function() {
-                    uberFilter(collection, qParams, 'TestType', schemas);
+                    utils.uberFilter(collection, qParams, filterSupport);
                 }).toDxFail('Date property "fromDate" missing "inequalityType" schema property');
             });
 
@@ -500,9 +539,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                 var qParams = {
                     fromDate: dateObj
                 };
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(1);
             });
@@ -512,80 +549,67 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     toDate: dateObj
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(1);
 
             });
 
             it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
-                schema.list.parameters.fromDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
+                schema.TestType.list.parameters.fromDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var qParams = {
                     fromDate: dateObj
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(0);
             });
 
             it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
-                schema.list.parameters.toDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
+                schema.TestType.list.parameters.toDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var qParams = {
                     toDate: dateObj
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(0);
             });
 
             it('follows "mapsTo" chains to check the correct attribute on the object', function() {
-                schema = {
-                    name: 'TestType',
-                    root: '/enemysgate',
-                    properties: {
-                        anotherObj: {
-                            type: 'string',
-                            format: 'objectReference',
-                            referenceTo: 'a'
-                        }
-                    },
-                    list: {
-                        parameters: {
-                            toDate: {
-                                type: 'string',
-                                format: 'date',
-                                mapsTo: 'anotherObj.finalObj.dateProp',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
+                var schemas = {
+                    TestType: {
+                        name: 'TestType',
+                        root: '/enemysgate',
+                        properties: {
+                            anotherObj: { type: 'string', format: 'objectReference', referenceTo: 'AnotherType' }
+                        },
+                        list: {
+                            parameters: {
+                                toDate: {
+                                    type: 'string',
+                                    mapsTo: 'anotherObj.finalObj.dateProp',
+                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
+                                }
                             }
                         }
-                    }
-                };
-                var anotherType = {
-                    name: 'AnotherType',
-                    root: '/somethingclever',
-                    properties: {
-                        finalObj: {
-                            type: 'string',
-                            format: 'objectReference',
-                            referenceTo: 'f'
+                    },
+                    AnotherType: {
+                        name: 'AnotherType',
+                        root: '/somethingclever',
+                        properties: {
+                            finalObj: { type: 'string', format: 'objectReference', referenceTo: 'FinalType' }
+                        }
+                    },
+                    FinalType: {
+                        name: 'FinalType',
+                        root: '/blah',
+                        properties: {
+                            dateProp: { type: 'string', format: 'date' }
                         }
                     }
-                };
-                var finalType = {
-                    name: 'FinalType',
-                    root: '/blah',
-                    properties: {
-                        dateProp: { type: 'string', format: 'date' }
-                    }
-                };
+                }
 
                 var mockTestType = {
                     type: 'TestType',
@@ -600,23 +624,26 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     dateProp: dateObj
                 };
 
-                spyOn(dx.test.mockServer, 'getObject').andCallFake(function(ref, type) {
-                    if (type === 'AnotherType') {
-                        return mockAnotherType;
-                    } else { // type === 'FinalType'
-                        return mockFinalType;
-                    }
-                });
-
                 collection = [mockTestType];
 
                 var qParams = {
                     toDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema, a: anotherType, f: finalType});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var utils = new MockFilterUtils(schemas);
+                var result = utils.uberFilter(collection, qParams, {
+                    type: 'TestType',
+                    server: {
+                        getObject: function(ref, type) {
+                            if (type === 'AnotherType') {
+                                return mockAnotherType;
+                            } else { // type === 'FinalType'
+                                return mockFinalType;
+                            }
+                        }
+                    },
+                    utils: utils
+                });
 
                 expect(result.length).toBe(1);
             });
@@ -627,9 +654,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     endDate: dateObj
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(1);
             });
@@ -639,9 +664,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() - 1)
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(1);
             });
@@ -651,9 +674,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     toDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(1);
             });
@@ -664,9 +685,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() - 1)
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(1);
             });
@@ -676,9 +695,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(0);
             });
@@ -688,9 +705,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     toDate: new Date(dateObj.getTime() - 1)
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(0);
             });
@@ -701,9 +716,7 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(0);
             });
@@ -715,12 +728,12 @@ ddescribe('dx.test.mockServer collection filters', function() {
                     fromDate: dateObj
                 };
 
-                var schemas = schemaStuff.prepareSchemas({s: schema});
-
-                var result = uberFilter(collection, qParams, 'TestType', schemas);
+                var result = utils.uberFilter(collection, qParams, filterSupport);
 
                 expect(result.length).toBe(0);
             });
         });
+
     });
+
 });

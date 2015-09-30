@@ -21,6 +21,7 @@
 'use strict';
 
 var _ = require('underscore');
+var MockFilterUtils = require('./MockFilterUtils.js');
 /*
  * ServerCore provides support for all the data management required of a Delphix Schema-based server (storing objects,
  * responding to operations). It is intended to be used as a base type for various mock servers, allowing subtypes to
@@ -28,6 +29,30 @@ var _ = require('underscore');
  * ServerCore provides support for storing Delphix Schema defined singleton objects and collections of objects, as
  * well as support for the operations defined by those schemas, including  standard operations (read, list, create,
  * update, delete), object operations, and root operations.
+ *
+ * CONSTRUCTION AND FILTERS
+ * A ServerCore instance can be constructed with one or two parameters:
+ *    var server = new ServerCore(schemas, filters);
+ * The schemas parameter, which is required, is a map of Delphix-style json-schemas in this format (where url-path.json is
+ * the same url path found as the value for properties like $ref, etc):
+ *    {
+ *        './url-path.json': { ... schema definition ...},
+ *        ...
+ *    }
+ * The optional filters parameter, is an object in this format:
+ *    {
+ *        TypeName: function(collection, queryParameters, filterSupport),
+ *        ...
+ *    }
+ * The collection will be an array of JavaScript objects that the server is ready to return to the client that this function
+ * is being asked to filter. The queryParameters is an object with key/value pairs corresponding to the query parameters
+ * passed to the server in the retrieval call. filterSupport is an object with three values:
+ *    type: The type of the collection. This is the same as the TypeName specified in the filter definition. It is
+ *          included for cases where the same filter function supports multiple types.
+ *    server: A reference to the ServerCore instance that is invoking this call. This is useful to reach back into the
+ *          server to look up related objects.
+ *    mockFilterUtils: a MockFilterUtils instance which has several utility functions that your filter may wish to use.
+ * The filter function must return the set of objects from the collection that are to be returned to the caller.
  *
  * DATA
  *      createObjects()
@@ -752,7 +777,11 @@ function buildStandardOperationHandlers(server, schema) {
             var collection = getCollection(server, typeName);
 
             if (server._filters[typeName]) {
-                collection = server._filters[typeName](collection, parameters || {}, typeName, server._schemasByName);
+                collection = server._filters[typeName](collection, parameters || {}, {
+                    type: typeName,
+                    server: server,
+                    utils: server._filterUtils
+                });
             }
 
             return new Result.ListResult(collection);
@@ -1065,7 +1094,7 @@ function reset(server) {
 /*
  * Document structure of schemas
  */
-function ServerCore(schemas) {
+function ServerCore(schemas, filters) {
     var self = this;
     if (!(self instanceof ServerCore)) {
         dx.fail('Must call ServerCore() with new.');
@@ -1076,10 +1105,12 @@ function ServerCore(schemas) {
 
     self._schemasByName = {};
     self._builtinHandlers = {}; // 'HTTPMMETHOD:url': function()
-    self._filters = [];
+    self._filters = filters || {};
     reset(self);
 
     processSchemas(this, schemas);
+
+    self._filterUtils = new MockFilterUtils(self._schemasByName);
 
     _.extend(self, {
         UNKNOWN_URL_STATUS: 1000,

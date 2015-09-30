@@ -361,7 +361,7 @@ function stopMockServer() {
     delete self._previousAjax;
 }
 
-function AbstractServer(schemas) {
+function AbstractServer(schemas, filters) {
     var self = this;
     if (!(self instanceof AbstractServer)) {
         dx.fail('Must call AbstractServer() with new.');
@@ -370,7 +370,7 @@ function AbstractServer(schemas) {
         dx.fail('Must pass a map of schemas when constructing a server.');
     }
 
-    var server = new ServerCore(schemas);
+    var server = new ServerCore(schemas, filters);
 
     _.extend(server, {
         _pendingLongpolls: [],

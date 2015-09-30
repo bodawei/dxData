@@ -24,7 +24,7 @@
 
 var schemaStuff = require('../../schema.js');
 
-ddescribe('prepareSchemas', function() {
+describe('prepareSchemas', function() {
 
     it('throws an error if no schema is provided', function() {
         expect(function() {
@@ -1239,7 +1239,7 @@ ddescribe('prepareSchemas', function() {
 
 });
 
-ddescribe('prepareEnums', function() {
+describe('prepareEnums', function() {
 
     it('throws an error if no schema is provided', function() {
         expect(function() {

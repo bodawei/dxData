@@ -27,7 +27,7 @@ var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
 var initFilters = require('../../filter.js');
 
-ddescribe('generateCollectionConstructors', function() {
+describe('generateCollectionConstructors', function() {
     var SimpleModelConstructor = Backbone.Model.extend({});
     var target;
     var collection;

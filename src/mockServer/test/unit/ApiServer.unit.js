@@ -23,7 +23,7 @@
 
 var ApiServer = require('../../ApiServer.js');
 
-ddescribe('ApiServer', function() {
+describe('ApiServer', function() {
     var jQueryAjax;
 
     beforeEach(function() {

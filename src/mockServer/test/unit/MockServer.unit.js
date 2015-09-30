@@ -23,7 +23,7 @@
 
 var MockServer = require('../../MockServer.js');
 
-ddescribe('MockServer', function() {
+describe('MockServer', function() {
     var jQueryAjax;
 
     beforeEach(function() {

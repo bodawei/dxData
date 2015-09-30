@@ -28,7 +28,7 @@ var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
 var CreationListener = require('../../creationListener.js');
 
-ddescribe('level2 creation listener', function() {
+describe('level2 creation listener', function() {
     var context = {};
 
     beforeEach(function() {
