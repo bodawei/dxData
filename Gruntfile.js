@@ -32,7 +32,8 @@ module.exports = function(grunt) {
             options: {
                 browserifyOptions: {
                     debug: true
-                }
+                },
+                external: ["underscore"]
             },
             'dist-lib': {
                 files: {

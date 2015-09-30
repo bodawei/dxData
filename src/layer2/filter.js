@@ -16,9 +16,11 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, _, $, Backbone */
+/*global dx, $, Backbone */
 
 'use strict';
+
+var _ = require('underscore');
 
 /*
  * Defines general purpose filter routines. These can be used to build type-specific filters.

@@ -16,9 +16,11 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, _, Backbone */
+/*global dx, $, Backbone */
 
 'use strict';
+
+var _ = require('underscore');
 
 /*
  * This takes a set of schemas (modified by _prepareSchemas), and creates a set of Backbone Collection constructor

@@ -16,11 +16,12 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global $, _ */
+/*global $, require */
 
 'use strict';
 
 var AbstractServer = require('./AbstractServer.js');
+var _ = require('underscore');
 
 /*
  * Defines a MockServer which responds to $.ajax calls, and then stores results until a caller/test calls respond().

@@ -16,9 +16,11 @@
  * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, _ */
+/*global dx, require, module */
 
 'use strict';
+
+var _ = require('underscore');
 
 /*
  * Do top-level processing of each schema. This involves:

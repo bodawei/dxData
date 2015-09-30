@@ -16,9 +16,11 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, _ */
+/*global dx */
 
 'use strict';
+
+var _ = require('underscore');
 
 /*
  * Creation listeners provide access to notification updates for API server objects creation in the form

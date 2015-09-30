@@ -16,7 +16,7 @@
  * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
  */
 
-/*global _, dx */
+/*global module */
 
 'use strict';
 

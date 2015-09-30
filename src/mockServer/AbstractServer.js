@@ -16,11 +16,12 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global $, _ */
+/*global $, require */
 
 'use strict';
 
 var ServerCore = require('./ServerCore.js');
+var _ = require('underscore');
 
 /*
  * This is an abstract supertype which provides common behavior for starting and stopping a mock server as well as

@@ -17,11 +17,12 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global $, _ */
+/*global $, require */
 
 'use strict';
 
 var ServerCore = require('./ServerCore.js');
+var _ = require('underscore');
 
 /*
  * This is an abstract supertype which provides common behavior for starting and stopping a mock server as well as
@@ -392,7 +393,7 @@ function AbstractServer(schemas) {
 
 module.exports = AbstractServer;
 
-},{"./ServerCore.js":3}],2:[function(require,module,exports){
+},{"./ServerCore.js":3,"underscore":"underscore"}],2:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -411,10 +412,11 @@ module.exports = AbstractServer;
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global dk, $, _ */
+/*global dx, $, require */
 
 'use strict';
 
+var _ = require('underscore');
 var AbstractServer = require('./AbstractServer.js');
 
 /*
@@ -477,7 +479,7 @@ function ApiServer(schemas) {
 
 module.exports = ApiServer;
 
-},{"./AbstractServer.js":1}],3:[function(require,module,exports){
+},{"./AbstractServer.js":1,"underscore":"underscore"}],3:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -496,10 +498,11 @@ module.exports = ApiServer;
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global _ */
+/*global require */
 
 'use strict';
 
+var _ = require('underscore');
 /*
  * ServerCore provides support for all the data management required of a Delphix Schema-based server (storing objects,
  * responding to operations). It is intended to be used as a base type for various mock servers, allowing subtypes to
@@ -1586,7 +1589,7 @@ function ServerCore(schemas) {
 
 module.exports = ServerCore;
 
-},{}],4:[function(require,module,exports){
+},{"underscore":"underscore"}],4:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1605,9 +1608,11 @@ module.exports = ServerCore;
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global _ */
+/*global require */
 
 'use strict';
+
+var _ = require('underscore');
 
 /*
  * Defines a set of filter helper functions for delphix schema root types to be used by the Mock Server.
@@ -1845,7 +1850,7 @@ module.exports = {
     maybeAddPagingToFilter: maybeAddPagingToFilter
 };
 
-},{}],5:[function(require,module,exports){
+},{"underscore":"underscore"}],5:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1864,11 +1869,12 @@ module.exports = {
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global $, _ */
+/*global $, require */
 
 'use strict';
 
 var AbstractServer = require('./AbstractServer.js');
+var _ = require('underscore');
 
 /*
  * Defines a MockServer which responds to $.ajax calls, and then stores results until a caller/test calls respond().
@@ -2154,5 +2160,5 @@ function MockServer(schemas) {
 
 module.exports = MockServer;
 
-},{"./AbstractServer.js":1}]},{},[1,2,3,4,5])
+},{"./AbstractServer.js":1,"underscore":"underscore"}]},{},[1,2,3,4,5])
 //# sourceMappingURL=dxDataMockServer.js.map

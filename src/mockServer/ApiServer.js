@@ -16,10 +16,11 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global dk, $, _ */
+/*global dx, $, require */
 
 'use strict';
 
+var _ = require('underscore');
 var AbstractServer = require('./AbstractServer.js');
 
 /*

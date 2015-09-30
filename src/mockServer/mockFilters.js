@@ -16,9 +16,11 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global _ */
+/*global require */
 
 'use strict';
+
+var _ = require('underscore');
 
 /*
  * Defines a set of filter helper functions for delphix schema root types to be used by the Mock Server.

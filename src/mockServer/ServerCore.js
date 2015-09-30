@@ -16,10 +16,11 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global _ */
+/*global require */
 
 'use strict';
 
+var _ = require('underscore');
 /*
  * ServerCore provides support for all the data management required of a Delphix Schema-based server (storing objects,
  * responding to operations). It is intended to be used as a base type for various mock servers, allowing subtypes to
