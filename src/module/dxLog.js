@@ -13,23 +13,11 @@
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global module */
+/*global module, console */
 
 'use strict';
 
-console.log('HI THERE');
-
-console.log(module)
-
-module.exports = {
-    ApiServer: require('../mockServer/ApiServer.js'),
-    ServerCore: require('../mockServer/ServerCore.js'),
-    AbstractServer: require('../mockServer/AbstractServer.js'),
-    MockServer: require('../mockServer/MockServer.js'),
-    DataSystem: require('../layer3/api.js')
-};
-
-console.log(module)
+module.exports = require('../log/log.js');

@@ -28,5 +28,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/delphix/dxData"
+  },
+  "devDependencies": {
+    "backbone": "^1.1.2",
+    "karma-browserify": "^4.4.0"
   }
 }

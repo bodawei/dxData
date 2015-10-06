@@ -16,12 +16,15 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global require */
+/*global require, module */
 
 'use strict';
 
 var _ = require('underscore');
+var dxLog = require('dxLog');
+
 var MockFilterUtils = require('./MockFilterUtils.js');
+
 /*
  * ServerCore provides support for all the data management required of a Delphix Schema-based server (storing objects,
  * responding to operations). It is intended to be used as a base type for various mock servers, allowing subtypes to
@@ -90,7 +93,7 @@ var MockFilterUtils = require('./MockFilterUtils.js');
  *  - deleteObjects() Requires a reference property. It can also accept an array of raw object references rather than
  *                    a whole object definition when the argument is an array.
  *
- * Note that these do not do full validation of the values passed in, so if dx.core.data calls fail reporting that
+ * Note that these do not do full validation of the values passed in, so if dxData calls fail reporting that
  * invalid properties were received, you should check your object definitions.
  *
  *      getSingleton()
@@ -197,12 +200,12 @@ function createObjects(server, newObjects, skipNotifications) {
  */
 function createObject(server, newObject, skipNotification) {
     if (!newObject.type) {
-        dx.fail('No type property found on object.', newObject);
+        dxLog.fail('No type property found on object.', newObject);
     }
 
     var schema = server._schemasByName[newObject.type];
     if (!schema) {
-        dx.fail(newObject.type + ' is not a known schema type.');
+        dxLog.fail(newObject.type + ' is not a known schema type.');
     }
 
     if (schema.singleton) {
@@ -219,7 +222,7 @@ function createObject(server, newObject, skipNotification) {
         var shouldHaveReference = !!getPropDef(schema, 'reference', server._schemasByName);
 
         if (!rootType) {
-            dx.fail(newObject.type + ' is not a type descended from one with a root property.');
+            dxLog.fail(newObject.type + ' is not a type descended from one with a root property.');
         }
 
         server._objects[rootType] = server._objects[rootType] || [];
@@ -272,12 +275,12 @@ function updateObject(server, newObject, skipNotification) {
         }
     } else {
         if (!newObject.reference) {
-            dx.fail('Can not update an object without at least a reference.');
+            dxLog.fail('Can not update an object without at least a reference.');
         }
         var existing = getObject(server, newObject.reference);
 
         if (!existing) {
-            dx.fail('There is no object with the reference ' + newObject.reference + ' to update.');
+            dxLog.fail('There is no object with the reference ' + newObject.reference + ' to update.');
         }
 
         updateObjectProperties(server, existing, newObject);
@@ -342,11 +345,11 @@ function deleteObject(server, doomedObjectOrRef, skipNotifications) {
     }
 
     if (!targetReference) {
-        dx.fail('No reference provided to identify the object to delete.');
+        dxLog.fail('No reference provided to identify the object to delete.');
     }
 
     if (isSingleton(server, targetReference)) {
-        dx.fail('Can not delete singletons (' + targetReference + ' is a singleton).');
+        dxLog.fail('Can not delete singletons (' + targetReference + ' is a singleton).');
     }
 
     var deletedIt = _.find(server._objects, function(objectsArray) {
@@ -369,7 +372,7 @@ function deleteObject(server, doomedObjectOrRef, skipNotifications) {
     });
 
     if (!deletedIt) {
-        dx.fail('Could not find ' + targetReference + ' to delete it.');
+        dxLog.fail('Could not find ' + targetReference + ' to delete it.');
     }
 }
 
@@ -430,14 +433,14 @@ function getObject(server, objectRef, typeName) {
     if (typeName) {
         var schema = server._schemasByName[typeName];
         if (!schema) {
-            dx.fail(typeName + ' is not a known type.');
+            dxLog.fail(typeName + ' is not a known type.');
         }
         var rootTypeName = getRootTypeForObject(schema, server._schemasByName);
         if (!rootTypeName) {
-            dx.fail('Can only ask for objects in collections with a root property with getObject().');
+            dxLog.fail('Can only ask for objects in collections with a root property with getObject().');
         }
         if (rootTypeName !== schema.name) {
-            dx.fail('Must specify the root type (' + rootTypeName + ') if a type is specified to getObject().');
+            dxLog.fail('Must specify the root type (' + rootTypeName + ') if a type is specified to getObject().');
         }
 
         return _.find(server._objects[typeName], function(obj) {
@@ -461,17 +464,17 @@ function getObject(server, objectRef, typeName) {
 function getCollection(server, typeName) {
     var schema = server._schemasByName[typeName];
     if (!schema) {
-        dx.fail(typeName + ' is not a known type.');
+        dxLog.fail(typeName + ' is not a known type.');
     }
     if (schema.singleton) {
-        dx.fail(typeName + ' is a singleton type, not a collection type.');
+        dxLog.fail(typeName + ' is a singleton type, not a collection type.');
     }
     var rootTypeName = getRootTypeForObject(schema, server._schemasByName);
     if (!rootTypeName) {
-        dx.fail('Can only ask for collections with a root property.');
+        dxLog.fail('Can only ask for collections with a root property.');
     }
     if (rootTypeName !== schema.name) {
-        dx.fail('Must specify the root type (' + rootTypeName + ').');
+        dxLog.fail('Must specify the root type (' + rootTypeName + ').');
     }
 
     return server._objects[typeName] || [];
@@ -482,7 +485,7 @@ function getCollection(server, typeName) {
  */
 function getSingleton(server, typeName) {
     if (!isSingleton(server, typeName)) {
-        dx.fail(typeName + ' is not a singleton type.');
+        dxLog.fail(typeName + ' is not a singleton type.');
     }
 
     if (!server._singletons[typeName]) {
@@ -524,7 +527,7 @@ function getCollectionLength(server, typeName) {
  */
 function addStandardOpHandlers(server, operationHash) {
     if (!_.isObject(operationHash)) {
-        dx.fail('Expected an object, but got ' + JSON.stringify(operationHash) + '.');
+        dxLog.fail('Expected an object, but got ' + JSON.stringify(operationHash) + '.');
     }
 
     _.each(operationHash, function(ops, type) {
@@ -539,22 +542,22 @@ function addStandardOpHandlers(server, operationHash) {
  */
 function addStandardOpHandler(server, typeName, opName, opHandler) {
     if (!_.isString(typeName)) {
-        dx.fail('Expected a string as a type name, but got ' + JSON.stringify(typeName) + '.');
+        dxLog.fail('Expected a string as a type name, but got ' + JSON.stringify(typeName) + '.');
     }
     if (!_.isString(opName)) {
-        dx.fail('Expected a string as an operation name, but got ' + JSON.stringify(opName) + '.');
+        dxLog.fail('Expected a string as an operation name, but got ' + JSON.stringify(opName) + '.');
     }
     if (!_.isFunction(opHandler)) {
-        dx.fail('Expected a function for the handler, but got ' + JSON.stringify(opHandler) + '.');
+        dxLog.fail('Expected a function for the handler, but got ' + JSON.stringify(opHandler) + '.');
     }
     if (!server._schemasByName[typeName]) {
-        dx.fail(typeName + ' is not a schema type.');
+        dxLog.fail(typeName + ' is not a schema type.');
     }
     if (!_.contains(STANDARD_OPERATONS, opName)) {
-        dx.fail(opName + ' is not one of the standard operations (' + STANDARD_OPERATONS.join(', ') + ').');
+        dxLog.fail(opName + ' is not one of the standard operations (' + STANDARD_OPERATONS.join(', ') + ').');
     }
     if (!server._schemasByName[typeName][opName]) {
-        dx.fail(opName + ' is not a standard operation on ' + typeName + '.');
+        dxLog.fail(opName + ' is not a standard operation on ' + typeName + '.');
     }
 
     server._customStdHandlers[typeName] = server._customStdHandlers[typeName] || {};
@@ -579,19 +582,19 @@ function addRootOpHandlers(server, operationHash) {
  */
 function addRootOpHandler(server, typeName, opName, opHandler) {
     if (!_.isString(typeName)) {
-        dx.fail('Expected a string as a type name, but got ' + JSON.stringify(typeName) + '.');
+        dxLog.fail('Expected a string as a type name, but got ' + JSON.stringify(typeName) + '.');
     }
     if (!_.isString(opName)) {
-        dx.fail('Expected a string as an operation name, but got ' + JSON.stringify(opName) + '.');
+        dxLog.fail('Expected a string as an operation name, but got ' + JSON.stringify(opName) + '.');
     }
     if (!_.isFunction(opHandler)) {
-        dx.fail('Expected a function for the handler, but got ' + JSON.stringify(opHandler) + '.');
+        dxLog.fail('Expected a function for the handler, but got ' + JSON.stringify(opHandler) + '.');
     }
     if (!server._schemasByName[typeName]) {
-        dx.fail(typeName + ' is not a schema type.');
+        dxLog.fail(typeName + ' is not a schema type.');
     }
     if (!server._schemasByName[typeName].rootOperations || !server._schemasByName[typeName].rootOperations[opName]) {
-        dx.fail(opName + ' is not a root operation on ' + typeName + '.');
+        dxLog.fail(opName + ' is not a root operation on ' + typeName + '.');
     }
 
     server._customRootHandlers[typeName] = server._customRootHandlers[typeName] || {};
@@ -616,19 +619,19 @@ function addObjectOpHandlers(server, operationHash) {
  */
 function addObjectOpHandler(server, typeName, opName, opHandler) {
     if (!_.isString(typeName)) {
-        dx.fail('Expected a string as a type name, but got ' + JSON.stringify(typeName) + '.');
+        dxLog.fail('Expected a string as a type name, but got ' + JSON.stringify(typeName) + '.');
     }
     if (!_.isString(opName)) {
-        dx.fail('Expected a string as an operation name, but got ' + JSON.stringify(opName) + '.');
+        dxLog.fail('Expected a string as an operation name, but got ' + JSON.stringify(opName) + '.');
     }
     if (!_.isFunction(opHandler)) {
-        dx.fail('Expected a function for the handler, but got ' + JSON.stringify(opHandler) + '.');
+        dxLog.fail('Expected a function for the handler, but got ' + JSON.stringify(opHandler) + '.');
     }
     if (!server._schemasByName[typeName]) {
-        dx.fail(typeName + ' is not a schema type.');
+        dxLog.fail(typeName + ' is not a schema type.');
     }
     if (!server._schemasByName[typeName].operations || !server._schemasByName[typeName].operations[opName]) {
-        dx.fail(opName + ' is not an object operation on ' + typeName + '.');
+        dxLog.fail(opName + ' is not an object operation on ' + typeName + '.');
     }
 
     server._customObjHandlers[typeName] = server._customObjHandlers[typeName] || {};
@@ -806,11 +809,11 @@ function buildStandardOperationHandlers(server, schema) {
             }
             payloadSchema = server._schemasByName[targetType];
             if (!payloadSchema) {
-                dx.fail(targetType + ' is not a known schema type.');
+                dxLog.fail(targetType + ' is not a known schema type.');
             }
             rootTypeName = getRootTypeForObject(payloadSchema, server._schemasByName);
             if (rootTypeName !== typeName) {
-                dx.fail('Trying to create a ' + typeName + ' but received a payload of type ' + payload.type +
+                dxLog.fail('Trying to create a ' + typeName + ' but received a payload of type ' + payload.type +
                     '. Use addStandardOpHandlers() to roll your own create logic.');
             }
 
@@ -898,7 +901,7 @@ function buildOperationHandlers(server, schema) {
                 return customHandlers[operationName](objectRef, payloadOrParams, Result, server);
             }
 
-            dx.fail('Test called ' + schema.name + '.' + operationName + ', but no handler registered for it.');
+            dxLog.fail('Test called ' + schema.name + '.' + operationName + ', but no handler registered for it.');
         };
     });
 }
@@ -914,7 +917,7 @@ function buildRootOperationHandlers(server, schema) {
                 return customHandlers[operationName](payloadOrParams, Result, server);
             }
 
-            dx.fail('Test called ' + schema.name + '.' + operationName + ', but no handler registered for it.');
+            dxLog.fail('Test called ' + schema.name + '.' + operationName + ', but no handler registered for it.');
         };
     });
 }
@@ -923,7 +926,7 @@ function Result(statusCode, data) {
     var self = this;
 
     if (!(self instanceof Result)) {
-        dx.fail('Must call Result() with new.');
+        dxLog.fail('Must call Result() with new.');
     }
 
     self.statusCode = statusCode;
@@ -932,7 +935,7 @@ function Result(statusCode, data) {
 
 function OkResult(data) {
     if (!(this instanceof OkResult)) {
-        dx.fail('Must call Result.OkResult() with new.');
+        dxLog.fail('Must call Result.OkResult() with new.');
     }
 
     return new Result(200, {
@@ -943,10 +946,10 @@ function OkResult(data) {
 
 function ListResult(data) {
     if (!_.isArray(data)) {
-        dx.fail('Must call Result.ListResult() with an array.');
+        dxLog.fail('Must call Result.ListResult() with an array.');
     }
     if (!(this instanceof ListResult)) {
-        dx.fail('Must call Result.ListResult() with new.');
+        dxLog.fail('Must call Result.ListResult() with new.');
     }
 
     return new Result(200, {
@@ -957,7 +960,7 @@ function ListResult(data) {
 
 function ErrorResult(statusCode, error) {
     if (!(this instanceof ErrorResult)) {
-        dx.fail('Must call Result.ErrorResult() with new.');
+        dxLog.fail('Must call Result.ErrorResult() with new.');
     }
 
     return new Result(statusCode, {
@@ -969,7 +972,7 @@ function ErrorResult(statusCode, error) {
 
 function MissingObjResult(type, ref, operation) {
     if (!(this instanceof MissingObjResult)) {
-        dx.fail('Must call Result.MissingObjResult() with new.');
+        dxLog.fail('Must call Result.MissingObjResult() with new.');
     }
 
     return new ErrorResult(404, {
@@ -1097,10 +1100,10 @@ function reset(server) {
 function ServerCore(schemas, filters) {
     var self = this;
     if (!(self instanceof ServerCore)) {
-        dx.fail('Must call ServerCore() with new.');
+        dxLog.fail('Must call ServerCore() with new.');
     }
     if (!schemas) {
-        dx.fail('Must pass a map of schemas when constructing a ServerCore.');
+        dxLog.fail('Must pass a map of schemas when constructing a ServerCore.');
     }
 
     self._schemasByName = {};

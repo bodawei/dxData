@@ -17,11 +17,15 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, $, _ */
+/*global $ */
 
 'use strict';
 
+var _ = require('underscore');
+var dxLog = require('dxLog');
+
 var AbstractServer = require('../../AbstractServer.js');
+var CORE_SCHEMAS = require('../shared/coreSchemas.js');
 
 describe('AbstractServer', function() {
     var jQueryAjax;
@@ -33,7 +37,7 @@ describe('AbstractServer', function() {
     afterEach(function() {
         if ($.ajax !== jQueryAjax) {
             $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
+            dxLog.fail('$.ajax was not cleaned up.');
         }
     });
 
@@ -41,7 +45,7 @@ describe('AbstractServer', function() {
 
         it('throw`s an error if not called with new', function() {
             expect(function() {
-                AbstractServer(dx.test.CORE_SCHEMAS);
+                AbstractServer(CORE_SCHEMAS);
             }).toDxFail('Must call AbstractServer() with new.');
         });
 
@@ -62,7 +66,7 @@ describe('AbstractServer', function() {
         });
 
         it('constructs something with the primary AbstractServer functions', function() {
-            var server = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var server = new AbstractServer(CORE_SCHEMAS);
 
             expect(server.start).toBeDefined();
             expect(server.stop).toBeDefined();
@@ -75,7 +79,7 @@ describe('AbstractServer', function() {
         var server;
 
         beforeEach(function() {
-            server = new AbstractServer(dx.test.CORE_SCHEMAS);
+            server = new AbstractServer(CORE_SCHEMAS);
         });
 
         it('starting replaces the jQuery ajax function', function() {
@@ -96,8 +100,8 @@ describe('AbstractServer', function() {
         });
 
         it('can be called multiple times with the different servers', function() {
-            var server2 = new AbstractServer(dx.test.CORE_SCHEMAS);
-            var server3 = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var server2 = new AbstractServer(CORE_SCHEMAS);
+            var server3 = new AbstractServer(CORE_SCHEMAS);
             expect(function() {
                 server.start();
                 server2.start();
@@ -115,7 +119,7 @@ describe('AbstractServer', function() {
         var server;
 
         beforeEach(function() {
-            server = new AbstractServer(dx.test.CORE_SCHEMAS);
+            server = new AbstractServer(CORE_SCHEMAS);
         });
 
         it('restores the jquery ajax function', function() {
@@ -139,7 +143,7 @@ describe('AbstractServer', function() {
         });
 
         it('restores the previous $.ajax', function() {
-            var server2 = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var server2 = new AbstractServer(CORE_SCHEMAS);
 
             server.start();
             server2.start();
@@ -149,7 +153,7 @@ describe('AbstractServer', function() {
         });
 
         it('will throw an error if one tries to stop without starting', function() {
-            var newServer = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var newServer = new AbstractServer(CORE_SCHEMAS);
 
             expect(function() {
                 newServer.stop();
@@ -157,7 +161,7 @@ describe('AbstractServer', function() {
         });
 
         it('will throw an error if one tries to stop it out of sequence', function() {
-            var newServer = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var newServer = new AbstractServer(CORE_SCHEMAS);
             server.start();
             newServer.start();
 
@@ -183,7 +187,7 @@ describe('AbstractServer', function() {
                     },
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server.createObjects([{
                 type: 'Container',
@@ -305,7 +309,7 @@ describe('AbstractServer', function() {
     describe('_handleResult()', function() {
 
         it('throws an error if called directly (it must be overridden)', function() {
-            var server = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var server = new AbstractServer(CORE_SCHEMAS);
 
             expect(function() {
                 server._handleResult({});
@@ -317,7 +321,7 @@ describe('AbstractServer', function() {
     describe('_handleUnknownUrl()', function() {
 
         it('throws an error if called directly (it must be overridden)', function() {
-            var server = new AbstractServer(dx.test.CORE_SCHEMAS);
+            var server = new AbstractServer(CORE_SCHEMAS);
 
             expect(function() {
                 server._handleUnknownUrl({});
@@ -340,7 +344,7 @@ describe('AbstractServer', function() {
                     create: {},
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
             server._handleResult = jasmine.createSpy('handleResultSpy');
             server.start();
         });
@@ -394,7 +398,7 @@ describe('AbstractServer', function() {
             server.createObjects([{
                 type: 'Container'
             }]);
-            dx.test.assert(server.getCollectionLength('Notification')).toEqual(1);
+            assert(server.getCollectionLength('Notification')).toEqual(1);
             $.ajax({
                 type: 'GET',
                 url: '/webapi/notification',
@@ -413,7 +417,7 @@ describe('AbstractServer', function() {
         var result;
 
         beforeEach(function() {
-            server = new AbstractServer(dx.test.CORE_SCHEMAS);
+            server = new AbstractServer(CORE_SCHEMAS);
             result = jasmine.createSpyObj('result', ['success', 'error']);
             result.statusCode = 200;
         });
@@ -588,13 +592,13 @@ describe('AbstractServer', function() {
 
     describe('debug', function() {
         var server;
-        var debugMode;
+        var logLevel;
         var result;
 
         beforeEach(function() {
-            spyOn(dx, 'debug');
-            debugMode = dx.core.debugMode;
-            dx.core.debugMode = true;
+            spyOn(dxLog, 'debug');
+            logLevel = dxLog.level;
+            dxLog.level = dxLog.LEVEL.DEBUG;
 
             server = new AbstractServer(_.extend({
                 '/container.json': {
@@ -606,7 +610,7 @@ describe('AbstractServer', function() {
                     update: {},
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server._handleResult = function(result) {
                 server._deliverResult(result);
@@ -627,7 +631,7 @@ describe('AbstractServer', function() {
 
         afterEach(function() {
             server.stop();
-            dx.core.debugMode = debugMode;
+            dxLog.level = logLevel;
         });
 
         it('logs no message if debug is not true', function() {
@@ -639,7 +643,7 @@ describe('AbstractServer', function() {
                 url: '/webapi/container/CONTAINER-1'
             });
 
-            expect(dx.debug).not.toHaveBeenCalled();
+            expect(dxLog.debug).not.toHaveBeenCalled();
         });
 
         it('logs a received message on successful call', function() {
@@ -649,7 +653,7 @@ describe('AbstractServer', function() {
                 url: '/webapi/container/CONTAINER-1'
             });
 
-            expect(dx.debug.calls[0].args[0])
+            expect(dxLog.debug.calls[0].args[0])
                 .toEqual('Call 1: Receive GET:/webapi/container/CONTAINER-1');
         });
 
@@ -668,7 +672,7 @@ describe('AbstractServer', function() {
                 url: '/webapi/container/CONTAINER-1'
             });
 
-            expect(dx.debug.calls[0].args[0])
+            expect(dxLog.debug.calls[0].args[0])
                 .toEqual('Call 2: Receive GET:/webapi/container/CONTAINER-1');
         });
 
@@ -677,7 +681,7 @@ describe('AbstractServer', function() {
             result.success = jasmine.createSpy('successCallback');
             server._deliverResult(result);
 
-            expect(dx.debug.calls[0].args[0]).toEqual('Call 5: Deliver success');
+            expect(dxLog.debug.calls[0].args[0]).toEqual('Call 5: Deliver success');
         });
 
         it('logs a message for error results', function() {
@@ -687,7 +691,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(dx.debug.calls[0].args[0]).toEqual('Call 5: Deliver error');
+            expect(dxLog.debug.calls[0].args[0]).toEqual('Call 5: Deliver error');
         });
 
         it('truncates long data', function() {
@@ -696,7 +700,7 @@ describe('AbstractServer', function() {
             server._reportDebug(1, 'AMessage', '_________1_________2_________3_________4_________5_________6' +
                 '_________7_________8_________9_________A');
 
-            expect(dx.debug.calls[0].args[0]).toEqual('Call 1: AMessage "_________1_________2_________3_________4' +
+            expect(dxLog.debug.calls[0].args[0]).toEqual('Call 1: AMessage "_________1_________2_________3_________4' +
                 '_________5_________6_________7_________8_________9________...');
         });
 

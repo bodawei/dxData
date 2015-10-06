@@ -17,17 +17,14 @@
  */
 
 /*eslint-env jasmine */
-/*global dx */
 
 'use strict';
-
-dx.namespace('dx.test');
 
 /*
  * Core dxData schemas.  This is a subset of the Delphix Schemas, with certain dependencies removed so that we can
  * use this subset without dragging in hundreds of other types.
  */
-dx.test.CORE_SCHEMAS = {
+module.exports = {
     '/delphix-api-error.json': {
         copyright: 'Copyright (c) 2014 by Delphix. All rights reserved.',
         license: 'Apache-2.0',

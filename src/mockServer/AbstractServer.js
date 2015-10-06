@@ -16,12 +16,14 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global $, require */
+/*global $, require, module */
 
 'use strict';
 
-var ServerCore = require('./ServerCore.js');
 var _ = require('underscore');
+var dxLog = require('dxLog');
+
+var ServerCore = require('./ServerCore.js');
 
 /*
  * This is an abstract supertype which provides common behavior for starting and stopping a mock server as well as
@@ -175,7 +177,7 @@ function addToResult(result, settings, callId) {
  * Expected parameters: result
  */
 function handleResult() {
-    dx.fail('handleResult() must be overridden.');
+    dxLog.fail('handleResult() must be overridden.');
 }
 
 /*
@@ -183,7 +185,7 @@ function handleResult() {
  * Expected parameters: method, url, settings
  */
 function handleUnknownUrl() {
-    dx.fail('handleUnknownUrl() must be overridden.');
+    dxLog.fail('handleUnknownUrl() must be overridden.');
 }
 
 /*
@@ -271,7 +273,7 @@ function findNotificationUrlBase(schemas) {
     });
 
     if (!notificationSchema || !notificationSchema.root) {
-        dx.fail('Schemas do not include a Notification type.');
+        dxLog.fail('Schemas do not include a Notification type.');
     }
 
     return notificationSchema.root;
@@ -311,7 +313,7 @@ function reportDebug(server, callId, message, data) {
         jsonData = jsonData.substr(0, 100) + '...';
     }
 
-    dx.debug('Call ' + callId + ': ' + message + jsonData);
+    dxLog.debug('Call ' + callId + ': ' + message + jsonData);
 }
 
 /*
@@ -320,7 +322,7 @@ function reportDebug(server, callId, message, data) {
 function startMockServer() {
     var self = this;
     if ($.ajax === self._currentAjax) {
-        dx.fail('This server is already started.');
+        dxLog.fail('This server is already started.');
     }
     self._previousAjax = $.ajax;
 
@@ -337,11 +339,11 @@ function startMockServer() {
 function stopMockServer() {
     var self = this;
     if (!self._previousAjax) {
-        dx.fail('This server has not been started.');
+        dxLog.fail('This server has not been started.');
     }
     // Check if $.ajax is our function, or is a jasmine spy on our function.
     if ($.ajax !== self._currentAjax && $.ajax.originalValue !== self._currentAjax) {
-        dx.fail('This server is not the active $.ajax handler, and so can not be stopped.');
+        dxLog.fail('This server is not the active $.ajax handler, and so can not be stopped.');
     }
 
     /*
@@ -364,10 +366,10 @@ function stopMockServer() {
 function AbstractServer(schemas, filters) {
     var self = this;
     if (!(self instanceof AbstractServer)) {
-        dx.fail('Must call AbstractServer() with new.');
+        dxLog.fail('Must call AbstractServer() with new.');
     }
     if (!_.isObject(schemas)) {
-        dx.fail('Must pass a map of schemas when constructing a server.');
+        dxLog.fail('Must pass a map of schemas when constructing a server.');
     }
 
     var server = new ServerCore(schemas, filters);

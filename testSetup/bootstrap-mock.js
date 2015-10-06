@@ -21,6 +21,7 @@
 "use strict";
 
 dx.namespace('dx.test');
+var CORE_SCHEMAS = require('../src/mockServer/test/shared/coreSchemas.js');
 
 // PhantomJS needs a bind function for some reason.  See https://github.com/ariya/phantomjs/issues/10522
 // This is from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
@@ -49,8 +50,8 @@ if (!Function.prototype.bind) {
         return fBound;
     };
 }
-var MockServer = require('../src/modules/dxData.js').MockServer;
-dx.test.mockServer = new MockServer(dx.test.CORE_SCHEMAS);
+var MockServer = require('dxDataTest').MockServer;
+dx.test.mockServer = new MockServer(CORE_SCHEMAS);
 dx.test.mockServer._filters = dx.test._filters;
 dx.test.mockServer.start();
 dx.test.assert = expect;

@@ -27,20 +27,34 @@ files = [
     'node_modules/jquery/dist/jquery.js',
     'node_modules/underscore/underscore.js',
     'node_modules/backbone/backbone.js',
+
     'testSetup/jasmineSetup.js',
+
     'src/dxBasics.js',
+//    'src/module/**/*.js',
+
+    'src/log/**/*.js',
+    'src/util/**/*.js',
     'src/layer1/**/*.js',
     'src/layer2/**/*.js',
     'src/layer3/**/*.js',
+    'src/mockServer/**/*.js',
+
     'testSetup/delphixSchema.js',
     'testSetup/bootstrap-dxdata.js',
-    'src/mockServer/**/*.js',
     'testSetup/bootstrap-mock.js',
 ];
 
 preprocessors = {
-    'src/mockServer/**/*.js': [ 'browserify' ],
-    'src/layer*/**/*.js': ['browserify'],
+    'src/dxBasics.js': ['browserify'],
+//    'src/module/**/*.js': ['browserify'],
+    
+    'src/log/**/*.js': ['browserify'],
+    'src/util/**/*.js': ['browserify'],
+    'src/layer1/**/*.js': ['browserify'],
+    'src/layer2/**/*.js': ['browserify'],
+    'src/layer3/**/*.js': ['browserify'],
+    'src/mockServer/**/*.js': ['browserify'],
     'testSetup/bootstrap-dxdata.js': ['browserify'],
     'testSetup/bootstrap-mock.js': [ 'browserify' ],
 };
@@ -81,6 +95,13 @@ module.exports = function(config) {
         singleRun: true,             // if true, it capture browsers, run tests and exit
         browserify: {
             debug: true,
+            configure: function (browserify) {
+                browserify.on('prebundle', function() {
+                    browserify.require('./src/module/dxData.js', { expose: 'dxData'});
+                    browserify.require('./src/module/dxLog.js', { expose: 'dxLog'});
+                    browserify.require('./src/module/dxDataTest.js', { expose: 'dxDataTest'});
+                });
+            }
         }
     });
 };

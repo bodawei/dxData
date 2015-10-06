@@ -16,12 +16,14 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global $, require */
+/*global $, require, module */
 
 'use strict';
 
-var AbstractServer = require('./AbstractServer.js');
+var dxLog = require('dxLog');
 var _ = require('underscore');
+
+var AbstractServer = require('./AbstractServer.js');
 
 /*
  * Defines a MockServer which responds to $.ajax calls, and then stores results until a caller/test calls respond().
@@ -33,11 +35,11 @@ var _ = require('underscore');
  *        var mockServer = new MockServer(MY_SCHEMAS);
  *        mockServer.start();
  *
- *        var promise = dx.core.data.getServerModelPromise('CONTAINER-1', 'Container');
+ *        var promise = dxData.getServerModelPromise('CONTAINER-1', 'Container');
  *        promise.then(function() {});
  *
  *        // Note that this has "sent" an "asynchronous" request to the MockServer
- *        dx.test.assert(promise).not.toHaveBeenCalled();
+ *        assert(promise).not.toHaveBeenCalled();
  *
  *        mockServer.respond(); // Tell the server to deliver the "asynchronous" results to the client
  *
@@ -120,7 +122,7 @@ function delayedDelivery() {
 function assertNotHandled() {
     var self = this;
     if (self._handled) {
-        dx.fail('Already ' + self._handled + ' this response.');
+        dxLog.fail('Already ' + self._handled + ' this response.');
     }
 }
 
@@ -181,7 +183,7 @@ function handleUnknownUrl(server, method, url, settings) {
      * Logically, this is a 404 situation.  But, also in theory this really shouldn't ever happen.  A thrown error
      * makes it clearer that the developer has done something very un-ok.
      */
-    dx.fail('The requested resource is not available: ' + method + ':' + url);
+    dxLog.fail('The requested resource is not available: ' + method + ':' + url);
 }
 
 /*
@@ -203,7 +205,7 @@ function handleResult(server, result) {
  */
 function respond(server, filterFunction) {
     if (!_.isUndefined(filterFunction) && !_.isFunction(filterFunction)) {
-        dx.fail('Filter function, if provided, must be a function.');
+        dxLog.fail('Filter function, if provided, must be a function.');
     }
     var resultCount = 0;
     var resultSent;
@@ -223,7 +225,7 @@ function respond(server, filterFunction) {
             filterFunction(response, server._stash);
             resultSent = response._delivered;
             if (!response._handled) {
-                dx.fail('Must do something with the response.');
+                dxLog.fail('Must do something with the response.');
             }
         } else {
             resultSent = true;
@@ -278,10 +280,10 @@ function forceRespond(server) {
 function MockServer(schemas, filters) {
     var self = this;
     if (!(self instanceof MockServer)) {
-        dx.fail('Must call MockServer() with new.');
+        dxLog.fail('Must call MockServer() with new.');
     }
     if (!_.isObject(schemas)) {
-        dx.fail('Must pass a map of schemas when constructing a server.');
+        dxLog.fail('Must pass a map of schemas when constructing a server.');
     }
 
     var server = new AbstractServer(schemas, filters);

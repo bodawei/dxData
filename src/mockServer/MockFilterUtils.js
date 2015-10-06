@@ -16,11 +16,15 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global require */
+/*global require, module */
 
 'use strict';
 
 var _ = require('underscore');
+var dxLog = require('dxLog');
+
+var util = require('../util/util.js');
+var CONSTANT = require('../util/constant.js');
 
 /*
  * Defines a set of filter helper functions for delphix schema root types to be used by the Mock Server.
@@ -42,7 +46,7 @@ var _ = require('underscore');
 var DATE_PROPS = ['fromDate', 'startDate', 'toDate', 'endDate'];
 
 function missingObject(type, reference) {
-    dx.fail('The ' + type + ' (' + reference + ') does not exist in the mock server and is needed to filter your ' +
+    dxLog.fail('The ' + type + ' (' + reference + ') does not exist in the mock server and is needed to filter your ' +
             '$$list operation.');
 }
 
@@ -78,7 +82,7 @@ function checkSimpleProp(qParamVal, qParamName, object, filterSupport) {
     var objectSchema = self._schemas[filterSupport.type];
     var mapsTo = objectSchema.list.parameters[qParamName].mapsTo;
     if (!mapsTo) {
-        dx.fail('No mapsTo property found for query parameter ' + qParamName + '.');
+        dxLog.fail('No mapsTo property found for query parameter ' + qParamName + '.');
     }
 
     var pair = followDataMapping.call(self, object, mapsTo, filterSupport);
@@ -97,17 +101,17 @@ function checkDateProp(qParamVal, qParamName, object, filterSupport) {
 
     var mapsTo = objectSchema.list.parameters[qParamName].mapsTo;
     if (!mapsTo) {
-        dx.fail('No mapsTo property found for query parameter ' + qParamName);
+        dxLog.fail('No mapsTo property found for query parameter ' + qParamName);
     }
 
     if (!_.contains(DATE_PROPS, qParamName)) {
-        dx.fail('Expected a date related query parameter (' + DATE_PROPS.join(', ') + ') but found: ' + qParamName);
+        dxLog.fail('Expected a date related query parameter (' + DATE_PROPS.join(', ') + ') but found: ' + qParamName);
     }
 
     var inequalityType = objectSchema.list.parameters[qParamName].inequalityType;
 
     if (_.isUndefined(inequalityType)) {
-        dx.fail('Date property "' + qParamName + '" missing "inequalityType" schema property');
+        dxLog.fail('Date property "' + qParamName + '" missing "inequalityType" schema property');
     }
 
     var pair = followDataMapping.call(self, object, mapsTo, filterSupport);
@@ -125,7 +129,7 @@ function checkDateProp(qParamVal, qParamName, object, filterSupport) {
         objAttrVal = new Date(objAttrVal);
     }
 
-    if (dx.core.util.isNone(objAttrVal)) {
+    if (util.isNone(objAttrVal)) {
         return false;
     }
 
@@ -137,7 +141,7 @@ function checkDateProp(qParamVal, qParamName, object, filterSupport) {
         return false;
     }
 
-    if (inequalityType === dx.core.constants.INEQUALITY_TYPES.STRICT && objAttrVal.getTime() === qParamVal.getTime()) {
+    if (inequalityType === CONSTANT.INEQUALITY_TYPES.STRICT && objAttrVal.getTime() === qParamVal.getTime()) {
         return false;
     }
 
@@ -160,7 +164,7 @@ function checkPageSize(qParams, objectIndex, collectionLength) {
     pageOffset = qParams.pageOffset || 0; // No pageOffset gives you the page with the most recent data
 
     if (pageSize < 0) {
-        dx.fail('pageSize must be a positive integer');
+        dxLog.fail('pageSize must be a positive integer');
     }
 
     if (pageOffset >= 0) {

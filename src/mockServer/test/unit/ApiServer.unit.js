@@ -17,11 +17,15 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, $, _ */
+/*global $ */
 
 'use strict';
 
+var _ = require('underscore');
+var dxLog = require('dxLog');
+
 var ApiServer = require('../../ApiServer.js');
+var CORE_SCHEMAS = require('../shared/coreSchemas.js');
 
 describe('ApiServer', function() {
     var jQueryAjax;
@@ -33,7 +37,7 @@ describe('ApiServer', function() {
     afterEach(function() {
         if ($.ajax !== jQueryAjax) {
             $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
+            dxLog.fail('$.ajax was not cleaned up.');
         }
     });
 
@@ -41,7 +45,7 @@ describe('ApiServer', function() {
 
         it('throws an error if not called with new', function() {
             expect(function() {
-                ApiServer(dx.test.CORE_SCHEMAS);
+                ApiServer(CORE_SCHEMAS);
             }).toDxFail('Must call ApiServer() with new.');
         });
 
@@ -52,7 +56,7 @@ describe('ApiServer', function() {
         });
 
         it('constructs something with the start() and stop() functions', function() {
-            var server = new ApiServer(dx.test.CORE_SCHEMAS);
+            var server = new ApiServer(CORE_SCHEMAS);
 
             expect(server.start).toBeDefined();
             expect(server.stop).toBeDefined();
@@ -74,7 +78,7 @@ describe('ApiServer', function() {
                     },
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
             server.createObjects([{
                 type: 'Container',
                 name: 'testObject',
@@ -97,7 +101,7 @@ describe('ApiServer', function() {
         it('calls the the real ajax function when the url is not known', function() {
             var mockAjax = jasmine.createSpy('mockAjax');
             $.ajax = mockAjax;
-            var server = new ApiServer(dx.test.CORE_SCHEMAS);
+            var server = new ApiServer(CORE_SCHEMAS);
             server.start();
 
             $.ajax({
@@ -126,7 +130,7 @@ describe('ApiServer', function() {
                     },
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
             server.createObjects([{
                 type: 'Container',
                 name: 'testObject',
@@ -218,7 +222,7 @@ describe('ApiServer', function() {
                     },
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
             server.start();
             successSpy = jasmine.createSpy('successSpy');
         });

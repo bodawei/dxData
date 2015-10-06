@@ -16,11 +16,12 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, Backbone */
-
 'use strict';
 
 var _ = require('underscore');
+var Backgone = require('Backbone');
+var dxLog = require('dxLog');
+var util = require('../util/util.js');
 
 function dumpEventListners(eventLadenObject) {
     var functionNameRegEx = /.*function *([^ \(]*) *\(/;
@@ -49,7 +50,7 @@ function dumpEventListners(eventLadenObject) {
         if (anonymousCount > 0) {
             suffix += ' (' + anonymousCount + ' anonymous)';
         }
-        dx.info('   ' + eventName + ' : ' + listenerArray.length + ' callbacks' + suffix);
+        dxLog.info('   ' + eventName + ' : ' + listenerArray.length + ' callbacks' + suffix);
     });
 }
 
@@ -147,21 +148,21 @@ function ModelSubscriberStore() {
      * Write out the subscribers.
      */
     function dump() {
-        dx.info('SUBSCRIBERS');
-        dx.info('===========');
-        dx.info(modelSubscribersByType);
+        dxLog.info('SUBSCRIBERS');
+        dxLog.info('===========');
+        dxLog.info(modelSubscribersByType);
     }
 
     function dumpText() {
-        dx.info('SUBSCRIBERS');
-        dx.info('===========');
+        dxLog.info('SUBSCRIBERS');
+        dxLog.info('===========');
         if (_.isEmpty(modelSubscribersByType)) {
-            dx.info('None.');
+            dxLog.info('None.');
         }
         var types = _.keys(modelSubscribersByType);
         _.each(types.sort(), function(typeName) {
-            dx.info(typeName);
-            dx.info('-------------');
+            dxLog.info(typeName);
+            dxLog.info('-------------');
             _.each(modelSubscribersByType[typeName], function(subscriber) {
                 if (subscriber instanceof Backbone.Collection) {
                     var collection = subscriber;
@@ -173,11 +174,11 @@ function ModelSubscriberStore() {
                     }, []);
 
                     var suffix = references.length === 0 ? '' :  '. IDs: ' + references.join(', ');
-                    dx.info('   ' + collection.length + ' model collection' + suffix);
+                    dxLog.info('   ' + collection.length + ' model collection' + suffix);
                     dumpEventListners(collection);
                 } else {
                     var qp = subscriber.getQueryParameters();
-                    dx.info('Notification Listener with query params: ' + (qp ? JSON.stringify(qp) : 'None'));
+                    dxLog.info('Notification Listener with query params: ' + (qp ? JSON.stringify(qp) : 'None'));
                 }
             });
         });
@@ -256,19 +257,19 @@ function SingletonStore() {
      * Write out the singletons.
      */
     function dump() {
-        dx.info('SINGLETONS');
-        dx.info('==========');
-        dx.info(singletons);
+        dxLog.info('SINGLETONS');
+        dxLog.info('==========');
+        dxLog.info(singletons);
     }
 
     function dumpText() {
-        dx.info('SINGLETONS');
-        dx.info('==========');
+        dxLog.info('SINGLETONS');
+        dxLog.info('==========');
         if (_.isEmpty(singletons)) {
-            dx.info('None.');
+            dxLog.info('None.');
         }
         _.each(singletons, function(singleton, typeName) {
-            dx.info(typeName);
+            dxLog.info(typeName);
             dumpEventListners(singleton);
         });
     }
@@ -305,8 +306,8 @@ function ModelStore(context) {
         var reference = model.get('reference');
         modelsByTypeThenRef[rootType] = modelsByTypeThenRef[rootType] || {};
 
-        if (dx.core.util.isNone(reference)) {
-            dx.fail('Can not cache a model with no reference (type is: ' + model.get('type') + ').');
+        if (util.isNone(reference)) {
+            dxLog.fail('Can not cache a model with no reference (type is: ' + model.get('type') + ').');
         }
 
         modelsByTypeThenRef[rootType][reference] = model;
@@ -399,25 +400,25 @@ function ModelStore(context) {
      * Write out the models.
      */
     function dump() {
-        dx.info('SERVER MODELS');
-        dx.info('=============');
-        dx.info(modelsByTypeThenRef);
+        dxLog.info('SERVER MODELS');
+        dxLog.info('=============');
+        dxLog.info(modelsByTypeThenRef);
     }
 
     function dumpText() {
-        dx.info('SERVER MODELS');
-        dx.info('=============');
+        dxLog.info('SERVER MODELS');
+        dxLog.info('=============');
         if (_.isEmpty(modelsByTypeThenRef)) {
-            dx.info('None.');
+            dxLog.info('None.');
         }
         var types = _.keys(modelsByTypeThenRef);
         _.each(types.sort(), function(typeName) {
-            dx.info(typeName);
-            dx.info('-------------');
+            dxLog.info(typeName);
+            dxLog.info('-------------');
             var references = _.keys(modelsByTypeThenRef[typeName]);
             _.each(references.sort(), function(reference) {
                 var model = modelsByTypeThenRef[typeName][reference];
-                dx.info(reference);
+                dxLog.info(reference);
                 dumpEventListners(model);
             });
         });
@@ -473,7 +474,7 @@ function initCache(context) {
      */
     function getCachedSingleton(typeName, options) {
         if (!_.isString(typeName)) {
-            dx.fail('A type name must be passed to get the singleton.');
+            dxLog.fail('A type name must be passed to get the singleton.');
         }
         options = options || {};
         var model;
@@ -487,7 +488,7 @@ function initCache(context) {
             var schema = assertTypeAndGetModelSchema(typeName);
 
             if (!schema.singleton) {
-                dx.fail(typeName + ' is not a singleton.');
+                dxLog.fail(typeName + ' is not a singleton.');
             }
 
             model = context._newServerModel(typeName);
@@ -527,15 +528,15 @@ function initCache(context) {
         var model;
 
         if (!_.isObject(properties) || !_.isString(properties.type)) {
-            dx.fail('Must be called with an object that has a type property that is a string value.');
+            dxLog.fail('Must be called with an object that has a type property that is a string value.');
         }
 
         if (!context._modelConstructors[properties.type]) {
-            dx.fail('Don\'t know how to create a model of type ' + properties.type + '.');
+            dxLog.fail('Don\'t know how to create a model of type ' + properties.type + '.');
         }
 
         // Not all types have a reference property. Those that do not are not cachable. Assume this is a client model
-        if (!isTypeCachable(properties.type) || dx.core.util.isNone(properties.reference)) {
+        if (!isTypeCachable(properties.type) || util.isNone(properties.reference)) {
             model = context._newClientModel(properties.type);
             model._dxSet(properties);
             return model;
@@ -569,7 +570,7 @@ function initCache(context) {
      */
     function getCachedModel(reference, typeName, options) {
         if (!_.isString(reference) || !_.isString(typeName)) {
-            dx.fail('A reference and a type must be passed to get the model.');
+            dxLog.fail('A reference and a type must be passed to get the model.');
         }
         options = options || {};
 
@@ -611,7 +612,7 @@ function initCache(context) {
      */
     function containsCachedModel(reference, typeName) {
         if (!_.isString(reference) || !_.isString(typeName)) {
-            dx.fail('A reference and a type must be passed to check on the model.');
+            dxLog.fail('A reference and a type must be passed to check on the model.');
         }
 
         return !_.isUndefined(context._modelStore.get(reference, context._getRootType(typeName)));
@@ -624,7 +625,7 @@ function initCache(context) {
      */
     function deleteCachedModel(reference, typeName, dontTriggerDelete) {
         if (!_.isString(reference) || !_.isString(typeName)) {
-            dx.fail('A reference and a type must be passed to delete a model.');
+            dxLog.fail('A reference and a type must be passed to delete a model.');
         }
 
         var rootType = context._getRootType(typeName);
@@ -662,10 +663,10 @@ function initCache(context) {
      */
     function dumpCacheAsText() {
         context._modelSubscribersStore.dumpText();
-        dx.info('');
+        dxLog.info('');
 
         context._singletonStore.dumpText();
-        dx.info('');
+        dxLog.info('');
 
         context._modelStore.dumpText();
     }
@@ -675,13 +676,13 @@ function initCache(context) {
      */
     function dumpCache() {
         context._modelSubscribersStore.dump();
-        dx.info('');
+        dxLog.info('');
 
         context._singletonStore.dump();
-        dx.info('');
+        dxLog.info('');
 
         context._modelStore.dump();
-        dx.info('');
+        dxLog.info('');
     }
 
     function prune() {
@@ -751,7 +752,7 @@ function initCache(context) {
         var ModelConstructor = context._modelConstructors[typeName];
 
         if (!ModelConstructor) {
-            dx.fail(typeName + ' is not a known type name.');
+            dxLog.fail(typeName + ' is not a known type name.');
         }
 
         return ModelConstructor.prototype._dxSchema;

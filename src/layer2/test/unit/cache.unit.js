@@ -28,6 +28,8 @@ var generateCollectionConstructors = require('../../collection.js');
 var initFilters = require('../../filter.js');
 var CreationListener = require('../../creationListener.js');
 
+var dxLog = require('dxLog');
+
 describe('cache', function() {
     var target;
     var SIMPLE_MODEL = {
@@ -717,43 +719,43 @@ describe('cache', function() {
 
     describe('dump()', function() {
         it('reports nothing when there\'s nothing in the cache', function() {
-            spyOn(dx, 'info');
+            spyOn(dxLog, 'info');
 
             target._cache.dump();
 
-            expect(dx.info.calls[0].args[0]).toEqual('SUBSCRIBERS');
-            expect(dx.info.calls[1].args[0]).toEqual('===========');
-            expect(dx.info.calls[2].args[0]).toEqual({});
-            expect(dx.info.calls[3].args[0]).toEqual('');
-            expect(dx.info.calls[4].args[0]).toEqual('SINGLETONS');
-            expect(dx.info.calls[5].args[0]).toEqual('==========');
-            expect(dx.info.calls[6].args[0]).toEqual({});
-            expect(dx.info.calls[3].args[0]).toEqual('');
-            expect(dx.info.calls[8].args[0]).toEqual('SERVER MODELS');
-            expect(dx.info.calls[9].args[0]).toEqual('=============');
-            expect(dx.info.calls[10].args[0]).toEqual({});
+            expect(dxLog.info.calls[0].args[0]).toEqual('SUBSCRIBERS');
+            expect(dxLog.info.calls[1].args[0]).toEqual('===========');
+            expect(dxLog.info.calls[2].args[0]).toEqual({});
+            expect(dxLog.info.calls[3].args[0]).toEqual('');
+            expect(dxLog.info.calls[4].args[0]).toEqual('SINGLETONS');
+            expect(dxLog.info.calls[5].args[0]).toEqual('==========');
+            expect(dxLog.info.calls[6].args[0]).toEqual({});
+            expect(dxLog.info.calls[3].args[0]).toEqual('');
+            expect(dxLog.info.calls[8].args[0]).toEqual('SERVER MODELS');
+            expect(dxLog.info.calls[9].args[0]).toEqual('=============');
+            expect(dxLog.info.calls[10].args[0]).toEqual({});
         });
 
         it('reports the contents of the cache when called', function() {
             var model = target._cache.getCachedModelFromProperties(SIMPLE_MODEL);
             var singleton = target._cache.getCachedSingleton('SingletonType');
-            spyOn(dx, 'info');
+            spyOn(dxLog, 'info');
 
             target._cache.dump();
 
-            expect(dx.info.calls[0].args[0]).toEqual('SUBSCRIBERS');
-            expect(dx.info.calls[1].args[0]).toEqual('===========');
-            expect(dx.info.calls[2].args[0]).toEqual({});
-            expect(dx.info.calls[3].args[0]).toEqual('');
-            expect(dx.info.calls[4].args[0]).toEqual('SINGLETONS');
-            expect(dx.info.calls[5].args[0]).toEqual('==========');
-            expect(dx.info.calls[6].args[0]).toEqual({
+            expect(dxLog.info.calls[0].args[0]).toEqual('SUBSCRIBERS');
+            expect(dxLog.info.calls[1].args[0]).toEqual('===========');
+            expect(dxLog.info.calls[2].args[0]).toEqual({});
+            expect(dxLog.info.calls[3].args[0]).toEqual('');
+            expect(dxLog.info.calls[4].args[0]).toEqual('SINGLETONS');
+            expect(dxLog.info.calls[5].args[0]).toEqual('==========');
+            expect(dxLog.info.calls[6].args[0]).toEqual({
                 SingletonType: singleton
             });
-            expect(dx.info.calls[7].args[0]).toEqual('');
-            expect(dx.info.calls[8].args[0]).toEqual('SERVER MODELS');
-            expect(dx.info.calls[9].args[0]).toEqual('=============');
-            expect(dx.info.calls[10].args[0]).toEqual({
+            expect(dxLog.info.calls[7].args[0]).toEqual('');
+            expect(dxLog.info.calls[8].args[0]).toEqual('SERVER MODELS');
+            expect(dxLog.info.calls[9].args[0]).toEqual('=============');
+            expect(dxLog.info.calls[10].args[0]).toEqual({
                 Simple: {
                     'MODEL-1': model
                 }
@@ -764,7 +766,7 @@ describe('cache', function() {
     describe('dumpText()', function() {
         it('reports nothing is in the cache if there is nothing in it', function() {
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dxLog, 'info').andCallFake(function(line) {
                 lines = lines + line + '\n';
             });
 
@@ -776,7 +778,7 @@ describe('cache', function() {
 
         it('reports a creation listener is in the cache if it is', function() {
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dxLog, 'info').andCallFake(function(line) {
                 lines = lines + line + '\n';
             });
             var creationListener = makeCreationListener();
@@ -790,7 +792,7 @@ describe('cache', function() {
 
         it('reports a creation listener is in the cache with query parameters if it is', function() {
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dxLog, 'info').andCallFake(function(line) {
                 lines = lines + line + '\n';
             });
             var creationListener = new CreationListener({
@@ -813,7 +815,7 @@ describe('cache', function() {
             target._cache.getCachedModelFromProperties(SIMPLE_MODEL);
             target._cache.getCachedSingleton('SingletonType');
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dxLog, 'info').andCallFake(function(line) {
                 lines = lines + line + '\n';
             });
 
@@ -1039,7 +1041,7 @@ describe('cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dxLog, 'info').andCallFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1058,7 +1060,7 @@ describe('cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dxLog, 'info').andCallFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1225,7 +1227,7 @@ describe('cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dxLog, 'info').andCallFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1244,7 +1246,7 @@ describe('cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dxLog, 'info').andCallFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1467,7 +1469,7 @@ describe('cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dxLog, 'info').andCallFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1486,7 +1488,7 @@ describe('cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dxLog, 'info').andCallFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });

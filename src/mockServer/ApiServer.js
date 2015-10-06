@@ -16,11 +16,13 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, require */
+/*global $, require, module */
 
 'use strict';
 
 var _ = require('underscore');
+var dxLog = require('dxLog');
+
 var AbstractServer = require('./AbstractServer.js');
 
 /*
@@ -62,7 +64,7 @@ function handleResult(server, result) {
 function ApiServer(schemas, filters) {
     var self = this;
     if (!(self instanceof ApiServer)) {
-        dx.fail('Must call ApiServer() with new.');
+        dxLog.fail('Must call ApiServer() with new.');
     }
 
     var server = new AbstractServer(schemas, filters);

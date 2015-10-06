@@ -13,28 +13,21 @@
  */
 
 /*
- * Copyright (c) 2014 by Delphix. All rights reserved.
+ * Copyright (c) 2015 by Delphix. All rights reserved.
  */
 
 /*global dx */
 
-"use strict";
+'use strict';
 
-var dxData = require('dxData');
-/*
- * Some wrappers around browser access
- */
-dx.namespace('dx.core.browser');
-
-dx.core.browser.getWindowLocation = function() {
-    return {
-        origin: '',
-        hash: ''
-    };
+module.exports = {
+    INEQUALITY_TYPES: {
+        STRICT: 'STRICT',
+        NON_STRICT: 'NON-STRICT'
+    },
+    LIST_TYPES: {
+        NONE:   'NONE',
+        UBER:   'UBER',
+        CUSTOM: 'CUSTOM'
+    }
 };
-
-/*
- * Start the mock server. This is loaded as part of the unit test system so that the mock server is available to tests.
- */
-var temp = new dxData.DataSystem(delphixSchema);
-_.extend(dx.core.data, temp);

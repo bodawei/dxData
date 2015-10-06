@@ -17,11 +17,14 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, _ */
 
 'use strict';
 
+var _ = require('underscore');
+
 var ServerCore = require('../../ServerCore.js');
+
+var CORE_SCHEMAS = require('../shared/coreSchemas.js');
 
 describe('ServerCore (handlers)', function() {
     var server;
@@ -283,7 +286,7 @@ describe('ServerCore (handlers)', function() {
                     $ref: '/delphix-typed-object.json'
                 }
             }
-        }, dx.test.CORE_SCHEMAS));
+        }, CORE_SCHEMAS));
 
         server._filters.Container = function(collection) {
             return collection;

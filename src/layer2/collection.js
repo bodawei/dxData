@@ -16,11 +16,16 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, Backbone */
+/*global $ */
 
 'use strict';
 
 var _ = require('underscore');
+var Backgone = require('Backbone');
+var dxLog = require('dxLog');
+
+var CONSTANT = require('../util/constant.js');
+var util = require('../util/util.js');
 
 /*
  * This takes a set of schemas (modified by _prepareSchemas), and creates a set of Backbone Collection constructor
@@ -174,9 +179,9 @@ function generateCollectionConstructors(schemas, context) {
      */
     function dxParse(response) {
         if (!response || !response.type) {
-           dx.fail('Got a response without a type.');
+           dxLog.fail('Got a response without a type.');
         } else if (response.type !== 'ListResult') {
-            dx.fail('Got an unexpected type of response (' + response.type + ') in parse().');
+            dxLog.fail('Got an unexpected type of response (' + response.type + ') in parse().');
         }
 
         return response.result;
@@ -188,7 +193,7 @@ function generateCollectionConstructors(schemas, context) {
      * maps to our schemas.
      */
     function dxFetch() {
-        dx.fail('Do not call fetch() directly. Instead, call $$list().');
+        dxLog.fail('Do not call fetch() directly. Instead, call $$list().');
     }
 
     /*
@@ -196,7 +201,7 @@ function generateCollectionConstructors(schemas, context) {
      * done through the $$create operations.
      */
     function dxCreate() {
-        dx.fail('Do not call create() directly. Instead, call rootOps.' + this._dxInfo.baseType + '.$$create().');
+        dxLog.fail('Do not call create() directly. Instead, call rootOps.' + this._dxInfo.baseType + '.$$create().');
     }
 
     /*
@@ -243,7 +248,7 @@ function generateCollectionConstructors(schemas, context) {
 
         var filter = context._filters[rootType];
         if (!filter) {
-            if (self._dxInfo.paramDefs.dxFilterMode === dx.core.constants.LIST_TYPES.NONE) {
+            if (self._dxInfo.paramDefs.dxFilterMode === CONSTANT.LIST_TYPES.NONE) {
                 dxSet.call(self, model, options);
                 return;
             }
@@ -274,7 +279,7 @@ function generateCollectionConstructors(schemas, context) {
                     }
                     break;
                 default:
-                    dx.fail('Filter returned an invalid value.');
+                    dxLog.fail('Filter returned an invalid value.');
             }
         });
     }
@@ -364,10 +369,10 @@ function generateCollectionConstructors(schemas, context) {
         var rootType = this._dxInfo.baseType;
 
         // No filter function. Complain so someone writes one, and blindly add the model
-        if (dx.core.util.isNone(context._filters[rootType]) &&
-            self._dxInfo.paramDefs.dxFilterMode === dx.core.constants.LIST_TYPES.CUSTOM) {
-            dx.fail('No filter function found for collections of type ' + rootType + '. Add one to ' +
-                 ' dx.core.data._filters. In the mean time, all models will be added to the collection.');
+        if (util.isNone(context._filters[rootType]) &&
+            self._dxInfo.paramDefs.dxFilterMode === CONSTANT.LIST_TYPES.CUSTOM) {
+            dxLog.fail('No filter function found for collections of type ' + rootType + '. Add one to ' +
+                 ' _filters. In the mean time, all models will be added to the collection.');
         }
 
         self._dxIsReady = false;
@@ -398,7 +403,7 @@ function generateCollectionConstructors(schemas, context) {
                 }
 
                 var resetting = false;
-                self._queryParameters = dx.core.util.deepClone(parameters);
+                self._queryParameters = util.deepClone(parameters);
                 self._listSuccessError = successError; // save for auto-relisting
                 self._dxIsReady = true;
                 self._listingMode = LISTINGMODE_LISTING;
@@ -481,12 +486,12 @@ function generateCollectionConstructors(schemas, context) {
      *              collection.
      */
     function newServerCollection(typeName, resetOnList) {
-        if (dx.core.util.isNone(typeName)) {
-            dx.fail('To create a new collection, a type name must be provided.');
+        if (util.isNone(typeName)) {
+            dxLog.fail('To create a new collection, a type name must be provided.');
         }
 
         if (!isSchemaType(typeName)) {
-            dx.fail(typeName + ' is not a known type with a list operation. Can not create this collection.');
+            dxLog.fail(typeName + ' is not a known type with a list operation. Can not create this collection.');
         }
 
         var collection = new context._collectionConstructors[typeName]();
@@ -497,7 +502,7 @@ function generateCollectionConstructors(schemas, context) {
     }
 
     function operationNotAllowed() {
-        dx.fail('Can not call this operation on a Server Collection.');
+        dxLog.fail('Can not call this operation on a Server Collection.');
     }
 
     /*
@@ -537,11 +542,11 @@ function generateCollectionConstructors(schemas, context) {
         if (aModel instanceof Backbone.Model) {
             type = aModel.get('type');
         } else {
-            dx.fail('Can not add an arbitrary set of attributes. Must pass a Backbone Model.');
+            dxLog.fail('Can not add an arbitrary set of attributes. Must pass a Backbone Model.');
         }
 
         if (!isACompatibleType(type, baseType)) {
-            dx.fail('Can not add a model of type ' + type + ' to a collection with a base type of ' + baseType + '.');
+            dxLog.fail('Can not add a model of type ' + type + ' to a collection with a base type of ' + baseType + '.');
         }
     }
 
@@ -549,8 +554,8 @@ function generateCollectionConstructors(schemas, context) {
      * Validates that all models are compatible with this collection's type.
      */
     function assertModelsCompatible(models, referenceModel) {
-        if (dx.core.util.isNone(models)) {
-            dx.fail('Can not call without a model.');
+        if (util.isNone(models)) {
+            dxLog.fail('Can not call without a model.');
         }
 
         if (_.isArray(models)) {
@@ -607,7 +612,7 @@ function generateCollectionConstructors(schemas, context) {
                 _dxRemoveModel: Backbone.Collection.prototype.remove,
                 _dxAddOrRemove: dxAddOrRemove,
                 model: function() {
-                    dx.fail('Can not create a new model on a collection. Must use the cache.');
+                    dxLog.fail('Can not create a new model on a collection. Must use the cache.');
                 },
                 on: dxOn,
                 add: operationNotAllowed,

@@ -21,8 +21,12 @@
 
 'use strict';
 
-var dxData = require('../../../modules/dxData.js');
+var dxData = require('dxData');
+var dxDataTest = require('dxDataTest');
+var dxLog = require('dxLog');
+
 var setupNotificationSystem = require('../../../layer3/notification.js');
+var CORE_SCHEMAS = require('../shared/coreSchemas.js');
 
 describe('notification processor', function() {
     var server;
@@ -71,8 +75,8 @@ describe('notification processor', function() {
                     }
                 }
             }
-        }, dx.test.CORE_SCHEMAS);
-        server = new dxData.MockServer(schemas, {
+        }, CORE_SCHEMAS);
+        server = new dxDataTest.MockServer(schemas, {
             Group: function(collection, qParams, support) {
                 return support.utils.uberFilter(collection, qParams, support);
             }
@@ -333,10 +337,10 @@ describe('notification processor', function() {
             }]
         });
 
-        spyOn(dx, 'fail').andCallFake(function() {
+        spyOn(dxLog, 'fail').andCallFake(function() {
             throw new Error('placeholder exception');
         });
-        var warnSpy = spyOn(dx, 'warn');
+        var warnSpy = spyOn(dxLog, 'warn');
 
         // Get the current collection state
         var groups = client.getServerCollection('Group');
@@ -358,8 +362,8 @@ describe('notification processor', function() {
                 objectType: 'BogusSingletonType'
             }]
         });
-        spyOn(dx, 'fail');  // block message from mock server
-        var warnSpy = spyOn(dx, 'warn');
+        spyOn(dxLog, 'fail');  // block message from mock server
+        var warnSpy = spyOn(dxLog, 'warn');
 
         // Get the current collection state
         client.notification.start();
@@ -385,7 +389,7 @@ describe('notification processor', function() {
         var groups = client.getServerCollection('Group');
         groups.$$list();
         server.respond();
-        var warnSpy = spyOn(dx, 'warn');
+        var warnSpy = spyOn(dxLog, 'warn');
 
         // Get the current collection state
         client.notification.start();
@@ -409,7 +413,7 @@ describe('notification processor', function() {
             }]
         });
 
-        var warnSpy = spyOn(dx, 'warn');
+        var warnSpy = spyOn(dxLog, 'warn');
 
         client.notification.start();
         server.respond();
@@ -499,7 +503,7 @@ describe('notification processor', function() {
                 responseText: null
             }, 'error', null);
         });
-        var errorSpy = spyOn(dx, 'warn');
+        var errorSpy = spyOn(dxLog, 'warn');
         jasmine.Clock.useMock();
         client.notification.start();
 
@@ -514,7 +518,7 @@ describe('notification processor', function() {
 
     it('doesn\'t retry on error after stop() is called', function() {
         jasmine.Clock.useMock();
-        spyOn(dx, 'warn'); // suppress warning message
+        spyOn(dxLog, 'warn'); // suppress warning message
         server.createObjects({});
         var ajaxSpy = spyOn($, 'ajax').andCallFake(function(options) {
             options.error({
@@ -710,7 +714,7 @@ describe('notification processor', function() {
     });
 
     it('reports an error if called with an unknown event type', function() {
-        spyOn(dx, 'warn');
+        spyOn(dxLog, 'warn');
         server.createObjects({
             Notification: [ {
                 type: 'ObjectNotification',
@@ -722,7 +726,7 @@ describe('notification processor', function() {
 
         client.notification.start();
         server.respond();
-        expect(dx.warn).toHaveBeenCalled();
+        expect(dxLog.warn).toHaveBeenCalled();
         client.notification.stop();
     });
 
@@ -739,14 +743,14 @@ describe('notification processor', function() {
          * This strange construction is because we need the underlying call to fail to throw an exception
          * so the next layer of code above will react correctly (notification has a try catch)
          */
-        spyOn(dx, 'warn');
-        spyOn(dx, 'fail').andCallFake(function(message) {throw new Error(message); });
+        spyOn(dxLog, 'warn');
+        spyOn(dxLog, 'fail').andCallFake(function(message) {throw new Error(message); });
 
         client.notification.start();
         server.respond();
         client.notification.stop();
 
-        expect(dx.warn.mostRecentCall.args[0]).toBe('notification processing failed: Fish is not a known type name.');
+        expect(dxLog.warn.mostRecentCall.args[0]).toBe('notification processing failed: Fish is not a known type name.');
     });
 
     it('will reload the browser page if it receives an object dropped notification', function() {
@@ -774,7 +778,7 @@ describe('notification processor', function() {
 
     it('reports a warning if the call to the notification system fails', function() {
         jasmine.Clock.useMock();
-        spyOn(dx, 'warn');
+        spyOn(dxLog, 'warn');
         var callback;
         spyOn($, 'ajax').andCallFake(function(options) {
             callback = options;
@@ -788,13 +792,13 @@ describe('notification processor', function() {
             responseText: null
         }, 'error', null);
 
-        expect(dx.warn.mostRecentCall.args[0]).toBe('Notification call failed.');
+        expect(dxLog.warn.mostRecentCall.args[0]).toBe('Notification call failed.');
         client.notification.stop();
         jasmine.Clock.reset();
     });
 
     it('reports no warning if the call to the notification system fails after the system was stopped', function() {
-        spyOn(dx, 'warn');
+        spyOn(dxLog, 'warn');
         var callback;
         spyOn($, 'ajax').andCallFake(function(options) {
             callback = options;
@@ -809,6 +813,6 @@ describe('notification processor', function() {
             responseText: null
         }, 'error', null);
 
-        expect(dx.warn.calls.length).toBe(0);
+        expect(dxLog.warn.calls.length).toBe(0);
     });
 });

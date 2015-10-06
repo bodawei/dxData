@@ -20,6 +20,8 @@
 
 'use strict';
 
+var dxLog = require('dxLog');
+
 /*
  * This notification system receives updates from the server about objects that have been created, deleted or updated.
  * This system, in turn, converts those notifications into calls to the underlying cache system so all models and
@@ -97,7 +99,7 @@ function setupNotificationSystem(context) {
                                 suppressDefaultErrorHandler: true
                             });
                             model.once('error', function(model, err) {
-                                dx.warn('Got an error when doing a ' + notification.get('eventType') + ' on ' +
+                                dxLog.warn('Got an error when doing a ' + notification.get('eventType') + ' on ' +
                                     objRef + '.', err.toJSON());
                             });
                         }
@@ -106,11 +108,11 @@ function setupNotificationSystem(context) {
                         context._cache.deleteCachedModel(objRef, rootType);
                         break;
                     default:
-                        dx.warn('Unknown event type: ' + notification.get('eventType'));
+                        dxLog.warn('Unknown event type: ' + notification.get('eventType'));
                 }
             } catch (e) {
                 // We really don't want notification processing to stop, so swallow any exception and keep going
-                dx.warn('notification processing failed: ' + e.message);
+                dxLog.warn('notification processing failed: ' + e.message);
             }
         });
 
@@ -122,7 +124,7 @@ function setupNotificationSystem(context) {
                 context._cache.getCachedSingleton(type, {update: true});
             } catch (e) {
                 // We really don't want notification processing to stop, so swallow any exception and keep going
-                dx.warn('notification processing failed: ' + e.message);
+                dxLog.warn('notification processing failed: ' + e.message);
             }
         });
     }
@@ -146,7 +148,7 @@ function setupNotificationSystem(context) {
             },
             error: function() {
                 if (!stopped) {
-                    dx.warn('Notification call failed.');
+                    dxLog.warn('Notification call failed.');
                 }
 
                 if (stopped) {
@@ -169,7 +171,7 @@ function setupNotificationSystem(context) {
         if (_.isUndefined(notification)) {
             notification = context.getServerCollection('Notification');
         } else {
-            dx.fail('Notification system already started.');
+            dxLog.fail('Notification system already started.');
         }
         stopped = false;
         fetchNotifications();

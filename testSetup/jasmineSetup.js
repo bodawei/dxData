@@ -63,10 +63,11 @@ function toHaveProps(expected) {
  * Delphix custom jasmine setup.
  */
 beforeEach(function() {
+    window.assert = expect;
     this.addMatchers({
         toDxFail: toDxFail,
         toHaveProps: toHaveProps
     });
 });
-
+ 
 })();

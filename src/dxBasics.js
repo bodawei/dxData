@@ -37,34 +37,6 @@ window.dx = window.dx || {
         return current;
     },
  
-    /*
-     * Report a failing message. Writes the info to the console and throws an error
-     */
-    fail: function() {
-        window.console.error.call(window.console, arguments);
-        throw new Error(arguments[0]);
-    },
- 
-    /*
-     * Report a warning message. Writes the info to the console
-     */
-    warn: function() {
-        window.console.warn.call(window.console, arguments);
-    },
-
-    /*
-     * Report an info message. Writes the info to the console
-     */
-    info: function() {
-        window.console.info.call(window.console, arguments);
-    },
-
-    /*
-     * Report an debug message. Writes the info to the console
-     */
-    debug: function() {
-        window.console.info.call(window.console, arguments);
-    },
 
     /*
      * Dummy stub for a localization system

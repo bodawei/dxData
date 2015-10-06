@@ -21,6 +21,9 @@
 'use strict';
 
 var _ = require('underscore');
+var dxLog = require('dxLog');
+var util = require('../util/util.js');
+var constant = require('../util/constant.js');
 
 /*
  * Do top-level processing of each schema. This involves:
@@ -81,7 +84,7 @@ function processSchema(schema, schemaKey, sourceSchemas, newSchemas, preserveUnn
  */
 function schemaKeyToTypeName(schemaKey, schemas) {
     if (!schemas[schemaKey]) {
-        dx.fail('Could not find a schema entry for ' + schemaKey);
+        dxLog.fail('Could not find a schema entry for ' + schemaKey);
     }
 
     if (schemas[schemaKey].name) {
@@ -186,11 +189,11 @@ function processOperations(schema, parentSchema, sourceSchemas) {
     // Do some schema validation
     var schemaOps = _.pick(schema, ['operations', 'rootOperations', 'create', 'read', 'list', 'update', 'delete']);
     if (!schema.root && !_.isEmpty(schemaOps)) {
-        dx.fail('Found ' + _.keys(schemaOps) + ' on a non-root schema.');
+        dxLog.fail('Found ' + _.keys(schemaOps) + ' on a non-root schema.');
     }
 
     if (schema.operations && parentSchema && parentSchema.operations) {
-        dx.fail('Both ' + parentSchema.name + ' and ' + schema.name + ' have operations. This isn\'t supported.');
+        dxLog.fail('Both ' + parentSchema.name + ' and ' + schema.name + ' have operations. This isn\'t supported.');
     }
 
     var parentOps = (parentSchema && parentSchema.operations) ? parentSchema.operations : {};
@@ -212,7 +215,7 @@ function processOperations(schema, parentSchema, sourceSchemas) {
     var pSchema = parentSchema || {};
     _.each(['create', 'update', 'read', 'list', 'delete'], function(opName) {
         var opDef = schema[opName];
-        if (!dx.core.util.isNone(opDef)) {
+        if (!util.isNone(opDef)) {
             if (opName === 'create' || opName === 'update') {
                opDef.validateAs = opDef.validateAs || opName;
             }
@@ -328,7 +331,7 @@ function processOperations(schema, parentSchema, sourceSchemas) {
 function processOperation(opDef, opName, sourceSchemas) {
     if (opDef.payload) {
         if (opDef.parameters) {
-            dx.fail('Found both a payload and a parameters for the operation ' + opName + '.');
+            dxLog.fail('Found both a payload and a parameters for the operation ' + opName + '.');
         }
         if (opDef.payload.$ref) {
             opDef.payload.$ref = schemaKeyToTypeName(opDef.payload.$ref, sourceSchemas);
@@ -404,7 +407,7 @@ function markListOperations(schemas) {
     _.each(schemas, function(schema) {
         if (schema.list) {
             if (_.isEmpty(schema.list.parameters)) {
-                schema.list.dxFilterMode = dx.core.constants.LIST_TYPES.NONE;
+                schema.list.dxFilterMode = constant.LIST_TYPES.NONE;
             } else {
                 var missingMapsTo = false;
                 _.any(schema.list.parameters, function(param) {
@@ -413,8 +416,8 @@ function markListOperations(schemas) {
                         return true;
                     }
                 });
-                schema.list.dxFilterMode = missingMapsTo ? dx.core.constants.LIST_TYPES.CUSTOM :
-                    dx.core.constants.LIST_TYPES.UBER;
+                schema.list.dxFilterMode = missingMapsTo ? constant.LIST_TYPES.CUSTOM :
+                    constant.LIST_TYPES.UBER;
             }
         }
     });
@@ -455,12 +458,12 @@ function prepareSchemas(schemas, copySchemas, preserveUnneeded) {
     var newSchemas = {};
 
     if (!_.isObject(schemas)) {
-        dx.fail('Must provide a schemas object.');
+        dxLog.fail('Must provide a schemas object.');
     }
 
     // Always copy the schemas at this time, as it caused model-generator to be unhappy.
     if (copySchemas || true) {
-        schemas = dx.core.util.deepClone(schemas);
+        schemas = util.deepClone(schemas);
     }
 
     _.each(schemas, function(value, key) {
@@ -524,7 +527,7 @@ function prepareEnums(schemas) {
     var enums = {};
 
     if (!_.isObject(schemas)) {
-        dx.fail('Must provide a set of prepared schemas.');
+        dxLog.fail('Must provide a set of prepared schemas.');
     }
 
     function processEnum(type, name, definition) {

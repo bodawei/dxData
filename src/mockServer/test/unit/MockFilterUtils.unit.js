@@ -17,14 +17,18 @@
  */
 
 /*eslint-env jasmine */
-/*global dx */
 
 'use strict';
 
-var schemaStuff = require('../../../layer1/schema.js');
+var _ = require('underscore');
+
+var dxData = require('dxData');
+var dxLog = require('dxLog');
+
 var MockFilterUtils = require('../../MockFilterUtils.js');
 var MockServer = require('../../MockServer.js');
-var dxData = require('../../../modules/dxData.js');
+var CORE_SCHEMAS = require('../shared/coreSchemas.js');
+var CONSTANT = require('../../../util/constant.js');
 
 describe('MockFilterUtils', function() {
     var collection;
@@ -311,7 +315,7 @@ describe('MockFilterUtils', function() {
 
             beforeEach(function() {
                 var objects = [];
-                var testSchemas = _.extend({'/delphix-fault.js': FAULT_SCHEMA}, dx.test.CORE_SCHEMAS);
+                var testSchemas = _.extend({'/delphix-fault.js': FAULT_SCHEMA}, CORE_SCHEMAS);
 
                 for (var i = 0; i < 30; i++) {
                     objects.push({
@@ -472,25 +476,25 @@ describe('MockFilterUtils', function() {
                                     type: 'string',
                                     format: 'date',
                                     mapsTo: 'updateDate',
-                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                    inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                                 },
                                 startDate: {
                                     type: 'string',
                                     format: 'date',
                                     mapsTo: 'updateDate',
-                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                    inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                                 },
                                 toDate: {
                                     type: 'string',
                                     format: 'date',
                                     mapsTo: 'updateDate',
-                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                    inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                                 },
                                 endDate: {
                                     type: 'string',
                                     format: 'date',
                                     mapsTo: 'updateDate',
-                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                    inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                                 }
                             }
                         }
@@ -556,7 +560,7 @@ describe('MockFilterUtils', function() {
             });
 
             it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
-                schema.TestType.list.parameters.fromDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
+                schema.TestType.list.parameters.fromDate.inequalityType = CONSTANT.INEQUALITY_TYPES.STRICT;
                 var qParams = {
                     fromDate: dateObj
                 };
@@ -567,7 +571,7 @@ describe('MockFilterUtils', function() {
             });
 
             it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
-                schema.TestType.list.parameters.toDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
+                schema.TestType.list.parameters.toDate.inequalityType = CONSTANT.INEQUALITY_TYPES.STRICT;
                 var qParams = {
                     toDate: dateObj
                 };
@@ -590,7 +594,7 @@ describe('MockFilterUtils', function() {
                                 toDate: {
                                     type: 'string',
                                     mapsTo: 'anotherObj.finalObj.dateProp',
-                                    inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
+                                    inequalityType: CONSTANT.INEQUALITY_TYPES.STRICT
                                 }
                             }
                         }

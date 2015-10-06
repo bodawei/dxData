@@ -30,6 +30,10 @@ module.exports = function(grunt) {
         },
         browserify: {
             options: {
+                alias: {
+                    dxLog: './src/module/dxLog.js',
+                    dxData: './src/module/dxData.js'
+                },
                 browserifyOptions: {
                     debug: true
                 },

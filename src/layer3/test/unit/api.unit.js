@@ -21,7 +21,9 @@
 
 'use strict';
 
-var dxData = require('../../../modules/dxData.js');
+var dxData = require('dxData');
+var dxDataTest = require('dxDataTest');
+var CORE_SCHEMAS = require('../shared/coreSchemas.js');
 
 describe('DataSystem instance', function() {
     var SimpleModel = Backbone.Model.extend({});
@@ -95,7 +97,7 @@ describe('DataSystem instance', function() {
                         }
                     }
                 }
-            }, dx.test.CORE_SCHEMAS);
+            }, CORE_SCHEMAS);
 
             client = {};
             client = new dxData.DataSystem(schemas);
@@ -103,7 +105,7 @@ describe('DataSystem instance', function() {
                 handler(dxData._filters.INCLUDE);
             };
 
-            server = new dxData.MockServer(schemas, {
+            server = new dxDataTest.MockServer(schemas, {
                 AType: function(collection, qParams, support) {
                     return support.utils.uberFilter(collection, qParams, support);
                 }
@@ -368,14 +370,14 @@ describe('DataSystem instance', function() {
                         $ref: 'r'
                     }
                 }
-            }, dx.test.CORE_SCHEMAS);
+            }, CORE_SCHEMAS);
 
             client = new dxData.DataSystem(schemas);
             client._filters.Rooted = function(collection, model, handler) {
                 handler(dxData._filters.INCLUDE);
             };
 
-            server = new dxData.MockServer(schemas, {
+            server = new dxDataTest.MockServer(schemas, {
                 Rooted: function(collection, qParams, support) {
                     return support.utils.uberFilter(collection, qParams, support);
                 }
@@ -488,12 +490,12 @@ describe('DataSystem instance', function() {
                 n: {
                     name: 'NonSingleton'
                 }
-            }, dx.test.CORE_SCHEMAS);
+            }, CORE_SCHEMAS);
 
             singleton = undefined;
             client = new dxData.DataSystem(schemas);
 
-            server = new dxData.MockServer(schemas);
+            server = new dxDataTest.MockServer(schemas);
             server.start();
         });
 
@@ -703,11 +705,11 @@ describe('DataSystem instance', function() {
                         }
                     }
                 }
-            }, dx.test.CORE_SCHEMAS);
+            }, CORE_SCHEMAS);
 
             client = new dxData.DataSystem(schemas);
 
-            server = new dxData.MockServer(schemas);
+            server = new dxDataTest.MockServer(schemas);
             server.start();
 
             successSpy = jasmine.createSpy('success');
@@ -996,11 +998,11 @@ describe('DataSystem instance', function() {
                         $ref: 't'
                     }
                 }
-            }, dx.test.CORE_SCHEMAS);
+            }, CORE_SCHEMAS);
 
             client = new dxData.DataSystem(schemas);
 
-            server = new dxData.MockServer(schemas);
+            server = new dxDataTest.MockServer(schemas);
             server.start();
             server.createObjects([{ type: 'CousinType', reference: 'COUSIN-1'}]);
 

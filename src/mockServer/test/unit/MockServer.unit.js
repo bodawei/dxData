@@ -17,11 +17,15 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, $, _ */
+/*global assert, $ */
 
 'use strict';
 
+var _ = require('underscore');
+var dxLog = require('dxLog');
+
 var MockServer = require('../../MockServer.js');
+var CORE_SCHEMAS = require('../shared/coreSchemas.js');
 
 describe('MockServer', function() {
     var jQueryAjax;
@@ -33,7 +37,7 @@ describe('MockServer', function() {
     afterEach(function() {
         if ($.ajax !== jQueryAjax) {
             $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
+            dxLog.fail('$.ajax was not cleaned up.');
         }
     });
 
@@ -41,7 +45,7 @@ describe('MockServer', function() {
 
         it('throw`s an error if not called with new', function() {
             expect(function() {
-                MockServer(dx.test.CORE_SCHEMAS);
+                MockServer(CORE_SCHEMAS);
             }).toDxFail('Must call MockServer() with new.');
         });
 
@@ -52,7 +56,7 @@ describe('MockServer', function() {
         });
 
         it('constructs something with the primary MockServer functions', function() {
-            var server = new MockServer(dx.test.CORE_SCHEMAS);
+            var server = new MockServer(CORE_SCHEMAS);
 
             expect(server.start).toBeDefined();
             expect(server.stop).toBeDefined();
@@ -77,7 +81,7 @@ describe('MockServer', function() {
                     },
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server.createObjects([{
                 type: 'Container',
@@ -331,7 +335,7 @@ describe('MockServer', function() {
                     },
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server.createObjects([{
                 type: 'Container',
@@ -424,7 +428,7 @@ describe('MockServer', function() {
                     },
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server.createObjects([{
                 type: 'Container',
@@ -622,7 +626,7 @@ describe('MockServer', function() {
                 server.respond(function(response) {
                     response.stash();
                 });
-                dx.test.assert(successSpy).not.toHaveBeenCalled();
+                assert(successSpy).not.toHaveBeenCalled();
 
                 server.respond(function(response, stash) {
                     stash.deliverAll();
@@ -643,10 +647,10 @@ describe('MockServer', function() {
                 server.respond(function(response) {
                     response.delay(10);
                 });
-                dx.test.assert(successSpy).not.toHaveBeenCalled();
+                assert(successSpy).not.toHaveBeenCalled();
 
                 jasmine.Clock.tick(10);
-                dx.test.assert(successSpy).not.toHaveBeenCalled();
+                assert(successSpy).not.toHaveBeenCalled();
                 server.respond();
 
                 expect(successSpy).toHaveBeenCalled();
@@ -691,7 +695,7 @@ describe('MockServer', function() {
                     create: {},
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server.start();
             successSpy = jasmine.createSpy('successSpy');
@@ -916,12 +920,12 @@ describe('MockServer', function() {
 
     describe('debug', function() {
         var server;
-        var debugMode;
+        var logLevel;
 
         beforeEach(function() {
-            spyOn(dx, 'debug');
-            debugMode = dx.core.debugMode;
-            dx.core.debugMode = true;
+            spyOn(dxLog, 'debug');
+            logLevel = dxLog.level;
+            dxLog.level = dxLog.LEVEL.DEBUG;
 
             server = new MockServer(_.extend({
                 '/container.json': {
@@ -933,7 +937,7 @@ describe('MockServer', function() {
                     update: {},
                     read: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server.createObjects([{
                 type: 'Container',
@@ -946,7 +950,7 @@ describe('MockServer', function() {
 
         afterEach(function() {
             server.stop();
-            dx.core.debugMode = debugMode;
+            dxLog.level = logLevel;
         });
 
         it('logs a message on successful respond', function() {
@@ -959,7 +963,7 @@ describe('MockServer', function() {
 
             server.respond();
 
-            expect(dx.debug.calls[2].args[0]).toEqual('Call 1: Deliver success');
+            expect(dxLog.debug.calls[2].args[0]).toEqual('Call 1: Deliver success');
         });
 
         it('logs a message for delivered notifications (which are done second)', function() {
@@ -980,8 +984,8 @@ describe('MockServer', function() {
 
             server.respond();
 
-            expect(dx.debug.calls[4].args[0]).toEqual('Call 2: Deliver success');
-            expect(dx.debug.calls[5].args[0]).toEqual('Call 1: Deliver success');
+            expect(dxLog.debug.calls[4].args[0]).toEqual('Call 2: Deliver success');
+            expect(dxLog.debug.calls[5].args[0]).toEqual('Call 1: Deliver success');
         });
 
         it('logs a message on successful respond but no callbacks', function() {
@@ -993,7 +997,7 @@ describe('MockServer', function() {
 
             server.respond();
 
-            expect(dx.debug.calls[2].args[0]).toEqual('Call 1: No callbacks');
+            expect(dxLog.debug.calls[2].args[0]).toEqual('Call 1: No callbacks');
         });
 
     });
@@ -1014,7 +1018,7 @@ describe('MockServer', function() {
                     read: {},
                     list: {}
                 }
-            }, dx.test.CORE_SCHEMAS));
+            }, CORE_SCHEMAS));
 
             server.createObjects([{
                 type: 'Container',
@@ -1057,7 +1061,7 @@ describe('MockServer', function() {
                 }
             });
             server.reset();
-            dx.test.assert(successSpy).not.toHaveBeenCalled();
+            assert(successSpy).not.toHaveBeenCalled();
             server.createObjects([{
                 type: 'Container'
             }]);
