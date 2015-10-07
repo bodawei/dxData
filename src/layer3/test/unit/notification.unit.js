@@ -32,9 +32,12 @@ var CORE_SCHEMAS = require('../shared/coreSchemas.js');
 describe('notification processor', function() {
     var server;
     var client;
+    var schemas;
+    var notificationDropSpy;
 
     beforeEach(function() {
-        var schemas = _.extend({
+        notificationDropSpy = jasmine.createSpy('notificationDropSpy');
+        schemas = _.extend({
             '/group.json': {
                 root: '/webapi/somewhere',
                 name: 'Group',
@@ -59,8 +62,7 @@ describe('notification processor', function() {
                         type: 'integer'
                     }
                 }
-            }
-        }, {
+            },
             '/happy-singleton.json': {
                 root: '/webapi/happysingleton',
                 name: 'HappySingleton',
@@ -84,7 +86,9 @@ describe('notification processor', function() {
         });
         server.start();
 
-        client = new dxData.DataSystem(schemas);
+        client = new dxData.DataSystem(schemas, {
+            onNotificationDrop: notificationDropSpy
+        });
         client._filters.Group = client._filters._uberFilter;
     });
 
@@ -754,8 +758,7 @@ describe('notification processor', function() {
         expect(dxLog.warn.mostRecentCall.args[0]).toBe('notification processing failed: Fish is not a known type name.');
     });
 
-    it('will reload the browser page if it receives an object dropped notification', function() {
-        spyOn(dx.core.util, 'reloadClient');
+    it('calls the provided onNotificationDrop function, if provided, when a notification drop is received', function() {
         server.createObjects({
             Notification: [ {
                 type: 'NotificationDrop',
@@ -766,9 +769,25 @@ describe('notification processor', function() {
         client.notification.start();
         server.respond();
         client.notification.stop();
-        expect(dx.core.util.reloadClient).toHaveBeenCalledWith('[dx.notification_drop]');
+        expect(notificationDropSpy).toHaveBeenCalledWith(34);
     });
 
+    it('logs a message when a notification drop is received and no onNotificationDrop handler provided', function() {
+        spyOn(dxLog, 'warn');
+        var tempClient = new dxData.DataSystem(schemas);
+        server.createObjects({
+            Notification: [ {
+                type: 'NotificationDrop',
+                dropCount: 35
+            }]
+        });
+       
+        tempClient.notification.start();
+        server.respond();
+        tempClient.notification.stop();
+        expect(dxLog.warn).toHaveBeenCalledWith('Dropped 35 notifications.');
+    });
+         
     it('throws an error if start() called twice', function() {
         client.notification.start();
         expect(function() {

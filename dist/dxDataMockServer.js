@@ -4357,7 +4357,7 @@ var setupNotificationSystem = require('./notification.js');
  *                                     screen. This is mainly useful if you have an operation error handler which,
  *                                     after examining the ErrorResult model, you still wish to show it to the user.
  */
-function DataSystem(schemas) {
+function DataSystem(schemas, options) {
     /*
      * Returns a new client model.
      *
@@ -4547,7 +4547,7 @@ function DataSystem(schemas) {
     generateModelConstructors(parsedSchemas, context);
     generateCollectionConstructors(parsedSchemas, context);
 
-    setupNotificationSystem(context);
+    setupNotificationSystem(context, options && options.onNotificationDrop);
 
     _.extend(context, {
         parsedSchemas: parsedSchemas,
@@ -4603,7 +4603,7 @@ var dxLog = require('dxLog');
  * To use the notification system, simply call the start() function at the start of your program. To stop receiving
  * notifications, call stop(). You can also call isStarted() to verify whether the notification system is turned on.
  */
-function setupNotificationSystem(context) {
+function setupNotificationSystem(context, notificationDropped) {
 
     /*
      * We use long polling to fetch notifications. We want to make sure our timeout is less than the browser timeout,
@@ -4644,7 +4644,12 @@ function setupNotificationSystem(context) {
                     }
                     break;
                 case 'NotificationDrop':
-                    dx.core.util.reloadClient(dx.gls('dx.notification_drop', model.get('dropCount')));
+                           console.log(notificationDropped)
+                    if (notificationDropped) {
+                        notificationDropped(model.get('dropCount'));
+                    } else {
+                        dxLog.warn('Dropped ' + model.get('dropCount') + " notifications.");
+                    }
                     break;
                 // we ignore all other types
             }

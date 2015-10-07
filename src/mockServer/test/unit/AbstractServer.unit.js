@@ -499,23 +499,23 @@ describe('AbstractServer', function() {
         });
 
         it('evals a script if dataType is script', function() {
-            result.data = 'dx._testValue = 1;';
+            result.data = 'jasmine._testValue = 1;';
             result.dataType = 'SCRIPT';
 
             server._deliverResult(result);
 
-            expect(dx._testValue).toBe(1);
-            delete dx._testValue;
+            expect(jasmine._testValue).toBe(1);
+            delete jasmine._testValue;
         });
 
         it('returns the script as a string', function() {
-            result.data = 'dx._testValue = 1;';
+            result.data = 'jasmine._testValue = 1;';
             result.dataType = 'SCRIPT';
 
             server._deliverResult(result);
 
-            expect(result.success.mostRecentCall.args[0]).toEqual('dx._testValue = 1;');
-            delete dx._testValue;
+            expect(result.success.mostRecentCall.args[0]).toEqual('jasmine._testValue = 1;');
+            delete jasmine._testValue;
         });
 
         it('calls error handler if script can not be parsed', function() {

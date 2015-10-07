@@ -20,7 +20,6 @@
 
 "use strict";
 
-dx.namespace('dx.test');
 var CORE_SCHEMAS = require('../src/mockServer/test/shared/coreSchemas.js');
 
 // PhantomJS needs a bind function for some reason.  See https://github.com/ariya/phantomjs/issues/10522
@@ -50,8 +49,9 @@ if (!Function.prototype.bind) {
         return fBound;
     };
 }
+var dxData = require('dxData');
+var temp = new dxData.DataSystem(delphixSchema);
+
 var MockServer = require('dxDataTest').MockServer;
-dx.test.mockServer = new MockServer(CORE_SCHEMAS);
-dx.test.mockServer._filters = dx.test._filters;
-dx.test.mockServer.start();
-dx.test.assert = expect;
+var mockServer = new MockServer(CORE_SCHEMAS);
+mockServer.start();

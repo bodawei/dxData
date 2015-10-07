@@ -88,4 +88,19 @@ module.exports = function(grunt) {
         'extract_sourcemap:dist-types',
         'karma'
     ]);
+
+    grunt.registerTask('clean', 'Clean up all build artefacts', function() {
+        grunt.file.delete('./build');
+        grunt.file.delete('./dist');
+    });
+
+    grunt.registerTask('build-dist', 'Builds modules in dist folder.', function() {
+        grunt.file.delete('./dist');
+        grunt.file.copy('./src/module/dxData.json', './dist/dxData/package.json');
+        grunt.file.copy('./src/module/dxData.js', './dist/dxData/index.js');
+        grunt.file.copy('./src/module/dxDataTest.json', './dist/dxDataTest/package.json');
+        grunt.file.copy('./src/module/dxDataTest.js', './dist/dxDataTest/index.js');
+        grunt.file.copy('./src/module/dxLog.json', './dist/dxLog/package.json');
+        grunt.file.copy('./src/module/dxLog.js', './dist/dxLog/index.js');
+    });
 }

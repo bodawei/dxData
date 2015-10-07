@@ -58,7 +58,7 @@ var setupNotificationSystem = require('./notification.js');
  *                                     screen. This is mainly useful if you have an operation error handler which,
  *                                     after examining the ErrorResult model, you still wish to show it to the user.
  */
-function DataSystem(schemas) {
+function DataSystem(schemas, options) {
     /*
      * Returns a new client model.
      *
@@ -248,7 +248,7 @@ function DataSystem(schemas) {
     generateModelConstructors(parsedSchemas, context);
     generateCollectionConstructors(parsedSchemas, context);
 
-    setupNotificationSystem(context);
+    setupNotificationSystem(context, options && options.onNotificationDrop);
 
     _.extend(context, {
         parsedSchemas: parsedSchemas,

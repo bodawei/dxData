@@ -32,7 +32,7 @@ var dxLog = require('dxLog');
  * To use the notification system, simply call the start() function at the start of your program. To stop receiving
  * notifications, call stop(). You can also call isStarted() to verify whether the notification system is turned on.
  */
-function setupNotificationSystem(context) {
+function setupNotificationSystem(context, notificationDropped) {
 
     /*
      * We use long polling to fetch notifications. We want to make sure our timeout is less than the browser timeout,
@@ -73,7 +73,11 @@ function setupNotificationSystem(context) {
                     }
                     break;
                 case 'NotificationDrop':
-                    dx.core.util.reloadClient(dx.gls('dx.notification_drop', model.get('dropCount')));
+                    if (notificationDropped) {
+                        notificationDropped(model.get('dropCount'));
+                    } else {
+                        dxLog.warn('Dropped ' + model.get('dropCount') + " notifications.");
+                    }
                     break;
                 // we ignore all other types
             }

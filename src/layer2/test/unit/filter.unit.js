@@ -367,7 +367,6 @@ describe('filters', function() {
                     };
 
                     target._filters._uberFilter(collection, model, resultHandler);
-                    dx.test.mockServer.respond();
 
                     expect(filterResult).toBe(target._filters.EXCLUDE);
                 });

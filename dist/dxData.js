@@ -14,160 +14,6 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
  */
 
 /*
- * Copyright (c) 2013, 2014 by Delphix. All rights reserved.
- */
-
-/*global _, dx */
-
-'use strict';
-
-/*
- * Misc "common code" needed by the dxData code
- */
-(function() {
-
-/*
- * Delphix framework/top-level namespace
- */
-window.dx = window.dx || {
-    namespace: function(namespace) {
-        var current = window;
-        _.each(namespace.split('.'), function(pName) {
-            current = (current[pName] = current[pName] || {});
-        });
-        return current;
-    },
- 
-
-    /*
-     * Dummy stub for a localization system
-     */
-    gls: function(message) {
-        return '[' + message + ']';
-    }
-};
-
-/*
- * Constants
- */
-dx.namespace('dx.core.constants');
-
-dx.core.constants = {
-    INEQUALITY_TYPES: {
-        STRICT: 'STRICT',
-        NON_STRICT: 'NON-STRICT'
-    },
-    LIST_TYPES: {
-        NONE:   'NONE',
-        UBER:   'UBER',
-        CUSTOM: 'CUSTOM'
-    }
-};
-
-/*
- * General utilities
- */
-dx.namespace('dx.core.util');
-
-dx.core.util = {
-    /*
-     * Short cut for checking if a value is either null or undefined
-     */
-    isNone: function(value) {
-        return _.isNull(value) || _.isUndefined(value);
-    },
- 
-    /*
-     * Stub for reloading the client in the case we've been told by the server we are out of sync
-     */
-    reloadClient: function() {
-    },
-
-    /*
-     * Returns a new object that is a deep clone of the input object.
-     */
-    deepClone: function(obj) {
-        var result = obj;
-
-        if (_.isArray(obj)) {
-            result = [];
-            _.each(obj, function(value, index) {
-                result[index] = dx.core.util.deepClone(value);
-            });
-        } else if (_.isObject(obj)) {
-            if (obj instanceof Date) {
-                result = new Date(obj.getTime());
-            } else {
-                result = {};
-                _.each(obj, function(value, index) {
-                    result[index] = dx.core.util.deepClone(value);
-                });
-            }
-        }
-
-        return result;
-    }
-
-};
-
-/*
- * Ajax utility routines
- */
-dx.namespace('dx.core.ajax');
-
-/*
- * Wrapper function for jquery $.ajax function
- *    config - $.ajax configuration object.
- */
-dx.core.ajax = {
-    ajaxCall: function(config) {
-        if (config && config.url) {
-            config.type = config.type || 'GET';
-            config.contentType = config.contentType || 'application/json';
-            config.dataType = config.dataType || 'json';
-
-            config.xhrFields = config.xhrFields || {
-                withCredentials: true
-            };
-
-            config.success = config.success || function(d) {
-                dx.debug(d);
-            };
-
-            config.error = config.error || function(e) {
-                dx.debug(e);
-            };
-
-            config.cache = config.cache || false;
-
-            try {
-                $.ajax(config);
-            } catch (e) {
-                dx.fail(e.message);
-            }
-        } else {
-            dx.fail('Invalid configuration for jQuery ajax call. Unable to complete the operation.');
-        }
-    }
-};
-
-})();
-},{}],2:[function(require,module,exports){
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
@@ -732,7 +578,7 @@ module.exports = {
     prepareEnums: prepareEnums
 };
 
-},{"../util/constant.js":11,"../util/util.js":12,"dxLog":"dxLog","underscore":"underscore"}],3:[function(require,module,exports){
+},{"../util/constant.js":10,"../util/util.js":11,"dxLog":"dxLog","underscore":"underscore"}],2:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1535,7 +1381,7 @@ function initCache(context) {
 
 module.exports = initCache;
 
-},{"../util/util.js":12,"dxLog":"dxLog","underscore":"underscore"}],4:[function(require,module,exports){
+},{"../util/util.js":11,"dxLog":"dxLog","underscore":"underscore"}],3:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2180,7 +2026,7 @@ function generateCollectionConstructors(schemas, context) {
 
 module.exports = generateCollectionConstructors;
 
-},{"../util/constant.js":11,"../util/util.js":12,"dxLog":"dxLog","underscore":"underscore"}],5:[function(require,module,exports){
+},{"../util/constant.js":10,"../util/util.js":11,"dxLog":"dxLog","underscore":"underscore"}],4:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2277,7 +2123,7 @@ function isListableType(typeName, context) {
 
 module.exports = CreationListener;
 
-},{"../util/util.js":12,"dxLog":"dxLog","underscore":"underscore"}],6:[function(require,module,exports){
+},{"../util/util.js":11,"dxLog":"dxLog","underscore":"underscore"}],5:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2547,7 +2393,7 @@ function initFilters(context) {
 
 module.exports = initFilters;
 
-},{"../util/constant.js":11,"../util/util.js":12,"dxLog":"dxLog","underscore":"underscore"}],7:[function(require,module,exports){
+},{"../util/constant.js":10,"../util/util.js":11,"dxLog":"dxLog","underscore":"underscore"}],6:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -4450,7 +4296,7 @@ function generateModelConstructors(schemas, context) {
 
 module.exports = generateModelConstructors;
 
-},{"../util/util.js":12,"dxLog":"dxLog","underscore":"underscore"}],8:[function(require,module,exports){
+},{"../util/util.js":11,"dxLog":"dxLog","underscore":"underscore"}],7:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -4511,7 +4357,7 @@ var setupNotificationSystem = require('./notification.js');
  *                                     screen. This is mainly useful if you have an operation error handler which,
  *                                     after examining the ErrorResult model, you still wish to show it to the user.
  */
-function DataSystem(schemas) {
+function DataSystem(schemas, options) {
     /*
      * Returns a new client model.
      *
@@ -4701,7 +4547,7 @@ function DataSystem(schemas) {
     generateModelConstructors(parsedSchemas, context);
     generateCollectionConstructors(parsedSchemas, context);
 
-    setupNotificationSystem(context);
+    setupNotificationSystem(context, options && options.onNotificationDrop);
 
     _.extend(context, {
         parsedSchemas: parsedSchemas,
@@ -4722,7 +4568,7 @@ function DataSystem(schemas) {
 
 module.exports = DataSystem;
 
-},{"../layer1/schema.js":2,"../layer2/cache.js":3,"../layer2/collection.js":4,"../layer2/creationListener.js":5,"../layer2/filter.js":6,"../layer2/model.js":7,"../util/util.js":12,"./notification.js":9,"dxLog":"dxLog","underscore":"underscore"}],9:[function(require,module,exports){
+},{"../layer1/schema.js":1,"../layer2/cache.js":2,"../layer2/collection.js":3,"../layer2/creationListener.js":4,"../layer2/filter.js":5,"../layer2/model.js":6,"../util/util.js":11,"./notification.js":8,"dxLog":"dxLog","underscore":"underscore"}],8:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -4757,7 +4603,7 @@ var dxLog = require('dxLog');
  * To use the notification system, simply call the start() function at the start of your program. To stop receiving
  * notifications, call stop(). You can also call isStarted() to verify whether the notification system is turned on.
  */
-function setupNotificationSystem(context) {
+function setupNotificationSystem(context, notificationDropped) {
 
     /*
      * We use long polling to fetch notifications. We want to make sure our timeout is less than the browser timeout,
@@ -4798,7 +4644,12 @@ function setupNotificationSystem(context) {
                     }
                     break;
                 case 'NotificationDrop':
-                    dx.core.util.reloadClient(dx.gls('dx.notification_drop', model.get('dropCount')));
+                           console.log(notificationDropped)
+                    if (notificationDropped) {
+                        notificationDropped(model.get('dropCount'));
+                    } else {
+                        dxLog.warn('Dropped ' + model.get('dropCount') + " notifications.");
+                    }
                     break;
                 // we ignore all other types
             }
@@ -4929,7 +4780,7 @@ function setupNotificationSystem(context) {
 
 module.exports = setupNotificationSystem;
 
-},{"dxLog":"dxLog","underscore":"underscore"}],10:[function(require,module,exports){
+},{"dxLog":"dxLog","underscore":"underscore"}],9:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -5019,7 +4870,7 @@ module.exports = {
     debug: debug
 };
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -5054,7 +4905,7 @@ module.exports = {
     }
 };
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -5184,7 +5035,7 @@ module.exports = {
 };
 
 
-},{"../layer3/api.js":8,"../util/constant.js":11}],"dxLog":[function(require,module,exports){
+},{"../layer3/api.js":7,"../util/constant.js":10}],"dxLog":[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -5209,5 +5060,5 @@ module.exports = {
 
 module.exports = require('../log/log.js');
 
-},{"../log/log.js":10}]},{},[1])
+},{"../log/log.js":9}]},{},[])
 //# sourceMappingURL=dxData.js.map
