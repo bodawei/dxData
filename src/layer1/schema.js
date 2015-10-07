@@ -16,12 +16,13 @@
  * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, require, module */
+/*global require, module */
 
 'use strict';
 
 var _ = require('underscore');
 var dxLog = require('dxLog');
+
 var util = require('../util/util.js');
 var constant = require('../util/constant.js');
 

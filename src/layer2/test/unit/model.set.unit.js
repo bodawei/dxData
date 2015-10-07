@@ -17,9 +17,11 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _, $ */
+/*global Backbone, jQuery, $ */
 
 'use strict';
+
+var _ = require('underscore');
 
 var schemaStuff = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');

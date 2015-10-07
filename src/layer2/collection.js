@@ -21,7 +21,7 @@
 'use strict';
 
 var _ = require('underscore');
-var Backgone = require('Backbone');
+//var Backbone = require('Backbone');
 var dxLog = require('dxLog');
 
 var CONSTANT = require('../util/constant.js');
@@ -372,7 +372,7 @@ function generateCollectionConstructors(schemas, context) {
         if (util.isNone(context._filters[rootType]) &&
             self._dxInfo.paramDefs.dxFilterMode === CONSTANT.LIST_TYPES.CUSTOM) {
             dxLog.fail('No filter function found for collections of type ' + rootType + '. Add one to ' +
-                 ' _filters. In the mean time, all models will be added to the collection.');
+                 '_filters. In the mean time, all models will be added to the collection.');
         }
 
         self._dxIsReady = false;

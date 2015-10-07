@@ -17,7 +17,6 @@
  */
 
 /*eslint-env jasmine */
-/*global dx */
 
 'use strict';
 

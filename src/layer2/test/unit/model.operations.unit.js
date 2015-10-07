@@ -17,13 +17,15 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _, $ */
+/*global Backbone, $ */
 
 'use strict';
 
 var schemaStuff = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
+
+var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
 
 describe('generateModelConstructors - operations', function() {
     var target;
@@ -37,7 +39,7 @@ describe('generateModelConstructors - operations', function() {
         var ajaxSpy;
         var model;
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn($, 'ajax');
 
             target = {};
             var schema = {
@@ -55,12 +57,10 @@ describe('generateModelConstructors - operations', function() {
                     $ref: 't'
                 }
             };
-            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType,
-                o: dx.test.dataMocks.okResultSchema,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema
-            });
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                 t: schema,
+                 c: childType
+            }, CORE_SCHEMAS));
             initCache(target);
             generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
@@ -675,7 +675,7 @@ describe('generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn($, 'ajax');
 
             target = {};
             var schema = {
@@ -754,19 +754,13 @@ describe('generateModelConstructors - operations', function() {
                     $ref: 'o'
                 }
             };
-            var okResult = {
-                name: 'OKResult',
-                properties: {
-                    type: {
-                        type: 'string'
-                    }
-                }
-            };
-            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, C: container,
-                a: yetAnotherType, o: otherType, k: okResult,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema });
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                t: schema,
+                c: childType,
+                C: container,
+                a: yetAnotherType,
+                o: otherType
+            }, CORE_SCHEMAS));
             initCache(target);
             generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
@@ -836,9 +830,9 @@ describe('generateModelConstructors - operations', function() {
             payload.set('value', 23);
             model.$payload(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].type).toBe('POST');
-            expect(jQuery.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/payload');
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"type":"OtherType","value":23}');
+            expect($.ajax.mostRecentCall.args[0].type).toBe('POST');
+            expect($.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/payload');
+            expect($.ajax.mostRecentCall.args[0].data).toEqual('{"type":"OtherType","value":23}');
         });
 
         it('will accept a call with a subtype', function() {
@@ -848,7 +842,7 @@ describe('generateModelConstructors - operations', function() {
             payload.set('value', 23);
             model.$payload(payload);
 
-            expect(jQuery.ajax).toHaveBeenCalled();
+            expect($.ajax).toHaveBeenCalled();
         });
 
         it('will reject a call when a required parameter is missing', function() {
@@ -1081,7 +1075,7 @@ describe('generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn($, 'ajax');
 
             target = {};
             var schema = {
@@ -1097,18 +1091,11 @@ describe('generateModelConstructors - operations', function() {
                     $ref: 't'
                 }
             };
-            var okResult = {
-                name: 'OKResult',
-                properties: {
-                    type: {
-                        type: 'string'
-                    }
-                }
-            };
-            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, o: okResult,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema });
+
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                t: schema,
+                c: childType
+            }, CORE_SCHEMAS));
             initCache(target);
             generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
@@ -1221,7 +1208,7 @@ describe('generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn($, 'ajax');
 
             target = {};
             var schema = {
@@ -1286,10 +1273,10 @@ describe('generateModelConstructors - operations', function() {
                     }
                 }
             };
-            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, o: okResult,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema });
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                t: schema,
+                c: childType
+            }, CORE_SCHEMAS));
             initCache(target);
             generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
@@ -1327,9 +1314,9 @@ describe('generateModelConstructors - operations', function() {
 
             model.$parameters({ a: 'b', c: true});
 
-            expect(jQuery.ajax.mostRecentCall.args[0].type).toBe('GET');
-            expect(jQuery.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/parameters');
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual({ a: 'b', c: true});
+            expect($.ajax.mostRecentCall.args[0].type).toBe('GET');
+            expect($.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/parameters');
+            expect($.ajax.mostRecentCall.args[0].data).toEqual({ a: 'b', c: true});
         });
 
         it('will throw an error if invoked without a reference', function() {
@@ -1367,8 +1354,8 @@ describe('generateModelConstructors - operations', function() {
 
             model.$parameters();
 
-            expect(jQuery.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/parameters');
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toBeUndefined();
+            expect($.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/parameters');
+            expect($.ajax.mostRecentCall.args[0].data).toBeUndefined();
         });
 
         it('throws an error if a required parameter is not included', function() {
@@ -1483,7 +1470,7 @@ describe('generateModelConstructors - operations', function() {
                 dateVal: newDate
             });
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data)
+            expect($.ajax.mostRecentCall.args[0].data)
                 .toEqual({ requiredStringVal: 'required', dateVal: '2013-12-11T10:09:08.765Z'});
         });
 
@@ -1587,7 +1574,7 @@ describe('generateModelConstructors - operations', function() {
                 name: 'ChildRequired'
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn($, 'ajax');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1620,7 +1607,7 @@ describe('generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn($, 'ajax');
 
             var payload = target._newClientModel('RequiredParams');
             payload.set('first', 'hello');
@@ -1654,13 +1641,13 @@ describe('generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn($, 'ajax');
 
             var payload = target._newClientModel('RequiredParams');
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
+            expect($.ajax.mostRecentCall.args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
         });
 
         it('will not send non-required properties if they are undefined', function() {
@@ -1701,7 +1688,7 @@ describe('generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn($, 'ajax');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1709,7 +1696,7 @@ describe('generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"first":1,"embedded":{"first":11}}');
+            expect($.ajax.mostRecentCall.args[0].data).toEqual('{"first":1,"embedded":{"first":11}}');
         });
 
         it('will send required true and false props if they are non-null/non-undefined', function() {
@@ -1750,7 +1737,7 @@ describe('generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn($, 'ajax');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1767,7 +1754,7 @@ describe('generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data)
+            expect($.ajax.mostRecentCall.args[0].data)
                 .toEqual('{"first":1,"second":2,"third":3,"embedded":{"first":11,"second":12,"third":13}}');
         });
 
@@ -1785,7 +1772,7 @@ describe('generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn($, 'ajax');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1793,7 +1780,7 @@ describe('generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"third":3}');
+            expect($.ajax.mostRecentCall.args[0].data).toEqual('{"third":3}');
         });
 
         it('will not send non-required properties if they are undefined', function() {
@@ -1810,7 +1797,7 @@ describe('generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn($, 'ajax');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1818,7 +1805,7 @@ describe('generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{}');
+            expect($.ajax.mostRecentCall.args[0].data).toEqual('{}');
         });
     });
 
@@ -1827,7 +1814,7 @@ describe('generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn($, 'ajax');
 
             target = {};
             var schema = {
@@ -1848,21 +1835,11 @@ describe('generateModelConstructors - operations', function() {
                     $ref: 't'
                 }
             };
-            var okResult = {
-                name: 'OKResult',
-                properties: {
-                    result: {
-                        type: 'string'
-                    },
-                    type: {
-                        type: 'string'
-                    }
-                }
-            };
-            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, ok: okResult,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema });
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                t: schema,
+                c: childType
+            }, CORE_SCHEMAS));
+
             generateModelConstructors(schemas, target);
             model = target._newClientModel('t');
         });
@@ -1978,11 +1955,12 @@ describe('generateModelConstructors - operations', function() {
                 }
             };
             target = {};
-            ajaxSpy = spyOn(jQuery, 'ajax');
-            var schemas = schemaStuff.prepareSchemas({t: schema, c: childType, ok: okResult,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema });
+            ajaxSpy = spyOn($, 'ajax');
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                t: schema,
+                c: childType
+            }, CORE_SCHEMAS));
+
             generateModelConstructors(schemas, target);
         });
 

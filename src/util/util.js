@@ -84,7 +84,7 @@ function ajaxCall(config) {
         
         try {
             $.ajax(config);
-        } catch (e) {s
+        } catch (e) {
             dxLog.fail(e.message);
         }
     } else {

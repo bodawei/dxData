@@ -20,6 +20,7 @@
 
 'use strict';
 
+var _ = require('underscore');
 var dxLog = require('dxLog');
 
 /*

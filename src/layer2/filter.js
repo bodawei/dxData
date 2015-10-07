@@ -16,11 +16,16 @@
  * Copyright (c) 2014, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, Backbone */
+/*global $ */
 
 'use strict';
 
 var _ = require('underscore');
+//var Backbone = require('Backbone');
+var dxLog = require('dxLog');
+
+var util = require('../util/util.js');
+var CONSTANT = require('../util/constant.js');
 
 /*
  * Defines general purpose filter routines. These can be used to build type-specific filters.
@@ -84,9 +89,9 @@ function initFilters(context) {
      */
     function checkDateProp(qParamVal, qParamName, qpSchema, model, attrName) {
         if (!_.has(qpSchema, 'inequalityType')) {
-            dx.fail('Date property "' + qParamName + '" missing "inequalityType" schema property');
+            dxLog.fail('Date property "' + qParamName + '" missing "inequalityType" schema property');
         }
-        if (dx.core.util.isNone(model.get(attrName))) {
+        if (util.isNone(model.get(attrName))) {
             return EXCLUDE;
         }
 
@@ -98,7 +103,7 @@ function initFilters(context) {
             return EXCLUDE;
         }
 
-        if (qpSchema.inequalityType === dx.core.constants.INEQUALITY_TYPES.STRICT &&
+        if (qpSchema.inequalityType === CONSTANT.INEQUALITY_TYPES.STRICT &&
                 model.get(attrName).getTime() === qParamVal.getTime()) {
             return EXCLUDE;
         }
@@ -119,7 +124,7 @@ function initFilters(context) {
             mapsTo = qpSchema.mapsTo;
 
         if (!mapsTo) {
-            dx.fail('No mapsTo property found for query parameter ' + qParamName + '.');
+            dxLog.fail('No mapsTo property found for query parameter ' + qParamName + '.');
         }
 
         var pathSegs = mapsTo.split('.');
@@ -162,8 +167,8 @@ function initFilters(context) {
 
     function getRootedSchema(model) {
         function upwardFind(schema, schemaName) {
-            if (dx.core.util.isNone(schema)) {
-                dx.fail('Malformed type. Root schema type not found.');
+            if (util.isNone(schema)) {
+                dxLog.fail('Malformed type. Root schema type not found.');
             }
 
             if (schema.name === schemaName) {
@@ -174,7 +179,7 @@ function initFilters(context) {
         }
 
         if (!model._dxSchema.rootTypeName) {
-            dx.fail('Trying to filter a type that has no root type.');
+            dxLog.fail('Trying to filter a type that has no root type.');
         }
 
         return upwardFind(model._dxSchema, model._dxSchema.rootTypeName);

@@ -17,13 +17,17 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _, $ */
+/*global Backbone, jQuery, $ */
 
 'use strict';
+
+var _ = require('underscore');
 
 var schemaStuff = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
+
+var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
 
 describe('generateModelConstructors - operations', function() {
     var target;
@@ -360,15 +364,11 @@ describe('generateModelConstructors - operations', function() {
                 };
                 target = {};
                 ajaxSpy = spyOn(jQuery, 'ajax');
-                var schemas = schemaStuff.prepareSchemas({
+                var schemas = schemaStuff.prepareSchemas(_.extend({
                     t: schema,
                     c: childType,
-                    api: dx.test.dataMocks.apiErrorSchema,
-                    call: dx.test.dataMocks.callResultSchema,
-                    ok: dx.test.dataMocks.okResultSchema,
-                    e: dx.test.dataMocks.errorResultSchema,
                     u: updateWithAll
-                });
+                }, CORE_SCHEMAS));
                 initCache(target);
                 generateModelConstructors(schemas, target);
                 model = target._newServerModel('RootType');
@@ -739,16 +739,12 @@ describe('generateModelConstructors - operations', function() {
                         }
                     };
                     target = {};
-                    var schemas = schemaStuff.prepareSchemas({
+                    var schemas = schemaStuff.prepareSchemas(_.extend({
                         p: root,
                         c: embedded,
                         g: subembedded,
-                        x: extendedEmbedded,
-                        api: dx.test.dataMocks.apiErrorSchema,
-                        call: dx.test.dataMocks.callResultSchema,
-                        ok: dx.test.dataMocks.okResultSchema,
-                        e: dx.test.dataMocks.errorResultSchema
-                    });
+                        x: extendedEmbedded
+                    }, CORE_SCHEMAS));
                     generateModelConstructors(schemas, target);
                 });
 
@@ -1090,17 +1086,15 @@ describe('generateModelConstructors - operations', function() {
                 };
                 target = {};
                 ajaxSpy = spyOn(jQuery, 'ajax');
-                var schemas = schemaStuff.prepareSchemas({
+                 
+                var schemas = schemaStuff.prepareSchemas(_.extend({
                     t: paramType,
                     two: secondParamType,
                     r: schema,
                     c: childType,
-                    o: dx.test.dataMocks.okResultSchema,
-                    call: dx.test.dataMocks.callResultSchema,
-                    api: dx.test.dataMocks.apiErrorSchema,
-                    e: dx.test.dataMocks.errorResultSchema,
                     w: weirdSchema
-                });
+                }, CORE_SCHEMAS));
+                 
                 initCache(target);
                 generateModelConstructors(schemas, target);
             }

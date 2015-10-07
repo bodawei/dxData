@@ -17,14 +17,18 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _, $ */
+/*global Backbone, $ */
 
 'use strict';
+
+var _ = require('underscore');
+var dxLog = require('dxLog');
 
 var schemaStuff = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
 var initFilters = require('../../filter.js');
+var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
 
 describe('generateModelConstructors', function() {
     var target = {};
@@ -368,7 +372,7 @@ describe('generateModelConstructors', function() {
 
         it('can retrieve the model named by an objectReference attribute value ($attribute)', function() {
             model = target._newClientModel('TypeWithReference');
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn($, 'ajax');
             ajaxSpy.andCallFake(function(options) {
                 options.success({
                     type: 'OKResult',
@@ -410,7 +414,7 @@ describe('generateModelConstructors', function() {
             model = target._newClientModel('TypeWithReference');
             model.set('sibling', 'SIBLING-1');
 
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn($, 'ajax');
             ajaxSpy.andCallFake(function(options) {
                 options.success({
                     type: 'OKResult',
@@ -520,7 +524,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('escapes references models', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn($, 'ajax');
             ajaxSpy.andCallFake(function(options) {
                 options.success({
                     type: 'OKResult',
@@ -1105,24 +1109,24 @@ describe('generateModelConstructors', function() {
         });
 
         it('returns an empty hash if given no response', function() {
-            spyOn(dx, 'warn');
+            spyOn(dxLog, 'warn');
 
             expect(model.parse()).toBeUndefined();
         });
 
         it('returns an empty hash if given no response', function() {
-            spyOn(dx, 'warn');
+            spyOn(dxLog, 'warn');
 
             expect(model.parse()).toBeUndefined();
         });
 
         it('reports a warning if asked to parse something we dont know about', function() {
-            spyOn(dx, 'warn');
+            spyOn(dxLog, 'warn');
 
             expect(model.parse({
                 type: 'bogusness'
             })).toBeUndefined();
-            expect(dx.warn).toHaveBeenCalled();
+            expect(dxLog.warn).toHaveBeenCalled();
         });
 
         it('returns an the result value from an OKResult', function() {
@@ -1466,19 +1470,16 @@ describe('generateModelConstructors', function() {
                 name: 'ParentType',
                 properties: { reference: { type: 'string' } }
             };
-            var schemas = schemaStuff.prepareSchemas({
-                p: parent,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema
-            });
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                p: parent
+            }, CORE_SCHEMAS));
             generateModelConstructors(schemas, target);
             model = target._newClientModel('ParentType');
             model._dxIsReady = false;   // fake it so it looks enough like a server model
         });
 
         it('has no problems if an error handler isn\'t specified', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.error({
                     status: 200,
                     statusText: 'hi',
@@ -1493,13 +1494,13 @@ describe('generateModelConstructors', function() {
 
         it('serializes concurrent requests', function() {
             var deferred = [];
-            var ajaxSpy = spyOn(jQuery, 'ajax').andCallFake(function() {
+            var ajaxSpy = spyOn($, 'ajax').andCallFake(function() {
                 deferred = $.Deferred();
                 return deferred.promise();
             });
 
             model._dxFetch();
-            dx.test.assert(ajaxSpy.calls.length).toBe(1);
+            assert(ajaxSpy.calls.length).toBe(1);
 
             var options = ajaxSpy.calls[0].args[0];
 
@@ -1552,7 +1553,7 @@ describe('generateModelConstructors', function() {
 
         it('allows a dxFetch to be issued in a dxFetch callback', function() {
             var deferred = [];
-            var ajaxSpy = spyOn(jQuery, 'ajax').andCallFake(function() {
+            var ajaxSpy = spyOn($, 'ajax').andCallFake(function() {
                 deferred = $.Deferred();
                 return deferred.promise();
             });
@@ -1578,7 +1579,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('reports an status200/ErrorResult as an error with the ErrorResult model', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1594,7 +1595,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('reports an status200/ErrorResult with no error handler calls global handler', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1608,7 +1609,7 @@ describe('generateModelConstructors', function() {
 
         it('reports an status200/ErrorResult with no error handler calls global handler only once', function() {
             var deferred = [];
-            var ajaxSpy = spyOn(jQuery, 'ajax').andCallFake(function() {
+            var ajaxSpy = spyOn($, 'ajax').andCallFake(function() {
                 deferred = $.Deferred();
                 return deferred.promise();
             });
@@ -1635,7 +1636,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('does not report a status200/ErrorResult when suppresErrorHandler is set', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1650,7 +1651,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('reports an status404/ErrorResult as an error with the ErrorResult model', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1670,7 +1671,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('does not report a status404/ErrorResult when suppresErrorHandler is set', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1689,7 +1690,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('triggers an error event if an error occurs', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.error({
                 });
             });
@@ -1704,7 +1705,7 @@ describe('generateModelConstructors', function() {
 
         it('triggers an "error" event if this gets back a 200/ErrorResult', function() {
             var errorSpy = jasmine.createSpy('error');
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1717,7 +1718,7 @@ describe('generateModelConstructors', function() {
 
         it('triggers an "error" event at any point after the error occurs', function() {
             var errorSpy = jasmine.createSpy('error');
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1729,7 +1730,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('removes ready event callbacks at any point after the error occurs', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1742,7 +1743,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('removes error event callbacks at any point after the error occurs', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1755,7 +1756,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('triggers no badReference event if annon- 404 error occurs', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.error({
                     status: 403,
                     getResponseHeader: function() {
@@ -1773,7 +1774,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('reports an status404/non-ErrorResult as an error with an ErrorResult model', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1796,7 +1797,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('triggers a badReference event if an 404 error occurs', function() {
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1844,7 +1845,7 @@ describe('generateModelConstructors', function() {
             generateModelConstructors(schemas, target);
             model = target._newClientModel('AType');
             readySpy = jasmine.createSpy('readySpy');
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'OKResult',
                     result: {
@@ -1983,18 +1984,14 @@ describe('generateModelConstructors', function() {
                     }
                 }
             };
-            var schemas = schemaStuff.prepareSchemas({
-                p: type,
-                o: dx.test.dataMocks.okResultSchema,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                err: dx.test.dataMocks.errorResultSchema
-            });
+            var schemas = schemaStuff.prepareSchemas(_.extend({
+                p: type
+            }, CORE_SCHEMAS));
             initCache(target);
             generateModelConstructors(schemas, target);
             model = target._newClientModel('AType');
             errorSpy = jasmine.createSpy('errorSpy');
-            spyOn(jQuery, 'ajax').andCallFake(function(options) {
+            spyOn($, 'ajax').andCallFake(function(options) {
                 options.success({
                     type: 'OKResult',
                     result: {
@@ -2027,7 +2024,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('is triggered on a server model when it is not successfully fetched', function() {
-            jQuery.ajax.andCallFake(function(options) {
+            $.ajax.andCallFake(function(options) {
                 options.error({
                     type: 'ErrorResult'
                 });
@@ -2040,7 +2037,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('is removed after having been triggered when it is fetched', function() {
-            jQuery.ajax.andCallFake(function(options) {
+            $.ajax.andCallFake(function(options) {
                 options.error({
                     type: 'ErrorResult'
                 });
@@ -2053,7 +2050,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('removes ready callbacks after having been triggered when it is fetched', function() {
-            jQuery.ajax.andCallFake(function(options) {
+            $.ajax.andCallFake(function(options) {
                 options.error({
                     type: 'ErrorResult'
                 });
@@ -2066,7 +2063,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('will not be triggered after a second fetch if the first fails, but the next one succeeds', function() {
-            jQuery.ajax.andCallFake(function(options) {
+            $.ajax.andCallFake(function(options) {
                 options.error({
                     type: 'ErrorResult'
                 });
@@ -2074,7 +2071,7 @@ describe('generateModelConstructors', function() {
             model = target._newServerModel('AType');
             model._dxFetch();
 
-            jQuery.ajax.andCallFake(function(options) {
+            $.ajax.andCallFake(function(options) {
                 options.success({
                     type: 'OKResult',
                     result: {
@@ -2089,7 +2086,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('passes the model as the first argument to the handler', function() {
-            jQuery.ajax.andCallFake(function(options) {
+            $.ajax.andCallFake(function(options) {
                 options.error({
                     type: 'ErrorResult'
                 });
@@ -2102,7 +2099,7 @@ describe('generateModelConstructors', function() {
         });
 
         it('passes an error result as the second argument to the handler', function() {
-            jQuery.ajax.andCallFake(function(options) {
+            $.ajax.andCallFake(function(options) {
                 options.error({
                     type: 'ErrorResult'
                 });

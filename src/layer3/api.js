@@ -16,10 +16,14 @@
  * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, _, Backbone */
+/*global $, Backbone */
 
 'use strict';
 
+var _ = require('underscore');
+var dxLog = require('dxLog');
+
+var util = require('../util/util.js');
 var schema = require('../layer1/schema.js');
 var initCache = require('../layer2/cache.js');
 var initFilters = require('../layer2/filter.js');
@@ -93,8 +97,8 @@ function DataSystem(schemas) {
      *   queryParams    Optional query parameters used to filter notifications.
      */
     function getCreationListener(settings) {
-        if (dx.core.util.isNone(settings)) {
-            dx.fail('Settings must be specified.');
+        if (util.isNone(settings)) {
+            dxLog.fail('Settings must be specified.');
         }
         _.extend(settings, {
             context: context
@@ -212,7 +216,7 @@ function DataSystem(schemas) {
     var errorCallback;
     function setErrorCallback(func) {
         if (!_.isFunction(func)) {
-            dx.fail('setErrorCallback expects a function as an argument.');
+            dxLog.fail('setErrorCallback expects a function as an argument.');
         }
         errorCallback = func;
     }
@@ -222,7 +226,7 @@ function DataSystem(schemas) {
      */
     function reportErrorResult(errorResult) {
         if (!(errorResult instanceof Backbone.Model) || errorResult.get('type') !== 'ErrorResult') {
-            dx.fail('reportErrorResult expects an ErrorResult model as an argument.');
+            dxLog.fail('reportErrorResult expects an ErrorResult model as an argument.');
         }
 
         // errorCallback is set by an external source using setErrorCallback
@@ -230,7 +234,7 @@ function DataSystem(schemas) {
             errorCallback(errorResult);
         }
 
-        dx.warn('Error result: ' + JSON.stringify(errorResult.toJSON()));
+        dxLog.warn('Error result: ' + JSON.stringify(errorResult.toJSON()));
     }
 
     /*

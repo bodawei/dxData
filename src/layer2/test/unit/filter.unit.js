@@ -17,7 +17,6 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, jQuery */
 
 'use strict';
 
@@ -27,6 +26,8 @@ var initFilters = require('../../filter.js');
 var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
 var CreationListener = require('../../creationListener.js');
+var CONSTANT = require('../../../util/constant.js');
+var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
 
 describe('filters', function() {
     var collection;
@@ -325,14 +326,11 @@ describe('filters', function() {
                     };
 
                     target = {};
-                    schemas = schemaSupport.prepareSchemas({
-                        s: schema,
+                    schemas = schemaSupport.prepareSchemas(_.extend({
+                        t: schema,
                         a: anotherType,
-                        f: finalType,
-                        call: dx.test.dataMocks.callResultSchema,
-                        api: dx.test.dataMocks.apiErrorSchema,
-                        e: dx.test.dataMocks.errorResultSchema
-                    });
+                        f: finalType
+                    }, CORE_SCHEMAS));
 
                     var mockAnotherType = {
                         type: 'AnotherType',
@@ -343,7 +341,7 @@ describe('filters', function() {
                         someProp: 'val'
                     };
 
-                    ajaxSpy = spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                    ajaxSpy = spyOn($, 'ajax').andCallFake(function(options) {
                         if (options.url === '/somethingclever/AnotherType-1') {
                             options.success(mockAnotherType);
                         } else {
@@ -544,25 +542,25 @@ describe('filters', function() {
                                 type: 'string',
                                 format: 'date',
                                 mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                             },
                             startDate: {
                                 type: 'string',
                                 format: 'date',
                                 mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                             },
                             toDate: {
                                 type: 'string',
                                 format: 'date',
                                 mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                             },
                             endDate: {
                                 type: 'string',
                                 format: 'date',
                                 mapsTo: 'updateDate',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.NON_STRICT
+                                inequalityType: CONSTANT.INEQUALITY_TYPES.NON_STRICT
                             }
                         }
                     }
@@ -646,7 +644,7 @@ describe('filters', function() {
             });
 
             it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
-                schema.list.parameters.fromDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
+                schema.list.parameters.fromDate.inequalityType = CONSTANT.INEQUALITY_TYPES.STRICT;
                 var target = {};
                 var schemas = schemaSupport.prepareSchemas({s: schema});
 
@@ -666,7 +664,7 @@ describe('filters', function() {
             });
 
             it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
-                schema.list.parameters.toDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
+                schema.list.parameters.toDate.inequalityType = CONSTANT.INEQUALITY_TYPES.STRICT;
                 var target = {};
                 var schemas = schemaSupport.prepareSchemas({s: schema});
 
@@ -698,7 +696,7 @@ describe('filters', function() {
                                 type: 'string',
                                 format: 'date',
                                 mapsTo: 'anotherObj.finalObj.dateProp',
-                                inequalityType: dx.core.constants.INEQUALITY_TYPES.STRICT
+                                inequalityType: CONSTANT.INEQUALITY_TYPES.STRICT
                             }
                         }
                     }
@@ -730,7 +728,7 @@ describe('filters', function() {
                     dateProp: dateObj
                 };
 
-                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                spyOn($, 'ajax').andCallFake(function(options) {
                     if (options.url === '/somethingclever/AnotherType-1') {
                         options.success(mockAnotherType);
                     } else {

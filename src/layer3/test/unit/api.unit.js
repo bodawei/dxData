@@ -17,10 +17,12 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, $, _ */
+/*global Backbone, $*/
 
 'use strict';
 
+var _ = require('underscore');
+var dxLog = require('dxLog');
 var dxData = require('dxData');
 var dxDataTest = require('dxDataTest');
 var CORE_SCHEMAS = require('../shared/coreSchemas.js');
@@ -135,7 +137,7 @@ describe('DataSystem instance', function() {
         });
 
         it('throws error if asked to get a model type that doesn\'t exist', function() {
-            spyOn(dx, 'warn'); // silence warning messages from server
+            spyOn(dxLog, 'warn'); // silence warning messages from server
             expect(function() {
                 client.getServerModel('REF-1', 'badType');
             }).toDxFail(new Error('badType is not a known type name.'));
@@ -156,7 +158,7 @@ describe('DataSystem instance', function() {
         it('triggers badReference event if asked for an object which doesn\'t exist', function() {
             var badRefCallback = jasmine.createSpy('badRefCallback');
             spyOn(client, 'reportErrorResult'); // silence any actual behavior
-            spyOn(dx, 'warn'); // silence warning messages from server
+            spyOn(dxLog, 'warn'); // silence warning messages from server
 
             var model = client.getServerModel('REF-2', 'AType');
             model.on('badReference', badRefCallback);
@@ -195,7 +197,7 @@ describe('DataSystem instance', function() {
             }]);
             var model = client.getServerModel('REF-2', 'AType');
             server.respond();
-            dx.test.assert(model.get('age')).toBe(1);
+            assert(model.get('age')).toBe(1);
             server.updateObjects([{
                 type: 'AType',
                 reference: 'REF-2',
@@ -244,7 +246,7 @@ describe('DataSystem instance', function() {
 
             it('triggers the error event when error occurs during fetch', function() {
                 var errorSpy = jasmine.createSpy('errorSpy');
-                spyOn(dx, 'warn'); // suppress error messages from the mock server
+                spyOn(dxLog, 'warn'); // suppress error messages from the mock server
 
                 var model = client.getServerModel('REF-2', 'AType');
                 server.respond();
@@ -634,13 +636,7 @@ describe('DataSystem instance', function() {
         var target;
 
         beforeEach(function() {
-            target = new dxData.DataSystem({
-                o: dx.test.dataMocks.okResultSchema,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema,
-                n: dx.test.dataMocks.notificationSchema
-            }, target);
+            target = new dxData.DataSystem(CORE_SCHEMAS);
         });
 
         it('expects a function to be passed in', function() {
@@ -650,7 +646,7 @@ describe('DataSystem instance', function() {
         });
 
         it('sets a callback which is called by reportErrorResult', function() {
-            spyOn(dx, 'warn');
+            spyOn(dxLog, 'warn');
             var errorCallbackSpy = jasmine.createSpy('errorCallback');
             var result = target.newClientModel('ErrorResult');
             target.setErrorCallback(errorCallbackSpy);
@@ -747,7 +743,7 @@ describe('DataSystem instance', function() {
             });
 
             it('is rejected when the model\'s "error" event is triggered', function() {
-                spyOn(dx, 'warn'); // suppress server warning
+                spyOn(dxLog, 'warn'); // suppress server warning
                 server.addStandardOpHandler('SingletonType', 'read', function(payload, Result) {
                     return new Result.ErrorResult(404);
                 });
@@ -805,7 +801,7 @@ describe('DataSystem instance', function() {
             });
 
             it('is rejected when the model\'s "error" event is triggered', function() {
-                spyOn(dx, 'warn'); // suppress message from server
+                spyOn(dxLog, 'warn'); // suppress message from server
                 server.addStandardOpHandler('SingletonType', 'read', function(payload, Result) {
                     return new Result.ErrorResult(404);
                 });
@@ -847,7 +843,7 @@ describe('DataSystem instance', function() {
 
                 it('cleans up event listeners in the error case', function() {
                     var rejectSpy = jasmine.createSpy('reject');
-                    spyOn(dx, 'warn'); // suppress message from server
+                    spyOn(dxLog, 'warn'); // suppress message from server
                     server.addStandardOpHandler('SingletonType', 'read', function(payload, Result) {
                         return new Result.ErrorResult(404);
                     });
@@ -867,22 +863,16 @@ describe('DataSystem instance', function() {
         var client;
 
         beforeEach(function() {
-            spyOn(dx, 'warn');
-            client = new dxData.DataSystem({
-                o: dx.test.dataMocks.okResultSchema,
-                call: dx.test.dataMocks.callResultSchema,
-                api: dx.test.dataMocks.apiErrorSchema,
-                e: dx.test.dataMocks.errorResultSchema,
-                n: dx.test.dataMocks.notificationSchema
-            });
+            spyOn(dxLog, 'warn');
+            client = new dxData.DataSystem(CORE_SCHEMAS);
         });
 
-        it('reports a stringified version of the ErroResult to dx.warn', function() {
+        it('reports a stringified version of the ErroResult to dxLog.warn', function() {
             var result = client.newClientModel('ErrorResult');
 
             client.reportErrorResult(result);
 
-            expect(dx.warn).toHaveBeenCalled();
+            expect(dxLog.warn).toHaveBeenCalled();
         });
 
         it('throws an error if not passed a valid ErroResult', function() {

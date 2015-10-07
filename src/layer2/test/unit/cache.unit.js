@@ -19,7 +19,9 @@
 'use strict';
 
 /*eslint-env jasmine */
-/*global dx, $, Backbone */
+/*global $, Backbone */
+
+var dxLog = require('dxLog');
 
 var schema = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
@@ -27,8 +29,7 @@ var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
 var initFilters = require('../../filter.js');
 var CreationListener = require('../../creationListener.js');
-
-var dxLog = require('dxLog');
+var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
 
 describe('cache', function() {
     var target;
@@ -109,15 +110,12 @@ describe('cache', function() {
             root: '/somewhereelse'
         };
 
-        var schemas = schema.prepareSchemas({
+        var schemas = schema.prepareSchemas(_.extend({
             s: singleton,
             o: ordinary,
             n: nonCachable,
             p: noProps,
-            call: dx.test.dataMocks.callResultSchema,
-            api: dx.test.dataMocks.apiErrorSchema,
-            e: dx.test.dataMocks.errorResultSchema
-        });
+        }, CORE_SCHEMAS));
         initFilters(target);
         initCache(target);
         target._filters.Simple = function(collection, model, handler) {
@@ -988,7 +986,7 @@ describe('cache', function() {
                 store.add(collection1);
                 store.add(collection2);
                 store.add(creationListener);
-                dx.test.assert(collection1.length).toBe(1);
+                assert(collection1.length).toBe(1);
 
                 store.reset();
 

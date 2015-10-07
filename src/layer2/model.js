@@ -16,11 +16,16 @@
  * Copyright (c) 2013, 2015 by Delphix. All rights reserved.
  */
 
-/*global dx, $, Backbone */
+/*global $ */
 
 'use strict';
 
 var _ = require('underscore');
+//var Backbone = require('Backbone');
+var dxLog = require('dxLog');
+
+var util = require('../util/util.js');
+
 
 /*
  * This takes a set of schemas (modified by _prepareSchemas), and creates a set of Backbone Model constructor functions
@@ -256,13 +261,13 @@ function generateModelConstructors(schemas, context) {
 
         if (isObjectRefProp(info.propDef) && info.wantsModel) {
             var referenceValue = this.attributes[info.baseName];
-            if (dx.core.util.isNone(referenceValue)) {
+            if (util.isNone(referenceValue)) {
                 return;
             }
             if (_.isString(referenceValue)) {
                 return context._cache.getCachedModel(referenceValue, getRootType(info.propDef.referenceTo));
             }
-            dx.fail('Tried to retrieve a related object with ' + attrName + ' but value was ' + referenceValue + '.');
+            dxLog.fail('Tried to retrieve a related object with ' + attrName + ' but value was ' + referenceValue + '.');
         } else {
             return Backbone.Model.prototype.get.call(this, info.baseName);
         }
@@ -342,7 +347,7 @@ function generateModelConstructors(schemas, context) {
                 convertToType(self, newAttrs.type);
                 postConvertAttrs = _.clone(self.attributes);
             } else {
-                dx.fail('Tried to change this from ' + self._dxSchema.name + ' to ' + newAttrs.type + '.');
+                dxLog.fail('Tried to change this from ' + self._dxSchema.name + ' to ' + newAttrs.type + '.');
             }
         }
 
@@ -351,7 +356,7 @@ function generateModelConstructors(schemas, context) {
          */
         var invalidAttrs = _.omit(newAttrs, _.keys(self._dxSchema.properties || {}));
         if (!_.isEmpty(invalidAttrs)) {
-            dx.fail(_.keys(invalidAttrs) + ' are not attributes of a model of type ' + self._dxSchema.name + '.');
+            dxLog.fail(_.keys(invalidAttrs) + ' are not attributes of a model of type ' + self._dxSchema.name + '.');
         }
 
         /*
@@ -541,13 +546,13 @@ function generateModelConstructors(schemas, context) {
      */
     function dxHas(attrName) {
         if (!_.isString(attrName)) {
-            dx.fail('Must provide an attribute name.');
+            dxLog.fail('Must provide an attribute name.');
         }
 
         var info = getAttrInfo(this, attrName);
 
         // dxGet will throw an exception for unknown attributes, so reach directly into the attributes to avoid this
-        return info.baseName && !dx.core.util.isNone(this.attributes[info.baseName]);
+        return info.baseName && !util.isNone(this.attributes[info.baseName]);
     }
 
     /*
@@ -637,7 +642,7 @@ function generateModelConstructors(schemas, context) {
      */
     function dxParse(response) {
         if (!response || !response.type) {
-            dx.warn('Got an undefined response, or one without a type in parse().');
+            dxLog.warn('Got an undefined response, or one without a type in parse().');
             return;
         }
 
@@ -646,7 +651,7 @@ function generateModelConstructors(schemas, context) {
         } else if (isSchemaType(response.type)) {
             return response;
         } else {
-            dx.warn('Got an unexpected type of response (' + response.type + ') in parse().');
+            dxLog.warn('Got an unexpected type of response (' + response.type + ') in parse().');
             return;
         }
     }
@@ -672,11 +677,11 @@ function generateModelConstructors(schemas, context) {
      */
     function instanceOf(typeName) {
         if (!_.isString(typeName)) {
-            dx.fail('instanceOf() requires a type name as a parameter.');
+            dxLog.fail('instanceOf() requires a type name as a parameter.');
         }
 
         if (!isSchemaType(typeName)) {
-            dx.fail(typeName + ' is not a known type name.');
+            dxLog.fail(typeName + ' is not a known type name.');
         }
 
         var candidateTypeInfo = this._dxSchema;
@@ -700,7 +705,7 @@ function generateModelConstructors(schemas, context) {
      * Entirely block the standard Backbone destroy() routine. We want users to call $$delete() instead.
      */
     function noDestroy() {
-        dx.fail('Do not call destroy() directly. Instead, call $$delete().');
+        dxLog.fail('Do not call destroy() directly. Instead, call $$delete().');
     }
 
     /*
@@ -715,7 +720,7 @@ function generateModelConstructors(schemas, context) {
         var opDef = this._dxSchema.delete;
 
         if ((arg1 instanceof Backbone.Model) && !opDef.payload) {
-            dx.fail('$$delete does not allow a payload.');
+            dxLog.fail('$$delete does not allow a payload.');
         }
 
         var payload = arg1;
@@ -744,7 +749,7 @@ function generateModelConstructors(schemas, context) {
      */
     function dxCreate(opDef, url, arg1, arg2) {
         if ((arg1 instanceof Backbone.Model) && !opDef.payload) {
-            dx.fail('$$create does not allow a payload.');
+            dxLog.fail('$$create does not allow a payload.');
         }
 
         var payload = arg1;
@@ -765,7 +770,7 @@ function generateModelConstructors(schemas, context) {
      * Entirely block the standard Backbone save() routine. We want users to call $$update() instead.
      */
     function noSave() {
-        dx.fail('Do not call save() directly. Instead, call $$update().');
+        dxLog.fail('Do not call save() directly. Instead, call $$update().');
     }
 
     /*
@@ -776,8 +781,8 @@ function generateModelConstructors(schemas, context) {
     function dxUpdate(attributes, successError) {
         var opDef = this._dxSchema.update;
 
-        if (dx.core.util.isNone(attributes) || _.isEmpty(attributes)) {
-            dx.fail('$$update must be called with a non-empty set of attributes.');
+        if (util.isNone(attributes) || _.isEmpty(attributes)) {
+            dxLog.fail('$$update must be called with a non-empty set of attributes.');
         }
         assertHasReferenceAttr(this, '$update', !this._dxSchema.singleton);
 
@@ -796,7 +801,7 @@ function generateModelConstructors(schemas, context) {
      * Entirely block the standard Backbone fetc() routine.
      */
     function noFetch() {
-        dx.fail('Do not call fetch() directly. Instead, call getServerModel().');
+        dxLog.fail('Do not call fetch() directly. Instead, call getServerModel().');
     }
 
     /*
@@ -959,7 +964,7 @@ function generateModelConstructors(schemas, context) {
         assertHasReferenceAttr(caller, opName, perObject);
 
         if (successError instanceof Backbone.Model) {
-            dx.fail('$' + opName + ' can not be called with a payload (only a success/error object).');
+            dxLog.fail('$' + opName + ' can not be called with a payload (only a success/error object).');
         }
 
         return callOperation(caller, {
@@ -997,11 +1002,11 @@ function generateModelConstructors(schemas, context) {
         var sendableParams;
         assertHasReferenceAttr(caller, opName, perObject);
 
-        if (!_.isObject(parameters) && !dx.core.util.isNone(parameters)) {
-            dx.fail('$' + opName + ' must be passed a (possibly empty) hash of parameters.');
+        if (!_.isObject(parameters) && !util.isNone(parameters)) {
+            dxLog.fail('$' + opName + ' must be passed a (possibly empty) hash of parameters.');
         }
 
-        if (!dx.core.util.isNone(parameters)) {
+        if (!util.isNone(parameters)) {
             sendableParams = checkAndConvertParameters(parameters, opDef.parameters);
         }
 
@@ -1013,7 +1018,7 @@ function generateModelConstructors(schemas, context) {
 
     function assertHasReferenceAttr(model, opName, perObject) {
         if (!model.id && perObject) {
-            dx.fail('$' + opName + ' can not be called without a reference property set.');
+            dxLog.fail('$' + opName + ' can not be called without a reference property set.');
         }
     }
 
@@ -1029,11 +1034,11 @@ function generateModelConstructors(schemas, context) {
      */
     function callOperation(caller, options, type, opDef, successError) {
         if (successError && _.has(successError, 'success') && !_.isFunction(successError.success)) {
-            dx.fail('The success handler must be a function, but found a ' + typeof successError.success + '.');
+            dxLog.fail('The success handler must be a function, but found a ' + typeof successError.success + '.');
         }
 
         if (successError && _.has(successError, 'error') && !_.isFunction(successError.error)) {
-            dx.fail('The error handler must be a function, but found a ' + typeof successError.error + '.');
+            dxLog.fail('The error handler must be a function, but found a ' + typeof successError.error + '.');
         }
 
         var deferred = new $.Deferred();
@@ -1046,10 +1051,10 @@ function generateModelConstructors(schemas, context) {
                     handleErrorResult(processedResult, successError);
                     deferred.reject(processedResult);
                 } else {
-                    if (dx.core.util.isNone(result) || dx.core.util.isNone(result.type)) {
-                        dx.fail('Operation returned success, but without a typed object: ' + result);
+                    if (util.isNone(result) || util.isNone(result.type)) {
+                        dxLog.fail('Operation returned success, but without a typed object: ' + result);
                     }
-                    if (dx.core.util.isNone(opDef.return) && result.result === '') {
+                    if (util.isNone(opDef.return) && result.result === '') {
                         delete result.result;
                     }
                     assertValueMatchesDefinition('(return value)', result.result, opDef.return);
@@ -1081,7 +1086,7 @@ function generateModelConstructors(schemas, context) {
 
         params.type = type;
 
-        dx.core.ajax.ajaxCall(params);
+        util.ajaxCall(params);
         return deferred.promise();
     }
 
@@ -1089,17 +1094,17 @@ function generateModelConstructors(schemas, context) {
      * Validate that the payload matches the definition for the operation.
      */
     function assertAndPreparePayload(opName, opDef, payload) {
-        if (dx.core.util.isNone(payload) && opDef.payload && opDef.payload.required) {
-            dx.fail('Must call $' + opName + ' with a payload of type ' + opDef.payload.$ref + '.');
+        if (util.isNone(payload) && opDef.payload && opDef.payload.required) {
+            dxLog.fail('Must call $' + opName + ' with a payload of type ' + opDef.payload.$ref + '.');
         }
 
-        if (!dx.core.util.isNone(payload)) {
+        if (!util.isNone(payload)) {
             if (!_.isObject(payload) || !(payload instanceof Backbone.Model)) {
-                dx.fail('Must call $' + opName + ' with a backbone model.');
+                dxLog.fail('Must call $' + opName + ' with a backbone model.');
             }
 
             if (!payload.instanceOf(opDef.payload.$ref)) {
-                dx.fail('Must call $' + opName + ' with an instance of ' + opDef.payload.$ref + '.');
+                dxLog.fail('Must call $' + opName + ' with an instance of ' + opDef.payload.$ref + '.');
             }
 
             return JSON.stringify(jsonIze(payload, opDef.validateAs || 'send'));
@@ -1118,12 +1123,12 @@ function generateModelConstructors(schemas, context) {
         parameters = parameters || {};
         var undefinedParams = _.omit(parameters, _.keys(paramDefinitions));
         if (!_.isEmpty(undefinedParams)) {
-            dx.fail(_.keys(undefinedParams).join(', ') + ' is not a valid parameter name.');
+            dxLog.fail(_.keys(undefinedParams).join(', ') + ' is not a valid parameter name.');
         }
 
         _.each(parameters, function(value, key) {
             if (_.isUndefined(value)) {
-                dx.fail('Can not send a request with an undefined parameter (' + key + ' is undefined).');
+                dxLog.fail('Can not send a request with an undefined parameter (' + key + ' is undefined).');
             }
         });
 
@@ -1131,7 +1136,7 @@ function generateModelConstructors(schemas, context) {
             if (_.has(parameters, paramName)) {
                 assertValueMatchesDefinition(paramName, parameters[paramName], paramDef);
             } else if (paramDef.required) {
-                dx.fail(paramName + ' is required, but has not been passed.');
+                dxLog.fail(paramName + ' is required, but has not been passed.');
             }
         });
 
@@ -1179,12 +1184,12 @@ function generateModelConstructors(schemas, context) {
      * since the Backbone system doesn't really understand embedded models.
      */
     function makeNewModel(typeName, isClient) {
-        if (dx.core.util.isNone(typeName)) {
-            dx.fail('To create a new model, a type name must be provided.');
+        if (util.isNone(typeName)) {
+            dxLog.fail('To create a new model, a type name must be provided.');
         }
 
         if (!isSchemaType(typeName)) {
-            dx.fail(typeName + ' is not a known type name. Can not create one.');
+            dxLog.fail(typeName + ' is not a known type name. Can not create one.');
         } else {
             var model = new context._modelConstructors[typeName]();
             model._dxIsClientModel = isClient;
@@ -1257,7 +1262,7 @@ function generateModelConstructors(schemas, context) {
     }
 
     function cantModifyServerModel() {
-        dx.fail('Can not modify a server ' + this._dxSchema.name + ' instance.');
+        dxLog.fail('Can not modify a server ' + this._dxSchema.name + ' instance.');
     }
 
     /*
@@ -1266,11 +1271,11 @@ function generateModelConstructors(schemas, context) {
      */
     function getRootType(childType) {
         if (!_.isString(childType)) {
-            dx.fail('Must call with a type name.');
+            dxLog.fail('Must call with a type name.');
         }
 
         if (!isSchemaType(childType)) {
-            dx.fail(childType + ' is not a known type name.');
+            dxLog.fail(childType + ' is not a known type name.');
         }
 
         return context._modelConstructors[childType].prototype._dxSchema.rootTypeName;
@@ -1284,16 +1289,16 @@ function generateModelConstructors(schemas, context) {
         var responseInfo = xhr.responseText;
 
         // for testing xhr may not have getResponseHeader, and not all responses have a content-type!
-        var contentType = dx.core.util.isNone(xhr.getResponseHeader) ? undefined :
+        var contentType = util.isNone(xhr.getResponseHeader) ? undefined :
             xhr.getResponseHeader('content-type');
 
-        if (!dx.core.util.isNone(contentType) &&
+        if (!util.isNone(contentType) &&
             contentType.indexOf('application/json') > -1 &&
             !_.isObject(responseInfo)) {
             try {
                 responseInfo = JSON.parse(responseInfo);
             } catch (e) {
-                dx.fail('Server response claimed to be application/json, but couldn\'t be parsed as JSON (' +
+                dxLog.fail('Server response claimed to be application/json, but couldn\'t be parsed as JSON (' +
                     xhr.responseText + ').');
             }
         }
@@ -1326,7 +1331,7 @@ function generateModelConstructors(schemas, context) {
         var info = getAttrInfo(model, attrName);
 
         if (_.isUndefined(info.propDef)) {
-            dx.fail(attrName + ' is not a known attribute.');
+            dxLog.fail(attrName + ' is not a known attribute.');
         }
 
         return info;
@@ -1339,7 +1344,7 @@ function generateModelConstructors(schemas, context) {
      */
     function getAttrInfo(model, attrName) {
         if (!_.isString(attrName)) {
-            dx.fail('Must provide an attribute name.');
+            dxLog.fail('Must provide an attribute name.');
         }
 
         var baseName = attrName;
@@ -1425,10 +1430,10 @@ function generateModelConstructors(schemas, context) {
         var typeMatches;
 
         if (_.isUndefined(def)) {
-            if (dx.core.util.isNone(value)) {
+            if (util.isNone(value)) {
                 return type;
             } else {
-                dx.fail(name + ' has a value, but it has no definition.');
+                dxLog.fail(name + ' has a value, but it has no definition.');
             }
         }
 
@@ -1442,10 +1447,10 @@ function generateModelConstructors(schemas, context) {
 
         if (!typeMatches) {
             if (!def.$ref) {
-                dx.fail(name + ' has to be type ' + ((def.type === 'string' && def.format === 'date') ?
+                dxLog.fail(name + ' has to be type ' + ((def.type === 'string' && def.format === 'date') ?
                     'date' : def.type) + ' but is ' + type + ' (' + JSON.stringify(value) + ')');
             } else {
-                dx.fail(name + ' has to be type ' + def.type + '/' + def.$ref + ' but is ' + type + '/' + objectType);
+                dxLog.fail(name + ' has to be type ' + def.type + '/' + def.$ref + ' but is ' + type + '/' + objectType);
             }
         }
 
@@ -1453,8 +1458,8 @@ function generateModelConstructors(schemas, context) {
          * Note: def.enum throws an error in IE8.  We're also good with undefined/null from previous checks but those
          * values obviously aren't part of the enum
          */
-        if (def.enum && !dx.core.util.isNone(value) && !_.contains(def.enum, value)) {
-            dx.fail(name + ' is an enum and has to be one of ' + JSON.stringify(def.enum) + ' but is ' +
+        if (def.enum && !util.isNone(value) && !_.contains(def.enum, value)) {
+            dxLog.fail(name + ' is an enum and has to be one of ' + JSON.stringify(def.enum) + ' but is ' +
                 JSON.stringify(value));
         }
 
@@ -1515,7 +1520,7 @@ function generateModelConstructors(schemas, context) {
     }
 
     function blockPrototypeOperation() {
-        dx.fail('This operation does not exist on this instance. (it has been converted from a type that had it).');
+        dxLog.fail('This operation does not exist on this instance. (it has been converted from a type that had it).');
     }
 
     function firstIsSubtypeOfSecond(childType, parentType) {
@@ -1622,9 +1627,9 @@ function generateModelConstructors(schemas, context) {
                 var required = isRequired(propDef, mode);
 
                 // Don't send null when it won't be accepted
-                if (dx.core.util.isNone(attrValue) && !isNullableType(propDef)) {
+                if (util.isNone(attrValue) && !isNullableType(propDef)) {
                     if (required) {
-                        dx.fail('The attribute ' + key + ' is required to be non-null/non-undefined.');
+                        dxLog.fail('The attribute ' + key + ' is required to be non-null/non-undefined.');
                     }
                     return;
                 }
@@ -1787,8 +1792,8 @@ function generateModelConstructors(schemas, context) {
     }
 
     function throwIfBadNull(value, propDef, key) {
-        if (dx.core.util.isNone(value) && !isNullableType(propDef)) {
-            dx.fail('The attribute ' + key + ' is required to be non-null/non-undefined.');
+        if (util.isNone(value) && !isNullableType(propDef)) {
+            dxLog.fail('The attribute ' + key + ' is required to be non-null/non-undefined.');
         }
     }
 

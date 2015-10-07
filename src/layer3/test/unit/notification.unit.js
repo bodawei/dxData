@@ -17,10 +17,11 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, $, _ */
+/*global $ */
 
 'use strict';
 
+var _ = require('underscore');
 var dxData = require('dxData');
 var dxDataTest = require('dxDataTest');
 var dxLog = require('dxLog');
@@ -303,7 +304,7 @@ describe('notification processor', function() {
             age: 23
         });
         server.respond();
-        dx.test.assert(groups.length).toBe(1);
+        assert(groups.length).toBe(1);
 
         spyOn(client._cache, 'getCachedModel').andCallThrough();
         server.updateObjects([{
@@ -417,7 +418,7 @@ describe('notification processor', function() {
 
         client.notification.start();
         server.respond();
-        dx.test.assert(warnSpy).not.toHaveBeenCalled();
+        assert(warnSpy).not.toHaveBeenCalled();
 
         var model = client.getServerModel('GROUP-1', 'Group');
         model.trigger('error');
