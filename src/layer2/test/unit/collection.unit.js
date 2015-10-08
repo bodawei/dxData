@@ -25,14 +25,15 @@ var schema = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
-var initFilters = require('../../filter.js');
 var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
+var CONSTANT = require('../../../util/constant.js');
 
 describe('generateCollectionConstructors', function() {
     var SimpleModelConstructor = Backbone.Model.extend({});
     var target;
     var collection;
     var schemas;
+    var filterSpy;
 
     var GENERATE_INITIAL_RESULTS = function(options) {
             options.success({
@@ -138,21 +139,22 @@ describe('generateCollectionConstructors', function() {
                 $ref: 'p'
             }
         };
+        filterSpy = jasmine.createSpy('filterSpy').andCallFake(function(collection, model, handler) {
+            handler(CONSTANT.FILTER_RESULT.INCLUDE);
+        });
 
         schemas = schema.prepareSchemas({u: unRooted, p: rooted, c: rootChild, n: noqp, wmp: wmp});
         initCache(target);
-        initFilters(target);
-        target._filters.HasRoot = function(collection, model, handler) {
-            handler(target._filters.INCLUDE);
-        };
         generateModelConstructors(schemas, target);
-        generateCollectionConstructors(schemas, target);
+        generateCollectionConstructors(schemas, {
+            HasRoot: filterSpy
+        }, target);
         collection = target._newServerCollection('HasRoot');
     });
 
     describe('constructors', function() {
         it('has one constructor for each schema with a list operation', function() {
-            generateCollectionConstructors(schemas, target, target);
+            generateCollectionConstructors(schemas, {}, target);
 
             expect(_.size(target._collectionConstructors)).toBe(3);
             expect(target._collectionConstructors.HasRoot).toBeDefined();
@@ -322,18 +324,18 @@ describe('generateCollectionConstructors', function() {
                 r: reqType,
             }, CORE_SCHEMAS));
             initCache(target);
-            initFilters(target);
-            target._filters.hasList = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
-            target._filters.RequiredParams = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
-            target._filters.NoParams = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
             generateModelConstructors(schemas, target);
-            generateCollectionConstructors(schemas, target);
+            generateCollectionConstructors(schemas, {
+                hasList: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                },
+                RequiredParams: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                },
+                NoParams: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                }
+            }, target);
             collection = new target._newServerCollection('hasList');
         });
 
@@ -602,12 +604,12 @@ describe('generateCollectionConstructors', function() {
                 c: otherChild
             });
             initCache(target);
-            initFilters(target);
-            target._filters.ParentType = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
             generateModelConstructors(schemas, target);
-            generateCollectionConstructors(schemas, target);
+            generateCollectionConstructors(schemas, {
+                ParentType: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                }
+            }, target);
             collection = new target._newServerCollection('ChildTypeWithList');
 
             spyOn($, 'ajax').andCallFake(function(options) {
@@ -653,12 +655,12 @@ describe('generateCollectionConstructors', function() {
                     l: listType
                 });
                 initCache(target);
-                initFilters(target);
-                target._filters.NoRefProperty = function(collection, model, handler) {
-                    handler(target._filters.INCLUDE);
-                };
                 generateModelConstructors(schemas, target);
-                generateCollectionConstructors(schemas, target);
+                generateCollectionConstructors(schemas, {
+                    NoRefProperty: function(collection, model, handler) {
+                        handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                    }
+                }, target);
                 collection = new target._newServerCollection('NoRefProperty');
 
                 spyOn($, 'ajax').andCallFake(function(options) {
@@ -736,17 +738,16 @@ describe('generateCollectionConstructors', function() {
                     l: bogusType
                 });
                 initCache(target);
-                initFilters(target);
                 generateModelConstructors(schemas, target);
-                generateCollectionConstructors(schemas, target);
+                generateCollectionConstructors(schemas, {}, target);
                 collection = new target._newServerCollection('BogusType');
             });
 
             it('will throw an error if there is no filter function for a type when $$list is done', function() {
                 expect(function() {
                     collection.$$list();
-                }).toDxFail(new Error('No filter function found for collections of type BogusType. Add one to ' +
-                    '_filters. In the mean time, all models will be added to the collection.'));
+                }).toDxFail(new Error('No filter function found for collections of type BogusType. Pass one into ' +
+                    'the data system constructor. In the mean time, all models will be added to the collection.'));
             });
 
             it('adds models to the collection, even the filter would otherwise suggest it shouldn\'t be', function() {
@@ -792,12 +793,12 @@ describe('generateCollectionConstructors', function() {
                     p: pagedType
                 });
                 initCache(target);
-                initFilters(target);
-                target._filters.PagedType = function() {
-                    return target._filters.UNKNOWN;
-                };
                 generateModelConstructors(schemas, target);
-                generateCollectionConstructors(schemas, target);
+                generateCollectionConstructors(schemas, {
+                    PagedType: function() {
+                        return CONSTANT.FILTER_RESULT.UNKNOWN;
+                    }
+                }, target);
                 collection = new target._newServerCollection('PagedType');
 
                 collection.$$list({ pageSize: 3 });
@@ -1355,12 +1356,12 @@ describe('generateCollectionConstructors', function() {
                 p: noRef
             });
             initCache(target);
-            initFilters(target);
-            target._filters.NoRef = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
             generateModelConstructors(schemas, target);
-            generateCollectionConstructors(schemas, target);
+            generateCollectionConstructors(schemas, {
+                NoRef: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                }
+            }, target);
             collection = new target._newServerCollection('NoRef');
             var ajaxSpy = spyOn($, 'ajax');
             ajaxSpy.andCallFake(function(options) {
@@ -1475,12 +1476,12 @@ describe('generateCollectionConstructors', function() {
                 p: listType
             }, CORE_SCHEMAS));
             initCache(target);
-            initFilters(target);
-            target._filters.hasList = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
             generateModelConstructors(schemas, target);
-            generateCollectionConstructors(schemas, target);
+            generateCollectionConstructors(schemas, {
+                hasList: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                }
+            }, target);
             collection = new target._collectionConstructors.hasList();
         });
 
@@ -1539,9 +1540,7 @@ describe('generateCollectionConstructors', function() {
                     } ]
                 });
             });
-            target._filters.HasRoot = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
+
             collection = target._newServerCollection('HasRoot');
             collection.$$list({
                 name: 'fred'
@@ -1820,9 +1819,6 @@ describe('generateCollectionConstructors', function() {
                     } ]
                 });
             });
-            target._filters.HasRoot = function(collection, model, handler) {
-                handler(target._filters.INCLUDE);
-            };
             collection = target._newServerCollection('HasRoot');
             collection.$$list({
                 name: 'fred'
@@ -1940,9 +1936,6 @@ describe('generateCollectionConstructors', function() {
                     });
                 });
                 successSpy = jasmine.createSpy('successSpy');
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.INCLUDE);
-                };
                 collection.$$list({
                     name: 'fred'
                 }, {
@@ -1975,10 +1968,9 @@ describe('generateCollectionConstructors', function() {
              * the collection (which we emphatically do not want to have happen)
              */
             it('will not affect the collection if the model is already there', function() {
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.INCLUDE);
-                };
-
+                filterSpy.andCallFake(function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                });
                 var model = target._newClientModel('HasRoot');
                 model.set('reference', 'HASROOT-1');
                 model.set('name', 'newName');
@@ -1990,9 +1982,9 @@ describe('generateCollectionConstructors', function() {
             });
 
             it('will do nothing if asked to remove a model that isn\'t in the collection', function() {
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.EXCLUDE);
-                };
+                filterSpy.andCallFake(function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.EXCLUDE);
+                });
 
                 var model = target._newClientModel('HasRoot');
                 model.set('reference', 'HASROOT-2');
@@ -2003,10 +1995,9 @@ describe('generateCollectionConstructors', function() {
             });
 
             it('will remove the model from the collection if it is already there', function() {
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.EXCLUDE);
-                };
-
+                filterSpy.andCallFake(function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.EXCLUDE);
+                });
                 var model = target._newClientModel('HasRoot');
                 model.set('reference', 'HASROOT-1');
 
@@ -2016,9 +2007,9 @@ describe('generateCollectionConstructors', function() {
             });
 
             it('will trigger a dirty event in the case this is UNKNOWN', function() {
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.UNKNOWN);
-                };
+                filterSpy.andCallFake(function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.UNKNOWN);
+                });
                 var dirtySpy = jasmine.createSpy('dirtySpy');
                 var model = target._newClientModel('HasRoot');
                 collection.on('dirty', dirtySpy);
@@ -2029,9 +2020,9 @@ describe('generateCollectionConstructors', function() {
             });
 
             it('will trigger a new list call, if autoPageRefresh is true', function() {
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.UNKNOWN);
-                };
+                filterSpy.andCallFake(function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.UNKNOWN);
+                });
                 var model = target._newClientModel('HasRoot');
                 collection.setAutoPageRefresh(true);
                 expect(successSpy.calls.length).toBe(1);
@@ -2040,9 +2031,9 @@ describe('generateCollectionConstructors', function() {
                 collection._dxAddOrRemove(model);
 
                 // keep the list from infinitely calling itself.
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.INCLUDE);
-                };
+                filterSpy.andCallFake(function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                });
                 jasmine.Clock.tick(1);
 
                 expect(successSpy.calls.length).toBe(2);
@@ -2050,9 +2041,9 @@ describe('generateCollectionConstructors', function() {
 
             it('will trigger only one new list call even if autoPageRefresh true and many UNKNOWN models returned',
                 function() {
-                target._filters.HasRoot = function(collection, model, handler) {
-                    handler(target._filters.UNKNOWN);
-                };
+                filterSpy.andCallFake(function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.UNKNOWN);
+                });
                 ajaxSpy.andCallFake(function(options) {
                     options.success({
                         type: 'ListResult',
@@ -2083,9 +2074,9 @@ describe('generateCollectionConstructors', function() {
             });
 
             it('will throw an error if the filter returns an unknown value', function() {
-                target._filters.HasRoot = function(collection, model, handler) {
+                filterSpy.andCallFake(function(collection, model, handler) {
                     handler(5);
-                };
+                });
 
                 expect(function() {
                     collection._dxAddOrRemove(target._newClientModel('HasRoot'));

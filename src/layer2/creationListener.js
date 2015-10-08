@@ -23,7 +23,11 @@
 var _ = require('underscore');
 var dxLog = require('dxLog');
 
+var FilterUtil = require('./FilterUtil.js');
+var CONSTANT = require('../util/constant.js');
 var util = require('../util/util.js');
+
+var filterUtil = new FilterUtil();
 
 /*
  * Creation listeners provide access to notification updates for API server objects creation in the form
@@ -66,21 +70,26 @@ function CreationListener(settings) {
         if (!self.inUse) {
             return;
         }
+        
+        if (!settings.filters || !settings.filters[typeName]) {
+            settings.callback(model);
+            return;
+        }
 
-        context._filters[typeName](self, model, function(placement) {
+        settings.filters[typeName](self, model, function(placement) {
             switch (placement) {
-                case context._filters.INCLUDE:
+                case CONSTANT.FILTER_RESULT.INCLUDE:
                     settings.callback(model);
                     break;
-                case context._filters.EXCLUDE:
+                case CONSTANT.FILTER_RESULT.EXCLUDE:
                     break;
-                case context._filters.UNKNOWN:
+                case CONSTANT.FILTER_RESULT.UNKNOWN:
                     dxLog.fail('UNKNOWN filter result not supported by creation listeners');
                     break;  // to keep ant check happy.
                 default:
                     dxLog.fail('Filter returned an invalid value.');
             }
-        });
+        }, filterUtil);
     };
 
     self.dispose = function() {

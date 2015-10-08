@@ -323,8 +323,11 @@ describe('MockFilterUtils', function() {
                     });
                 }
                 
-                client = new dxData.DataSystem(testSchemas);
-                client._filters.Fault = client._filters._uberFilter;
+                client = new dxData.DataSystem(testSchemas, {
+                    Fault: function(collection, model, resultHandler, filterUtil) {
+                        filterUtil.uberFilter(collection, model, resultHandler, filterUtil);
+                    }
+                });
 
                 server = new MockServer(testSchemas, {
                     Fault: function(collection, qParams, support) {

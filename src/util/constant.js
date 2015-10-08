@@ -29,5 +29,10 @@ module.exports = {
         NONE:   'NONE',
         UBER:   'UBER',
         CUSTOM: 'CUSTOM'
+    },
+    FILTER_RESULT: {
+        INCLUDE: 'INCLUDE',
+        EXCLUDE: 'EXCLUDE',
+        UNKNOWN: 'UNKNOWN'
     }
 };

@@ -22,35 +22,36 @@
 
 var schemaSupport = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
-var initFilters = require('../../filter.js');
+var FilterUtil = require('../../FilterUtil.js');
 var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
 var CreationListener = require('../../creationListener.js');
 var CONSTANT = require('../../../util/constant.js');
 var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
 
-describe('filters', function() {
+describe('FilterUtil', function() {
     var collection;
     var model;
     var filterResult;
+    var filterUtil;
 
+    beforeEach(function() {
+        filterUtil = new FilterUtil();
+    });
+    
     function resultHandler(value) {
         filterResult = value;
     }
 
     function initDxData(schemas, target) {
         initCache(target);
-        initFilters(target);
         generateModelConstructors(schemas, target);
-        generateCollectionConstructors(schemas, target);
+        generateCollectionConstructors(schemas, {}, target);
     }
 
-    describe('_initFilters', function() {
-        it('creates _filters', function() {
-            var target = {};
-            initFilters(target);
-
-            expect(target._filters).toBeDefined();
+    describe('construction', function() {
+        it('creates a FilterUtil instance', function() {
+            expect(new FilterUtil().uberFilter).toBeDefined();
         });
     });
 
@@ -102,9 +103,9 @@ describe('filters', function() {
             var collection = target._newServerCollection('NoParams');
             var model = target._newClientModel('NoParams');
 
-            target._filters._uberFilter(collection, model, resultHandler);
+            filterUtil.uberFilter(collection, model, resultHandler);
 
-            expect(filterResult).toBe(target._filters.INCLUDE);
+            expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
         });
 
         it('will filter a rooted model', function() {
@@ -115,9 +116,9 @@ describe('filters', function() {
             var model = target._newClientModel('RootedType');
             model.set('canHandle', 'one');
 
-            target._filters._uberFilter(collection, model, resultHandler);
+            filterUtil.uberFilter(collection, model, resultHandler);
 
-            expect(filterResult).toBe(target._filters.INCLUDE);
+            expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
         });
 
         it('will filter a child of a rooted model', function() {
@@ -128,9 +129,9 @@ describe('filters', function() {
             var model = target._newClientModel('ChildType');
             model.set('canHandle', 'one');
 
-            target._filters._uberFilter(collection, model, resultHandler);
+            filterUtil.uberFilter(collection, model, resultHandler);
 
-            expect(filterResult).toBe(target._filters.INCLUDE);
+            expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
         });
 
         it('(whitebox) will throw an error if asked to filter an object that has no root', function() {
@@ -138,7 +139,7 @@ describe('filters', function() {
             var model = target._newClientModel('Rootless');
 
             expect(function() {
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
             }).toDxFail('Trying to filter a type that has no root type.');
         });
 
@@ -152,7 +153,7 @@ describe('filters', function() {
             model._dxSchema.rootTypeName = 'Bogus';
 
             expect(function() {
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
             }).toDxFail('Malformed type. Root schema type not found.');
         });
 
@@ -197,7 +198,7 @@ describe('filters', function() {
                     };
 
                     expect(function() {
-                        target._filters._uberFilter(collection, model, resultHandler);
+                        filterUtil.uberFilter(collection, model, resultHandler);
                     }).toDxFail('No mapsTo property found for query parameter someProp.');
                 });
 
@@ -211,9 +212,9 @@ describe('filters', function() {
                         someProp: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                    expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
                 });
 
                 it('excludes an object when the values don\'t match', function() {
@@ -226,9 +227,9 @@ describe('filters', function() {
                         someProp: 'other'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
                 });
             });
 
@@ -266,9 +267,9 @@ describe('filters', function() {
                         bProp: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                    expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
                 });
 
                 it('excludes an object when the values don\'t match', function() {
@@ -281,9 +282,9 @@ describe('filters', function() {
                         bProp: 'other'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
                 });
             });
 
@@ -366,9 +367,9 @@ describe('filters', function() {
                         aParam: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
                 });
 
                 it('includes an object when the values match', function() {
@@ -381,9 +382,9 @@ describe('filters', function() {
                         aParam: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                    expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
                 });
 
                 it('excludes an object when the values don\'t match', function() {
@@ -396,9 +397,9 @@ describe('filters', function() {
                         aParam: 'wrong!'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
                 });
             });
         });
@@ -435,9 +436,9 @@ describe('filters', function() {
                 });
                 var model = target._newClientModel('WithPaging');
 
-                target._filters._uberFilter(notificationListener, model, resultHandler);
+                filterUtil.uberFilter(notificationListener, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('does not return UNKNOWN if the schema does not have paging-related query parameters', function() {
@@ -469,9 +470,9 @@ describe('filters', function() {
                     otherParam: 'Some val'
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('does not return UNKNOWN if pageSize is 0', function() {
@@ -487,9 +488,9 @@ describe('filters', function() {
                     pageOffset: 2
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('returns UNKNOWN if pageSize is not 0', function() {
@@ -504,9 +505,9 @@ describe('filters', function() {
                     pageSize: 1
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.UNKNOWN);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.UNKNOWN);
             });
 
             it('returns UNKNOWN if pageSize is not defined', function() {
@@ -519,9 +520,9 @@ describe('filters', function() {
 
                 collection._queryParameters = {};
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.UNKNOWN);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.UNKNOWN);
             });
         });
 
@@ -582,7 +583,7 @@ describe('filters', function() {
                 };
 
                 expect(function() {
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
                 }).toDxFail('No mapsTo property found for query parameter fromDate.');
             });
 
@@ -600,7 +601,7 @@ describe('filters', function() {
                 };
 
                 expect(function() {
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    filterUtil.uberFilter(collection, model, resultHandler);
                 }).toDxFail('Date property "fromDate" missing "inequalityType" schema property');
             });
 
@@ -618,9 +619,9 @@ describe('filters', function() {
                     fromDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('includes an object when it occurs on the toDate and inequalityType is NON-STRICT', function() {
@@ -637,9 +638,9 @@ describe('filters', function() {
                     toDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
@@ -657,9 +658,9 @@ describe('filters', function() {
                     fromDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
             });
 
             it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
@@ -677,9 +678,9 @@ describe('filters', function() {
                     toDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
             });
 
             it('follows "mapsTo" chains to check the correct attribute on the object', function() {
@@ -748,10 +749,10 @@ describe('filters', function() {
                     toDate: new Date(dateObj.getTime() + 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
                 model.trigger('ready');
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('handles alternate names "startDate" and "endDate"', function() {
@@ -769,9 +770,9 @@ describe('filters', function() {
                     endDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('includes an object when it occurs between the from and toDate', function() {
@@ -789,9 +790,9 @@ describe('filters', function() {
                     fromDate: new Date(dateObj.getTime() - 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.INCLUDE);
             });
 
             it('excludes an object when it occurs before the fromDate', function() {
@@ -808,9 +809,9 @@ describe('filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
             });
 
             it('excludes an object when it occurs after the toDate', function() {
@@ -827,9 +828,9 @@ describe('filters', function() {
                     toDate: new Date(dateObj.getTime() - 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
             });
 
             it('excludes an object when the from and the to date are reversed', function() {
@@ -847,9 +848,9 @@ describe('filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
             });
 
             it('excludes an object with no date', function() {
@@ -866,9 +867,9 @@ describe('filters', function() {
                     fromDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                filterUtil.uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                expect(filterResult).toBe(CONSTANT.FILTER_RESULT.EXCLUDE);
             });
         });
     });

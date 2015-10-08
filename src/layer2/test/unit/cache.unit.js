@@ -27,9 +27,9 @@ var schema = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
-var initFilters = require('../../filter.js');
 var CreationListener = require('../../creationListener.js');
 var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
+var CONSTANT = require('../../../util/constant.js');
 
 describe('cache', function() {
     var target;
@@ -116,13 +116,13 @@ describe('cache', function() {
             n: nonCachable,
             p: noProps,
         }, CORE_SCHEMAS));
-        initFilters(target);
         initCache(target);
-        target._filters.Simple = function(collection, model, handler) {
-            handler(target._filters.INCLUDE);
-        };
         generateModelConstructors(schemas, target);
-        generateCollectionConstructors(schemas, target);
+        generateCollectionConstructors(schemas, {
+            Simple: function(collection, model, handler) {
+                handler(CONSTANT.FILTER_RESULT.INCLUDE);
+            }
+        }, target);
         ajaxSpy = spyOn($, 'ajax');
     });
 

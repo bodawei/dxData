@@ -86,10 +86,9 @@ describe('notification processor', function() {
         });
         server.start();
 
-        client = new dxData.DataSystem(schemas, {
+        client = new dxData.DataSystem(schemas, {}, {
             onNotificationDrop: notificationDropSpy
         });
-        client._filters.Group = client._filters._uberFilter;
     });
 
     afterEach(function() {

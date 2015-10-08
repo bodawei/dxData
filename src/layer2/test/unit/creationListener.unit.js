@@ -22,13 +22,16 @@
 
 var schema = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
-var initFilters = require('../../filter.js');
+var FilterUtil = require('../../FilterUtil.js');
 var generateModelConstructors = require('../../model.js');
 var generateCollectionConstructors = require('../../collection.js');
 var CreationListener = require('../../creationListener.js');
+var CONSTANT = require('../../../util/constant.js');
 
 describe('level2 creation listener', function() {
     var context = {};
+    var filterSpy;
+    var filters;
 
     beforeEach(function() {
         var schemaType = {
@@ -37,17 +40,20 @@ describe('level2 creation listener', function() {
             list: {}
         };
         context = {};
+        filterSpy = jasmine.createSpy('filterSpy').andCallFake(function(collection, model, handler) {});
+        filters = {
+            Type: filterSpy
+        };
         var schemas = schema.prepareSchemas({r: schemaType});
         initCache(context);
-        initFilters(context);
         generateModelConstructors(schemas, context);
-        generateCollectionConstructors(schemas, context);
+        generateCollectionConstructors(schemas, filters, context);
     });
 
     it('invokes the callback on notifications', function() {
-        context._filters.Type = function(collection, model, handler) {
-            handler(context._filters.INCLUDE);
-        };
+        filterSpy.andCallFake(function(collection, model, handler) {
+            handler(CONSTANT.FILTER_RESULT.INCLUDE);
+        });
         var models = [];
         var creationListener = new CreationListener({
             typeName: 'Type',
@@ -55,6 +61,7 @@ describe('level2 creation listener', function() {
                 models.push(model);
             },
             disposeCallback: function() {},
+            filters: filters,
             context: context
         });
         var model1 = {};
@@ -65,18 +72,17 @@ describe('level2 creation listener', function() {
     });
 
     it('supports undefined queryParameters', function() {
-        context._filters.Type = function() {};
         var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
             disposeCallback: function() {},
+            filters: filters,
             context: context
         });
         expect(creationListener.getQueryParameters()).toBeUndefined();
     });
 
     it('supports defined queryParameters', function() {
-        context._filters.Type = function() {};
         var creationListener = new CreationListener({
             typeName: 'Type',
             queryParams: {
@@ -84,6 +90,7 @@ describe('level2 creation listener', function() {
             },
             callback: function() {},
             disposeCallback: function() {},
+            filters: filters,
             context: context
         });
         expect(creationListener.getQueryParameters()).toEqual({
@@ -92,14 +99,15 @@ describe('level2 creation listener', function() {
     });
 
     it('does not invokes the callback on notifications when the filter excludes the model', function() {
-        context._filters.Type = function(collection, model, handler) {
-            handler(context._filters.EXCLUDE);
-        };
+        filterSpy.andCallFake(function(collection, model, handler) {
+            handler(CONSTANT.FILTER_RESULT.EXCLUDE);
+        });
         var callbackSpy = jasmine.createSpy('callback');
         var creationListener = new CreationListener({
             typeName: 'Type',
             callback: callbackSpy,
             disposeCallback: function() {},
+            filters: filters,
             context: context
         });
         var model1 = {};
@@ -108,13 +116,14 @@ describe('level2 creation listener', function() {
     });
 
     it('blows up if the filter is UNKNOWN', function() {
-        context._filters.Type = function(collection, model, handler) {
-            handler(context._filters.UNKNOWN);
-        };
+        filterSpy.andCallFake(function(collection, model, handler) {
+            handler(CONSTANT.FILTER_RESULT.UNKNOWN);
+        });
         var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
             disposeCallback: function() {},
+            filters: filters,
             context: context
         });
         expect(function() {
@@ -123,13 +132,14 @@ describe('level2 creation listener', function() {
     });
 
     it('blows up if the filter is an unknown result', function() {
-        context._filters.Type = function(collection, model, handler) {
+        filterSpy.andCallFake(function(collection, model, handler) {
             handler('Bogus');
-        };
+        });
         var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
             disposeCallback: function() {},
+            filters: filters,
             context: context
         });
         expect(function() {
@@ -142,16 +152,17 @@ describe('level2 creation listener', function() {
             new CreationListener({
                 typeName: 'Type',
                 callback: 5,
+                filters: filters,
                 context: context
             });
         }).toDxFail('Callback must be provided as a function.');
     });
 
     it('marks self as no longer in use on disposal', function() {
-        context._filters.Type = function() {};
         var creationListener = new CreationListener({
             typeName: 'Type',
             callback: function() {},
+            filters: filters,
             context: context
         });
         creationListener.dispose();

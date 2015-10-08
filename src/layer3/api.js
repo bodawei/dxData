@@ -26,11 +26,11 @@ var dxLog = require('dxLog');
 var util = require('../util/util.js');
 var schema = require('../layer1/schema.js');
 var initCache = require('../layer2/cache.js');
-var initFilters = require('../layer2/filter.js');
 var generateModelConstructors = require('../layer2/model.js');
 var generateCollectionConstructors = require('../layer2/collection.js');
 var CreationListener = require('../layer2/creationListener.js');
 var setupNotificationSystem = require('./notification.js');
+var FilterUtil = require('../layer2/FilterUtil.js');
 
 /*
  * This defines the public API of the Delphix Data System. It relies heavily on the infrastructure built in the
@@ -58,7 +58,7 @@ var setupNotificationSystem = require('./notification.js');
  *                                     screen. This is mainly useful if you have an operation error handler which,
  *                                     after examining the ErrorResult model, you still wish to show it to the user.
  */
-function DataSystem(schemas, options) {
+function DataSystem(schemas, filters, options) {
     /*
      * Returns a new client model.
      *
@@ -101,7 +101,8 @@ function DataSystem(schemas, options) {
             dxLog.fail('Settings must be specified.');
         }
         _.extend(settings, {
-            context: context
+            context: context,
+            filters: filters
         });
         var creationListener = new CreationListener(settings);
         context._modelSubscribersStore.add(creationListener);
@@ -243,10 +244,11 @@ function DataSystem(schemas, options) {
     var context = this; // called by constructor
     var parsedSchemas = schema.prepareSchemas(schemas);
     var enums = schema.prepareEnums(parsedSchemas);
+    var newFilters = _.clone(filters) || {};
+    newFilters.Notification = newFilters.Notification || new FilterUtil().uberFilter;
     initCache(context);
-    initFilters(context);
     generateModelConstructors(parsedSchemas, context);
-    generateCollectionConstructors(parsedSchemas, context);
+    generateCollectionConstructors(parsedSchemas, newFilters, context);
 
     setupNotificationSystem(context, options && options.onNotificationDrop);
 

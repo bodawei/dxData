@@ -26,6 +26,7 @@ var dxLog = require('dxLog');
 
 var CONSTANT = require('../util/constant.js');
 var util = require('../util/util.js');
+var FilterUtil = require('./FilterUtil.js');
 
 /*
  * This takes a set of schemas (modified by _prepareSchemas), and creates a set of Backbone Collection constructor
@@ -117,9 +118,10 @@ var util = require('../util/util.js');
  *     context: The object to put the resulting constructors (_collectionConstructors) on. If not specified, puts them
  *              on 'this'.
  */
-function generateCollectionConstructors(schemas, context) {
+function generateCollectionConstructors(schemas, filters, context) {
     var LISTINGMODE_IDLE = 0;
     var LISTINGMODE_LISTING = 1;
+    var filterUtil = new FilterUtil();
 
     /*
      * ========================================
@@ -246,14 +248,14 @@ function generateCollectionConstructors(schemas, context) {
             return;
         }
 
-        var filter = context._filters[rootType];
+        var filter = filters[rootType];
         if (!filter) {
             if (self._dxInfo.paramDefs.dxFilterMode === CONSTANT.LIST_TYPES.NONE) {
                 dxSet.call(self, model, options);
                 return;
             }
 
-            filter = context._filters._uberFilter;
+            filter = filterUtil.uberFilter;
         }
 
         filter(this, model, function(placement) {
@@ -266,14 +268,15 @@ function generateCollectionConstructors(schemas, context) {
                  */
                 return;
             }
+
             switch (placement) {
-                case context._filters.INCLUDE:
+                case CONSTANT.FILTER_RESULT.INCLUDE:
                     dxSet.call(self, model, options);
                     break;
-                case context._filters.EXCLUDE:
+                case CONSTANT.FILTER_RESULT.EXCLUDE:
                     self._dxRemoveModel(model, options);
                     break;
-                case context._filters.UNKNOWN:
+                case CONSTANT.FILTER_RESULT.UNKNOWN:
                     if (self._listingMode === LISTINGMODE_IDLE) {
                         triggerDirty(self);
                     }
@@ -281,7 +284,7 @@ function generateCollectionConstructors(schemas, context) {
                 default:
                     dxLog.fail('Filter returned an invalid value.');
             }
-        });
+        }, filterUtil);
     }
 
     /*
@@ -369,10 +372,10 @@ function generateCollectionConstructors(schemas, context) {
         var rootType = this._dxInfo.baseType;
 
         // No filter function. Complain so someone writes one, and blindly add the model
-        if (util.isNone(context._filters[rootType]) &&
+        if (util.isNone(filters[rootType]) &&
             self._dxInfo.paramDefs.dxFilterMode === CONSTANT.LIST_TYPES.CUSTOM) {
-            dxLog.fail('No filter function found for collections of type ' + rootType + '. Add one to ' +
-                 '_filters. In the mean time, all models will be added to the collection.');
+            dxLog.fail('No filter function found for collections of type ' + rootType + '. Pass one into the ' +
+                 'data system constructor. In the mean time, all models will be added to the collection.');
         }
 
         self._dxIsReady = false;

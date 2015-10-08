@@ -26,6 +26,7 @@ var dxLog = require('dxLog');
 var dxData = require('dxData');
 var dxDataTest = require('dxDataTest');
 var CORE_SCHEMAS = require('../shared/coreSchemas.js');
+var CONSTANT = require('../../../util/constant.js');
 
 describe('DataSystem instance', function() {
     var SimpleModel = Backbone.Model.extend({});
@@ -101,11 +102,11 @@ describe('DataSystem instance', function() {
                 }
             }, CORE_SCHEMAS);
 
-            client = {};
-            client = new dxData.DataSystem(schemas);
-            client._filters.AType = function(collection, model, handler) {
-                handler(dxData._filters.INCLUDE);
-            };
+            client = new dxData.DataSystem(schemas, {
+                AType: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                }
+            });
 
             server = new dxDataTest.MockServer(schemas, {
                 AType: function(collection, qParams, support) {
@@ -335,7 +336,6 @@ describe('DataSystem instance', function() {
         });
 
         it('returns a creation listener for a existing type', function() {
-            target._filters.Rooted = function() {};
             expect(target.getCreationListener({
                     typeName: 'Rooted',
                     callback: function() {}
@@ -374,10 +374,11 @@ describe('DataSystem instance', function() {
                 }
             }, CORE_SCHEMAS);
 
-            client = new dxData.DataSystem(schemas);
-            client._filters.Rooted = function(collection, model, handler) {
-                handler(dxData._filters.INCLUDE);
-            };
+            client = new dxData.DataSystem(schemas, {
+                Rooted: function(collection, model, handler) {
+                    handler(CONSTANT.FILTER_RESULT.INCLUDE);
+                }
+            });
 
             server = new dxDataTest.MockServer(schemas, {
                 Rooted: function(collection, qParams, support) {

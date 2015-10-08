@@ -27,7 +27,6 @@ var dxLog = require('dxLog');
 var schemaStuff = require('../../../layer1/schema.js');
 var initCache = require('../../cache.js');
 var generateModelConstructors = require('../../model.js');
-var initFilters = require('../../filter.js');
 var CORE_SCHEMAS = require('../../../layer3/test/shared/coreSchemas.js');
 
 describe('generateModelConstructors', function() {
@@ -1427,7 +1426,6 @@ describe('generateModelConstructors', function() {
                 n: noRoot
             });
             initCache(target);
-            initFilters(target);
             generateModelConstructors(parsedSchemas, target);
         });
 
