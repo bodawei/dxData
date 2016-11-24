@@ -30,12 +30,12 @@ showing up in their application.
 ## How to run the demo
 1. Install [node.js](http://nodejs.org)
 2. Install [Python 2.7.x](https://www.python.org/downloads/)
-3. Run `npm install` in the demo directory
-4. Run grunt in the demo directory
-  * This will build some files
-  * Grunt is installed locally in the demo directory. So you can run it with `node node_modules/grunt-cli/bin/grunt`. You may want to install it globally (npm install -g grunt-cli) so you can run it more easily.
+3. Run `npm install -g grunt-cli` to install [grunt-cli](http://gruntjs.com/getting-started)
+3. `cd demo`  (from the directory this README is in)
+4. `npm install`
+5. `grunt`
   * For Windows users, see [Does Grunt work on Windows](http://gruntjs.com/frequently-asked-questions) (short answer: yes, but you may want to avoid cygwin).
-5. Run the server with `grunt server` in the demo directory
+5. `grunt server` to start the server
 6. Visit http://localhost:8888 from one (or, preferably, multiple) browsers
 
 ## Using the demo
@@ -44,7 +44,7 @@ seen by all other Buzzr users.
 
 1. Type in a Buzz you want to send, and click Buzz
   * All users will receive the message reactively!
-2. Click on the user name ("Add your name here") to edit your user name. This demonstrates the unidirectional data change paradig.
+2. Click on the user name ("YourName") to edit your user name. This demonstrates the unidirectional data change paradig.
 
 Note: None of the data is persistent. So when you kill the server, all your messages will go away!
 
@@ -83,6 +83,6 @@ dxData is, like all such projects, a result of the ideas and contributions of ma
  limitations under the License.
 ```
 
-Copyright (c) 2014, 2015 by Delphix. All rights reserved.
+Copyright (c) 2014-2016 by Delphix. All rights reserved.
 
 
