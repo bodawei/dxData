@@ -1,22 +1,23 @@
 {
-    "name": "dxDataDemo",
-    "version": "0.9.0",
-    "description": "A application demonstrating using the principles of dxData",
-    "readme": "A application demonstrating using the principles of dxData",
-    "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
-    "license": "Apache-2.0",
-    "dependencies": {
-        "grunt-cli": "^0.1.x",
-        "grunt-contrib-concat": "^0.5.x",
-        "grunt-shell": "^1.1.x",
-        "grunt-contrib-copy": "^0.8.1",
-        "grunt-contrib-clean": "^0.6.x",
-        "underscore": "1.7.0",
-        "jquery": "2.1.1",
-        "backbone": "1.1.2"
-    },
-    "repository" : {
-        "type": "git",
-	"url": "https://github.com/delphix/dxData"
-    }
+  "name": "dxDataDemo",
+  "version": "0.9.0",
+  "description": "A application demonstrating using the principles of dxData",
+  "readme": "A application demonstrating using the principles of dxData",
+  "copyright": "Copyright (c) 2014 by Delphix. All rights reserved.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "grunt": "^1.0.1",
+    "grunt-cli": "1.2.0",
+    "grunt-contrib-concat": "1.0.1",
+    "grunt-shell": "2.1.0",
+    "grunt-contrib-copy": "1.0.0",
+    "grunt-contrib-clean": "1.0.0",
+    "underscore": "1.8.3",
+    "jquery": "2.1.1",
+    "backbone": "1.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/delphix/dxData"
+  }
 }

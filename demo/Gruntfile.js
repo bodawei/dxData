@@ -81,7 +81,11 @@ module.exports = function(grunt) {
         /*
          * Clean up stuff we've built
          */
-        clean: ['gen', '**/*.pyc']
+        clean: {
+            default: {
+               src: ['gen', '**/*.pyc', 'python/schemaTypes/*.py', '!python/schemaTypes/*Operations.py' ]
+            }
+         }
         
     });
     
