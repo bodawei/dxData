@@ -28,7 +28,7 @@ class SessionData:
     A simple object representing a single session
     """
     sessionId = 0
-    queue = []
+    channels = {}
     user = None
     clientSession = None
     
@@ -38,13 +38,23 @@ class SessionData:
     def writeSessionHeader(self, requestHandler):
         requestHandler.send_header("Set-Cookie", "session=" + str(self.sessionId))
 
-    def getNotifications(self):
+    def queueNotification(self, notification):
+        for channelId in self.channels:
+            self.channels[channelId].append(notification)
+
+    def getNotifications(self, channelId):
         sessionLock.acquire();
-        before = len(self.queue)
-        oldQueue = self.queue
-        self.queue = []
+
+        if channelId in self.channels:
+            channelQueue = self.channels[channelId]
+        else:
+            channelQueue = [];
+
+        self.channels[channelId] = []
+
         sessionLock.release();
-        return oldQueue
+
+        return channelQueue
 
 
 class SimpleSessionManager():
@@ -87,9 +97,11 @@ class SimpleSessionManager():
 
     def queueNotification(self, notification):
         sessionLock.acquire();
+
         for key in self.sessions:
             session = self.sessions[key]
-            session.queue.append(notification)
+            session.queueNotification(notification)
+
         sessionLock.release();
 
 

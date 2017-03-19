@@ -50,11 +50,14 @@ class NotificationSystem():
     def delete(self, typeName, reference):
         self._createNotification('DELETE', typeName, reference)
 
-    def getListResult(self, session):
+    def getListResult(self, session, params):
         """ Keep trying to get the set of notifications for the specified session, or return [] after a timeout """
-        finishTime = time() + 10
-        queue = session.getNotifications()
+        timeout = 10
+        if "timeout" in params:
+            timeout = params["timeout"]
+        finishTime = time() + (int(timeout) / 1000)
+        queue = session.getNotifications(params["channel"])
         while len(queue) is 0 and time() < finishTime:
             sleep(0.05)
-            queue = session.getNotifications()
+            queue = session.getNotifications(params["channel"])
         return makeListResult(queue)

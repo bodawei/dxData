@@ -57,7 +57,9 @@ class Handler(SimpleHTTPRequestHandler):
 
                     # special case notifications
                     if self.path.startswith('/webapi/notification') and httpOperation is 'GET':
-                        result = notificationSys.getListResult(session)
+                        queryIndex = self.path.find("?")
+                        queryParams = extractQueryParams(self.path[queryIndex + 1:])
+                        result = notificationSys.getListResult(session, queryParams)
                     else:
                         if payload is not None and len(payload) > 0:
                             try:
@@ -98,6 +100,17 @@ class Handler(SimpleHTTPRequestHandler):
     def do_DELETE(self):
         if self.path.startswith("/webapi"):
             self._doHandle('DELETE')
+
+
+def extractQueryParams(paramsString):
+   queryParams = {}
+   keyValuePairs = paramsString.split("&")
+
+   for pair in keyValuePairs:
+      splitPair = pair.split("=")
+      queryParams[splitPair[0]] = splitPair[1]
+
+   return queryParams
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
