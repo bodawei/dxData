@@ -5,6 +5,9 @@
   "readme": "Software and tools related to the dxData system for client/server data exchange",
   "copyright": "Copyright (c) 2012, 2015 by Delphix. All rights reserved.",
   "license": "Apache-2.0",
+  "scripts": {
+    "test": "karma start testSetup/karmaConfig.js "
+  },
   "dependencies": {
     "phantomjs": "~1.9.7-4",
     "karma": "~0.12.16",
@@ -22,7 +25,7 @@
     "grunt-karma": "0.9.0",
     "grunt-cli": "^0.1.x",
     "underscore": "1.7.0",
-    "jquery": "2.1.1",
+    "jquery": "3.5.0",
     "backbone": "1.1.2"
   },
   "repository": {
