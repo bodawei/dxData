@@ -512,7 +512,8 @@ describe('AbstractServer', function() {
             delete dx._testValue;
         });
 
-        // These stopped working in 
+        // With JQuery 3, syntactic errors in the Javascript delivered will cause a significant browser error,
+        // But the JQuery environment itself doesn't notice this, so we can't detect this.
         // it('calls error handler if script can not be parsed', function() {
         //     result.data = 'fun ( {;';
         //     result.dataType = 'SCRIPT';
