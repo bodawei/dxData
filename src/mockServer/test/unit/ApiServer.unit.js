@@ -88,7 +88,7 @@ describe('ApiServer', function() {
             });
             jasmine.Clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result.name).toEqual('testObject');
+            expect(successSpy.calls.mostRecent().args[0].result.name).toEqual('testObject');
             server.stop();
         });
 
@@ -104,7 +104,7 @@ describe('ApiServer', function() {
                 success: function() {}
             });
 
-            expect(mockAjax.mostRecentCall.args[0]).toEqual('/some/wonderful/resource');
+            expect(mockAjax.calls.mostRecent().args[0]).toEqual('/some/wonderful/resource');
             server.stop();
             $.ajax = jQueryAjax;
         });
@@ -164,13 +164,13 @@ describe('ApiServer', function() {
             });
             jasmine.Clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result.name).toEqual('testObject');
+            expect(successSpy.calls.mostRecent().args[0].result.name).toEqual('testObject');
         });
 
         it('is delivered after a timeout, even when it happens during a previous call', function() {
             jasmine.Clock.useMock();
             var secondSuccess = jasmine.createSpy('secondSuccess');
-            var firstSuccess = jasmine.createSpy('firstSuccess').andCallFake(secondCall);
+            var firstSuccess = jasmine.createSpy('firstSuccess').and.callFake(secondCall);
             function secondCall() {
                 setTimeout(function() {
                     $.ajax({
@@ -242,7 +242,7 @@ describe('ApiServer', function() {
 
             jasmine.Clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result[0].eventType).toEqual('CREATE');
+            expect(successSpy.calls.mostRecent().args[0].result[0].eventType).toEqual('CREATE');
         });
 
         it('is delivered from updateObjects', function() {
@@ -268,7 +268,7 @@ describe('ApiServer', function() {
 
             jasmine.Clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result[0].eventType).toEqual('UPDATE');
+            expect(successSpy.calls.mostRecent().args[0].result[0].eventType).toEqual('UPDATE');
         });
 
         it('is delivered from deleteObjects', function() {
@@ -292,7 +292,7 @@ describe('ApiServer', function() {
 
             jasmine.Clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result[0].eventType).toEqual('DELETE');
+            expect(successSpy.calls.mostRecent().args[0].result[0].eventType).toEqual('DELETE');
         });
 
     });

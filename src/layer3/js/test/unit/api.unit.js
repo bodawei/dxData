@@ -738,7 +738,7 @@ describe('dx.core.data', function() {
                 client.getServerModelPromise('REF-2', 'AType').done(successSpy);
                 server.respond();
 
-                expect(successSpy.mostRecentCall.args[0]).toEqual(serverModel);
+                expect(successSpy.calls.mostRecent().args[0]).toEqual(serverModel);
             });
 
             it('is rejected when the model\'s "error" event is triggered', function() {
@@ -760,7 +760,7 @@ describe('dx.core.data', function() {
 
                     client.getServerModelPromise('REF-1', 'AType', callbacks);
 
-                    expect(client.getServerModel.mostRecentCall.args[2]).toBe(callbacks);
+                    expect(client.getServerModel.calls.mostRecent().args[2]).toBe(callbacks);
                 });
             });
         });
@@ -796,7 +796,7 @@ describe('dx.core.data', function() {
                 client.getServerSingletonPromise('SingletonType').done(successSpy);
                 server.respond();
 
-                expect(successSpy.mostRecentCall.args[0].get('type')).toEqual('SingletonType');
+                expect(successSpy.calls.mostRecent().args[0].get('type')).toEqual('SingletonType');
             });
 
             it('is rejected when the model\'s "error" event is triggered', function() {
@@ -820,7 +820,7 @@ describe('dx.core.data', function() {
 
                     client.getServerSingletonPromise('SingletonType', callbacks);
 
-                    expect(client.getServerSingleton.mostRecentCall.args[1]).toBe(callbacks);
+                    expect(client.getServerSingleton.calls.mostRecent().args[1]).toBe(callbacks);
                 });
             });
 

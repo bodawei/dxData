@@ -145,9 +145,9 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 model.$$delete();
 
-                expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/somewhere/REF-1');
-                expect(ajaxSpy.mostRecentCall.args[0].type).toEqual('DELETE');
-                expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(undefined);
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/somewhere/REF-1');
+                expect(ajaxSpy.calls.mostRecent().args[0].type).toEqual('DELETE');
+                expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(undefined);
             });
 
             it('passes payload when given one', function() {
@@ -157,13 +157,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 model.$$delete(params);
 
-                expect(ajaxSpy.mostRecentCall.args[0].data).toEqual('{"required":34}');
+                expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual('{"required":34}');
             });
 
             it('calls error callback on error', function() {
                 model._dxSet('reference', 'REF-1');
                 var errorSpy = jasmine.createSpy('errorSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult'
                     });
@@ -172,13 +172,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 model.$$delete({error: errorSpy});
 
                 expect(errorSpy).toHaveBeenCalled();
-                expect(errorSpy.mostRecentCall.args[0].get('type')).toEqual('ErrorResult');
+                expect(errorSpy.calls.mostRecent().args[0].get('type')).toEqual('ErrorResult');
             });
 
             it('calls success callback on success, when no payload specified', function() {
                 model._dxSet('reference', 'REF-1');
                 var successSpy = jasmine.createSpy('successSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -187,13 +187,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 model.$$delete({success: successSpy});
 
                 expect(successSpy).toHaveBeenCalled();
-                expect(successSpy.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+                expect(successSpy.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
             });
 
             it('calls success callback on success, when payload specified', function() {
                 model._dxSet('reference', 'REF-1');
                 var successSpy = jasmine.createSpy('successSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -204,12 +204,12 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 model.$$delete(params, {success: successSpy});
 
                 expect(successSpy).toHaveBeenCalled();
-                expect(successSpy.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+                expect(successSpy.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
             });
 
             it('doesn\'t complain if no success handler was specified on success', function() {
                 model._dxSet('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -256,7 +256,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 it('is resolved on success', function() {
                     model._dxSet('reference', 'REF-1');
-                    ajaxSpy.andCallFake(function(options) {
+                    ajaxSpy.and.callFake(function(options) {
                         options.success({
                             type: 'OKResult'
                         });
@@ -271,7 +271,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 it('is rejected on error', function() {
                     model._dxSet('reference', 'REF-1');
-                    ajaxSpy.andCallFake(function(options) {
+                    ajaxSpy.and.callFake(function(options) {
                         options.success({
                             type: 'ErrorResult'
                         });
@@ -419,7 +419,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 model.$$update({
                     requiredTrue: 'newRequiredValue'
                 });
-                expect(ajaxSpy.mostRecentCall.args[0].data)
+                expect(ajaxSpy.calls.mostRecent().args[0].data)
                     .toEqual('{"requiredTrue":"newRequiredValue","updateRequired":"required"}');
             });
 
@@ -436,7 +436,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     updateReadonly: '5',
                     updateUnspecified: '6'
                 });
-                expect(ajaxSpy.mostRecentCall.args[0].data)
+                expect(ajaxSpy.calls.mostRecent().args[0].data)
                     .toEqual('{"requiredTrue":"1","requiredFalse":"2","updateRequired":"3","updateOptional":"4"}');
             });
 
@@ -459,7 +459,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     updateReadonly: '5',
                     updateUnspecified: '6'
                 });
-                expect(ajaxSpy.mostRecentCall.args[0].data).toEqual('{"requiredTrue":"1","updateRequired":"3"}');
+                expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual('{"requiredTrue":"1","updateRequired":"3"}');
             });
 
             it('will throw an error if one tries to update a non-nullable optional value with null', function() {
@@ -543,7 +543,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     updateOptional: null
                 });
 
-                expect(ajaxSpy.mostRecentCall.args[0].data)
+                expect(ajaxSpy.calls.mostRecent().args[0].data)
                     .toEqual('{"requiredTrue":null,"requiredFalse":null,"updateRequired":null,"updateOptional":null}');
             });
 
@@ -600,7 +600,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     other: 'placeholder'
                 });
 
-                expect(ajaxSpy.mostRecentCall.args[0].data)
+                expect(ajaxSpy.calls.mostRecent().args[0].data)
                     .toEqual('{"other":"placeholder","requiredTrue":"value1","updateRequired":"value3"}');
             });
 
@@ -609,7 +609,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 model._dxSet({
                     reference: 'REF-1'
                 });
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: ''
@@ -764,7 +764,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                         requiredTrue: 'someValue'
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data)
+                    expect(ajaxSpy.calls.mostRecent().args[0].data)
                         .toEqual('{"requiredTrue":"someValue","updateRequired":"updateRequired"}');
                 });
 
@@ -787,7 +787,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                             }
                         });
 
-                        expect(ajaxSpy.mostRecentCall.args[0].data)
+                        expect(ajaxSpy.calls.mostRecent().args[0].data)
                             .toEqual('{"requiredTrue":"r","updateRequired":"r","embedded":{"type":"EmbeddedType",' +
                             '"embRequiredTrue":"required","embUpdateRequired":"er"}}');
                     });
@@ -808,7 +808,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                         }
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                    expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(
                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
                         '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":"sr",' +
                         '"subUpdateRequired":"sr"}}}');
@@ -833,7 +833,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                         }
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                    expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(
                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
                         '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,' +
                         '"subUpdateRequired":null,"subUpdateOptional":"new"}}}');
@@ -858,7 +858,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                         }
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                    expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(
                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
                         '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,' +
                         '"subUpdateRequired":null,"subUpdateOptional":null}}}');
@@ -883,7 +883,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                         }
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                    expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(
                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
                         '"embRequiredTrue":null,"embUpdateRequired":null,"subEmbedded":{"subRequiredTrue":null,' +
                         '"subUpdateRequired":"new"}}}');
@@ -905,7 +905,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                         }
                     });
 
-                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                    expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(
                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"nameForTesting":"testName",' +
                         '"type":"ExtendedEmbeddedType","embRequiredTrue":null,"embRequiredFalse":null,' +
                         '"embUpdateRequired":null,"embUpdateOptional":null,"subEmbedded":{"subRequiredTrue":null,' +
@@ -931,7 +931,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     });
 
                     // To be clear, changing the type means sending all subproperties
-                    expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(
+                    expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(
                         '{"requiredTrue":null,"updateRequired":null,"embedded":{"type":"EmbeddedType",' +
                         '"embRequiredTrue":"valueIncluded","embRequiredFalse":null,"embUpdateRequired":null,' +
                         '"embUpdateOptional":null,"subEmbedded":{"subRequiredTrue":null,"subRequiredFalse":null,' +
@@ -965,7 +965,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             it('calls success callback on success', function() {
                 model._dxSet('reference', 'REF-1');
                 var successSpy = jasmine.createSpy('successSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -976,13 +976,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }, {success: successSpy});
 
                 expect(successSpy).toHaveBeenCalled();
-                expect(successSpy.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+                expect(successSpy.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
             });
 
             it('calls error callback on error', function() {
                 model._dxSet('reference', 'REF-1');
                 var errorSpy = jasmine.createSpy('errorSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult'
                     });
@@ -993,7 +993,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }, {error: errorSpy});
 
                 expect(errorSpy).toHaveBeenCalled();
-                expect(errorSpy.mostRecentCall.args[0].get('type')).toEqual('ErrorResult');
+                expect(errorSpy.calls.mostRecent().args[0].get('type')).toEqual('ErrorResult');
             });
 
             describe('returned Promise', function() {
@@ -1006,7 +1006,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 it('is resolved on success', function() {
                     model._dxSet('reference', 'REF-1');
-                    ajaxSpy.andCallFake(function(options) {
+                    ajaxSpy.and.callFake(function(options) {
                         options.success({
                             type: 'OKResult'
                         });
@@ -1023,7 +1023,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 it('is rejected on error', function() {
                     model._dxSet('reference', 'REF-1');
-                    ajaxSpy.andCallFake(function(options) {
+                    ajaxSpy.and.callFake(function(options) {
                         options.success({
                             type: 'ErrorResult'
                         });
@@ -1116,7 +1116,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(target._newClientModel('SimpleParam'));
 
-                expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/somewhere');
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/somewhere');
 
             });
 
@@ -1125,7 +1125,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.WeirdCreate.$$create(target._newClientModel('SimpleParam'));
 
-                expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/somewhere');
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/somewhere');
             });
 
             it('throws an error if passed an invalid parameter', function() {
@@ -1141,14 +1141,14 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(target._newClientModel('SimpleParam'));
 
-                expect(ajaxSpy.mostRecentCall.args[0].type).toEqual('POST');
-                expect(ajaxSpy.mostRecentCall.args[0].url).toEqual('/somewhere');
+                expect(ajaxSpy.calls.mostRecent().args[0].type).toEqual('POST');
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toEqual('/somewhere');
             });
 
             it('calls success callback on success', function() {
                 prepareForTest({name: 'SimpleParam'}, {});
                 var successSpy = jasmine.createSpy('successSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -1157,13 +1157,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 target.rootOps.RootType.$$create(target._newClientModel('SimpleParam'), {success: successSpy});
 
                 expect(successSpy).toHaveBeenCalled();
-                expect(successSpy.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+                expect(successSpy.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
             });
 
             it('calls error callback on error', function() {
                 prepareForTest({name: 'SimpleParam'}, {});
                 var errorSpy = jasmine.createSpy('errorSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 404,
                         getResponseHeader: function() {
@@ -1176,14 +1176,14 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 target.rootOps.RootType.$$create(target._newClientModel('SimpleParam'), {error: errorSpy});
 
                 expect(errorSpy).toHaveBeenCalled();
-                expect(errorSpy.mostRecentCall.args[0].get('type')).toEqual('ErrorResult');
+                expect(errorSpy.calls.mostRecent().args[0].get('type')).toEqual('ErrorResult');
             });
 
             it('copes with a timeout error', function() {
                 prepareForTest({name: 'SimpleParam'}, {});
                 var errorSpy = jasmine.createSpy('errorSpy');
                 // FYI: a timeout jqxhr looks like: {'readyState':0,'status':0,'statusText':'timeout'}
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 0,
                         readyState: 0,
@@ -1197,7 +1197,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 target.rootOps.RootType.$$create(target._newClientModel('SimpleParam'), {error: errorSpy});
 
                 expect(errorSpy).toHaveBeenCalled();
-                expect(errorSpy.mostRecentCall.args[0].get('type')).toEqual('ErrorResult');
+                expect(errorSpy.calls.mostRecent().args[0].get('type')).toEqual('ErrorResult');
             });
 
             it('will report an error if a create:required parameter is not set', function() {
@@ -1275,7 +1275,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
+                expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
             });
 
             it('will not send non-required properties if they are null', function() {
@@ -1338,7 +1338,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.mostRecentCall.args[0].data)
+                expect(jQuery.ajax.calls.mostRecent().args[0].data)
                     .toEqual('{"createRequired":"one","embedded":{"createRequired":"eleven"}}');
             });
 
@@ -1402,7 +1402,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.mostRecentCall.args[0].data)
+                expect(jQuery.ajax.calls.mostRecent().args[0].data)
                     .toEqual('{"createRequired":"one","createOptional":"second","embedded":' +
                     '{"createRequired":"eleven","createOptional":"twelve"}}');
             });
@@ -1430,7 +1430,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }, {
                     name: 'Dummy'
                 });
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -1454,7 +1454,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 it('is resolved on success', function() {
                     prepareForTest({name: 'SimpleParam'}, {});
-                    ajaxSpy.andCallFake(function(options) {
+                    ajaxSpy.and.callFake(function(options) {
                         options.success({
                             type: 'OKResult'
                         });
@@ -1470,7 +1470,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 it('is rejected on error', function() {
                     prepareForTest({name: 'SimpleParam'}, {});
                     var errorSpy = jasmine.createSpy('errorSpy');
-                    ajaxSpy.andCallFake(function(options) {
+                    ajaxSpy.and.callFake(function(options) {
                         options.error({
                             status: 404,
                             getResponseHeader: function() {

@@ -826,7 +826,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             });
 
             it('is rejected if asked to change to an incompatible type', function() {
-                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                spyOn(jQuery, 'ajax').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -842,7 +842,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
 
             it('is rejected if trying to set its type to a supertype', function() {
                 var model = target._newServerModel('CType');
-                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                spyOn(jQuery, 'ajax').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -857,7 +857,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             });
 
             it('is allowed if the type hasn\'t been fully fetched yet and this is a server model', function() {
-                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                spyOn(jQuery, 'ajax').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -875,7 +875,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             });
 
             it('is rejected if the model has been fetched', function() {
-                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                spyOn(jQuery, 'ajax').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {type: 'CType', age: 134}
@@ -925,7 +925,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 model = target._newServerModel('PType');
                 expect(model.$anOp).toBeUndefined();
 
-                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                spyOn(jQuery, 'ajax').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {type: 'CType', reference: 'CHILD-1'}
@@ -1091,7 +1091,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                     }
                 });
 
-                expect(nameSpy.callCount).toEqual(1);
+                expect(nameSpy.calls.count()).toEqual(1);
                 model.get('embedded').off('change:name', nameSpy);
             });
 
@@ -1112,7 +1112,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                     }
                 });
 
-                expect(heightSpy.callCount).toEqual(1);
+                expect(heightSpy.calls.count()).toEqual(1);
                 model.get('embedded').off('change:height', heightSpy);
             });
 
@@ -1173,8 +1173,8 @@ describe('dx.core.data.generateModelConstructors - set', function() {
 
                 model.get('embedded').$doit(model.get('embedded'));
 
-                expect(ajaxSpy.mostRecentCall.args[0].url).toEqual('/api/other/OTHER-2/doit');
-                expect(ajaxSpy.mostRecentCall.args[0].data).toEqual('{"name":"defaultName","type":"Other2",' +
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toEqual('/api/other/OTHER-2/doit');
+                expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual('{"name":"defaultName","type":"Other2",' +
                     '"reference":"OTHER-2"}');
             });
 
@@ -1192,8 +1192,8 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                     name: 'fred'
                 });
 
-                expect(ajaxSpy.mostRecentCall.args[0].type).toEqual('POST');
-                expect(ajaxSpy.mostRecentCall.args[0].url).toEqual('/api/other/OTHER-2');
+                expect(ajaxSpy.calls.mostRecent().args[0].type).toEqual('POST');
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toEqual('/api/other/OTHER-2');
             });
 
             it('adds delete operation when converting to a subtype', function() {
@@ -1208,8 +1208,8 @@ describe('dx.core.data.generateModelConstructors - set', function() {
 
                 model.get('embedded').$$delete();
 
-                expect(ajaxSpy.mostRecentCall.args[0].type).toEqual('DELETE');
-                expect(ajaxSpy.mostRecentCall.args[0].url).toEqual('/api/other/OTHER-2');
+                expect(ajaxSpy.calls.mostRecent().args[0].type).toEqual('DELETE');
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toEqual('/api/other/OTHER-2');
             });
 
             it('changes a subtype to a supertype', function() {
@@ -1264,7 +1264,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                     }
                 });
 
-                expect(nameSpy.callCount).toEqual(1);
+                expect(nameSpy.calls.count()).toEqual(1);
                 model.get('embedded').off('change:name', nameSpy);
             });
 
@@ -1305,7 +1305,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                     }
                 });
 
-                expect(widthSpy.callCount).toEqual(1);
+                expect(widthSpy.calls.count()).toEqual(1);
                 model.get('embedded').off('change:width', widthSpy);
             });
 
@@ -1344,7 +1344,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                     }
                 });
 
-                expect(nameSpy.callCount).toEqual(1);
+                expect(nameSpy.calls.count()).toEqual(1);
                 model.get('embedded').off('change:name', nameSpy);
             });
 

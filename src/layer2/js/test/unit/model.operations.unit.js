@@ -75,8 +75,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('can be called with no parameters', function() {
             model.set('reference', 'REF-1');
             model.$noPayload();
-            expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/somewhere/REF-1/noPayload');
-            expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(undefined);
+            expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/somewhere/REF-1/noPayload');
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(undefined);
         });
 
         it('can not be called if there is no reference', function() {
@@ -96,7 +96,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('will call success callback with the successful result', function() {
             var successCallback = jasmine.createSpy('success');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult'
                 });
@@ -106,13 +106,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 success: successCallback
             });
 
-            expect(successCallback.mostRecentCall.args[0] instanceof Backbone.Model).toBe(true);
-            expect(successCallback.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+            expect(successCallback.calls.mostRecent().args[0] instanceof Backbone.Model).toBe(true);
+            expect(successCallback.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
         });
 
         it('will not complain if no success callback is provided and the call is successful', function() {
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult'
                 });
@@ -127,7 +127,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             var errorCallback = jasmine.createSpy('error');
             var successCallback = jasmine.createSpy('success');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'ErrorResult',
                     error: {
@@ -142,13 +142,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             });
 
             expect(successCallback).not.toHaveBeenCalled();
-            expect(errorCallback.mostRecentCall.args[0] instanceof Backbone.Model).toBe(true);
-            expect(errorCallback.mostRecentCall.args[0].get('type')).toEqual('ErrorResult');
+            expect(errorCallback.calls.mostRecent().args[0] instanceof Backbone.Model).toBe(true);
+            expect(errorCallback.calls.mostRecent().args[0].get('type')).toEqual('ErrorResult');
         });
 
         it('will call system error handler if no error handler provided and the call creates ErrorResult', function() {
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -162,7 +162,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('will not call system error handler if no error handler provided but suppressDefaultErrorHandler is true',
             function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult'
                     });
@@ -178,7 +178,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('will call error callback with an ErrorResult when it gets an ajax error with ErrorResult', function() {
             var errorCallback = jasmine.createSpy('error');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -192,14 +192,14 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 error: errorCallback
             });
 
-            expect(errorCallback.mostRecentCall.args[0] instanceof Backbone.Model).toBe(true);
-            expect(errorCallback.mostRecentCall.args[0].get('type')).toEqual('ErrorResult');
+            expect(errorCallback.calls.mostRecent().args[0] instanceof Backbone.Model).toBe(true);
+            expect(errorCallback.calls.mostRecent().args[0].get('type')).toEqual('ErrorResult');
         });
 
         it('throws an error if it gets an error with something claiming to be JSON data but isn\'t', function() {
             var errorCallback = jasmine.createSpy('error');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -219,7 +219,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
         it('will call system error handler if no error callback provided and it gets an ajax error', function() {
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -237,7 +237,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('will call error callback if it receives an ordinary ajax failure', function() {
             var errorCallback = jasmine.createSpy('error');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -251,13 +251,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 error: errorCallback
             });
 
-            expect(errorCallback.mostRecentCall.args[0] instanceof Backbone.Model).toBe(true);
-            expect(errorCallback.mostRecentCall.args[0].get('type')).toEqual('ErrorResult');
+            expect(errorCallback.calls.mostRecent().args[0] instanceof Backbone.Model).toBe(true);
+            expect(errorCallback.calls.mostRecent().args[0].get('type')).toEqual('ErrorResult');
         });
 
         it('will call system error handler if no error callback is provided when get ajax error', function() {
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -387,7 +387,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             it('will throw an error if there is no return value', function() {
                 prepareForTest({ type: 'string' });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success();
                 });
 
@@ -399,7 +399,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             it('will throw an error if the result type isn\'t a typed object', function() {
                 prepareForTest({ type: 'string' });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({});
                 });
 
@@ -411,7 +411,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             it('will accept a return type which matches the definition for a simple type', function() {
                 prepareForTest({ type: 'string' });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: 'hi'
@@ -429,7 +429,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     $ref: 'd1'
                 });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -450,7 +450,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     $ref: 'smt'
                 });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -480,7 +480,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     $ref: 'smt'
                 });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -504,7 +504,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     $ref: 'woa'
                 });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -531,7 +531,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     $ref: 'woa'
                 });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -556,7 +556,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             it('will throw an error if no return type defined, but it nevertheless returns something', function() {
                 prepareForTest(undefined);
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: 'hi'
@@ -571,7 +571,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             it('will throw an error if the result type doesn\'t match the return type for the operation', function() {
                 prepareForTest({ type: 'string' });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: 45
@@ -589,7 +589,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     $ref: 'd1'
                 });
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -614,7 +614,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is resolved on success', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -629,7 +629,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ErrorResult', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult',
                         error: {
@@ -647,7 +647,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ajax error', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 404,
                         getResponseHeader: function() {
@@ -809,7 +809,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('will call success callback with the successful result', function() {
             var successCallback = jasmine.createSpy('success');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult'
                 });
@@ -821,8 +821,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 success: successCallback
             });
 
-            expect(successCallback.mostRecentCall.args[0] instanceof Backbone.Model).toBe(true);
-            expect(successCallback.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+            expect(successCallback.calls.mostRecent().args[0] instanceof Backbone.Model).toBe(true);
+            expect(successCallback.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
         });
 
         it('will make the appropriate call given its parameters', function() {
@@ -832,9 +832,9 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             payload.set('value', 23);
             model.$payload(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].type).toBe('POST');
-            expect(jQuery.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/payload');
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"type":"OtherType","value":23}');
+            expect(jQuery.ajax.calls.mostRecent().args[0].type).toBe('POST');
+            expect(jQuery.ajax.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/payload');
+            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"type":"OtherType","value":23}');
         });
 
         it('will accept a call with a subtype', function() {
@@ -912,7 +912,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$optionalPayload();
 
-            expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(null);
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(null);
         });
 
         it('will accept a call with a payload when the schema says payload is not required', function() {
@@ -954,7 +954,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$optionalPayload(target._newClientModel('YetAnotherType'));
 
-            expect(ajaxSpy.mostRecentCall.args[0].data).toEqual('{"type":"YetAnotherType"}');
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual('{"type":"YetAnotherType"}');
         });
 
         it('will send payload with ceate:optional parameters', function() {
@@ -1001,7 +1001,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$payloadWithCreateOptional(payload);
 
-            expect(ajaxSpy.mostRecentCall.args[0].data).toEqual('{"type":"YetAnotherType","co":"create:optional"}');
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual('{"type":"YetAnotherType","co":"create:optional"}');
         });
 
         describe('returned Promise', function() {
@@ -1014,7 +1014,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is resolved on success', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -1031,7 +1031,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ErrorResult', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult',
                         error: {
@@ -1051,7 +1051,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ajax error', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 404,
                         getResponseHeader: function() {
@@ -1123,8 +1123,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('can be called with no parameters', function() {
             model.set('reference', 'REF-1');
             model.$noParameters();
-            expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/somewhere/REF-1/noParameters');
-            expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(undefined);
+            expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/somewhere/REF-1/noParameters');
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(undefined);
         });
 
         it('will throw an error if invoked with no reference', function() {
@@ -1136,7 +1136,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('will call success callback with the successful result', function() {
             var successCallback = jasmine.createSpy('success');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult'
                 });
@@ -1146,8 +1146,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 success: successCallback
             });
 
-            expect(successCallback.mostRecentCall.args[0] instanceof Backbone.Model).toBe(true);
-            expect(successCallback.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+            expect(successCallback.calls.mostRecent().args[0] instanceof Backbone.Model).toBe(true);
+            expect(successCallback.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
         });
 
         describe('returned Promise', function() {
@@ -1160,7 +1160,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is resolved on success', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -1175,7 +1175,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ErrorResult', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult',
                         error: {
@@ -1193,7 +1193,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ajax error', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 404,
                         getResponseHeader: function() {
@@ -1304,7 +1304,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('will call success callback with the successful result', function() {
             var successCallback = jasmine.createSpy('success');
             model.set('reference', 'REF-1');
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult'
                 });
@@ -1314,8 +1314,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 success: successCallback
             });
 
-            expect(successCallback.mostRecentCall.args[0] instanceof Backbone.Model).toBe(true);
-            expect(successCallback.mostRecentCall.args[0].get('type')).toEqual('OKResult');
+            expect(successCallback.calls.mostRecent().args[0] instanceof Backbone.Model).toBe(true);
+            expect(successCallback.calls.mostRecent().args[0].get('type')).toEqual('OKResult');
         });
 
         it('it will pass its parameters to the call to the backend', function() {
@@ -1323,9 +1323,9 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$parameters({ a: 'b', c: true});
 
-            expect(jQuery.ajax.mostRecentCall.args[0].type).toBe('GET');
-            expect(jQuery.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/parameters');
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual({ a: 'b', c: true});
+            expect(jQuery.ajax.calls.mostRecent().args[0].type).toBe('GET');
+            expect(jQuery.ajax.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/parameters');
+            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual({ a: 'b', c: true});
         });
 
         it('will throw an error if invoked without a reference', function() {
@@ -1363,8 +1363,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$parameters();
 
-            expect(jQuery.ajax.mostRecentCall.args[0].url).toContain('somewhere/REF-1/parameters');
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toBeUndefined();
+            expect(jQuery.ajax.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/parameters');
+            expect(jQuery.ajax.calls.mostRecent().args[0].data).toBeUndefined();
         });
 
         it('throws an error if a required parameter is not included', function() {
@@ -1479,7 +1479,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 dateVal: newDate
             });
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data)
+            expect(jQuery.ajax.calls.mostRecent().args[0].data)
                 .toEqual({ requiredStringVal: 'required', dateVal: '2013-12-11T10:09:08.765Z'});
         });
 
@@ -1493,7 +1493,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is resolved on success', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -1508,7 +1508,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ErrorResult', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult',
                         error: {
@@ -1526,7 +1526,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ajax error', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 404,
                         getResponseHeader: function() {
@@ -1656,7 +1656,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
+            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
         });
 
         it('will not send non-required properties if they are undefined', function() {
@@ -1705,7 +1705,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"first":1,"embedded":{"first":11}}');
+            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"first":1,"embedded":{"first":11}}');
         });
 
         it('will send required true and false props if they are non-null/non-undefined', function() {
@@ -1763,7 +1763,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data)
+            expect(jQuery.ajax.calls.mostRecent().args[0].data)
                 .toEqual('{"first":1,"second":2,"third":3,"embedded":{"first":11,"second":12,"third":13}}');
         });
 
@@ -1789,7 +1789,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{"third":3}');
+            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"third":3}');
         });
 
         it('will not send non-required properties if they are undefined', function() {
@@ -1814,7 +1814,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.mostRecentCall.args[0].data).toEqual('{}');
+            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{}');
         });
     });
 
@@ -1876,8 +1876,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         it('can be called with no parameters', function() {
             model.set('reference', 'REF-1');
             model.$noPayload_childPayload();
-            expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/somewhere/REF-1/noPayload/childPayload');
-            expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(undefined);
+            expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/somewhere/REF-1/noPayload/childPayload');
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(undefined);
         });
 
         describe('returned Promise', function() {
@@ -1890,7 +1890,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is resolved on success', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -1905,7 +1905,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ErrorResult', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult',
                         error: {
@@ -1923,7 +1923,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             it('is rejected on ajax error', function() {
                 model.set('reference', 'REF-1');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 404,
                         getResponseHeader: function() {
@@ -1996,8 +1996,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
         it('can be called with no parameters', function() {
             target.rootOps.RootType.$noPayload();
-            expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/somewhere/noPayload');
-            expect(ajaxSpy.mostRecentCall.args[0].data).toEqual(undefined);
+            expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/somewhere/noPayload');
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(undefined);
         });
 
         describe('on singletons', function() {
@@ -2030,7 +2030,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 var model = target._newClientModel('ASingleton');
 
                 model.$rootOp();
-                expect(ajaxSpy.mostRecentCall.args[0].url).toContain('/a/singleton/url/rootOp');
+                expect(ajaxSpy.calls.mostRecent().args[0].url).toContain('/a/singleton/url/rootOp');
             });
         });
 
@@ -2043,7 +2043,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             });
 
             it('is resolved on success', function() {
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'OKResult'
                     });
@@ -2057,7 +2057,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             });
 
             it('is rejected on ErrorResult', function() {
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'ErrorResult',
                         error: {
@@ -2074,7 +2074,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             });
 
             it('is rejected on ajax error', function() {
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.error({
                         status: 404,
                         getResponseHeader: function() {

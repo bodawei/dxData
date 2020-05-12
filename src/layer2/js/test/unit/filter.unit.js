@@ -382,7 +382,7 @@ describe('dx.core.data filters', function() {
                         someProp: 'val'
                     };
 
-                    ajaxSpy = spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                    ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(function(options) {
                         if (options.url === '/somethingclever/AnotherType-1') {
                             options.success(mockAnotherType);
                         } else {
@@ -392,7 +392,7 @@ describe('dx.core.data filters', function() {
                 });
 
                 it('excludes a model if an object reference in the chain can\'t be resolved', function() {
-                    ajaxSpy.andCallFake(function(options) {
+                    ajaxSpy.and.callFake(function(options) {
                         options.error({
                             status: 404
                         });
@@ -823,7 +823,7 @@ describe('dx.core.data filters', function() {
                     dateProp: dateObj
                 };
 
-                spyOn(jQuery, 'ajax').andCallFake(function(options) {
+                spyOn(jQuery, 'ajax').and.callFake(function(options) {
                     if (options.url === '/somethingclever/AnotherType-1') {
                         options.success(mockAnotherType);
                     } else {

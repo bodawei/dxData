@@ -190,7 +190,7 @@ describe('dx.test.mockServer collection filters', function() {
                 });
 
                 it('fails if an object reference in the chain can\'t be resolved', function() {
-                    spyOn(dx.test.mockServer, 'getObject').andReturn(undefined);
+                    spyOn(dx.test.mockServer, 'getObject').and.returnValue(undefined);
 
                     var qParams = {
                         aParam: 'val'
@@ -204,7 +204,7 @@ describe('dx.test.mockServer collection filters', function() {
                 });
 
                 it('includes an object when the values match', function() {
-                    spyOn(dx.test.mockServer, 'getObject').andCallFake(function(ref, type) {
+                    spyOn(dx.test.mockServer, 'getObject').and.callFake(function(ref, type) {
                         if (type === 'AnotherType') {
                             return mockAnotherType;
                         } else { // type === 'FinalType'
@@ -222,7 +222,7 @@ describe('dx.test.mockServer collection filters', function() {
                 });
 
                 it('excludes an object when the values don\'t match', function() {
-                    spyOn(dx.test.mockServer, 'getObject').andCallFake(function(ref, type) {
+                    spyOn(dx.test.mockServer, 'getObject').and.callFake(function(ref, type) {
                         if (type === 'AnotherType') {
                             return mockAnotherType;
                         } else { // type === 'FinalType'
@@ -596,7 +596,7 @@ describe('dx.test.mockServer collection filters', function() {
                     dateProp: dateObj
                 };
 
-                spyOn(dx.test.mockServer, 'getObject').andCallFake(function(ref, type) {
+                spyOn(dx.test.mockServer, 'getObject').and.callFake(function(ref, type) {
                     if (type === 'AnotherType') {
                         return mockAnotherType;
                     } else { // type === 'FinalType'
