@@ -26,6 +26,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
     var target;
     var collection;
     var schemas;
+    var clock;
 
     var GENERATE_INITIAL_RESULTS = function(options) {
             options.success({
@@ -76,6 +77,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
     beforeEach(function() {
         target = {};
 
+        clock = jasmine.clock();
         var unRooted = {
             name: 'NoRoot',
             properties: { type: { type: 'string' } }
@@ -142,6 +144,11 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         dx.core.data._generateCollectionConstructors(schemas, target);
         collection = target._newServerCollection('HasRoot');
     });
+
+    afterEach(function() {
+        clock.uninstall();
+    });
+
 
     describe('constructors', function() {
         it('has one constructor for each schema with a list operation', function() {
@@ -1919,17 +1926,9 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 var client = target._newClientModel('WithMapsTo');
                 client.set('name', 'fred');
 
-                runs(function() {
-                    collection._dxAddOrRemove(client);
-                });
+                collection._dxAddOrRemove(client);
 
-                waitsFor(function() {
-                    return collection.length > 1;
-                }, "the collection should be added to", 75);
-              
-                runs(function() {
-                    expect(collection.length).toBe(2);
-                });
+                expect(collection.length).toBe(2);
             });
 
         });
@@ -2045,7 +2044,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 var model = target._newClientModel('HasRoot');
                 collection.setAutoPageRefresh(true);
                 expect(successSpy.calls.count()).toBe(1);
-                jasmine.Clock.useMock();
+                clock.install()
 
                 collection._dxAddOrRemove(model);
 
@@ -2053,7 +2052,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 target._filters.HasRoot = function(collection, model, handler) {
                     handler(target._filters.INCLUDE);
                 };
-                jasmine.Clock.tick(1);
+                clock.tick(1);
 
                 expect(successSpy.calls.count()).toBe(2);
             });
@@ -2081,13 +2080,13 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 successSpy = jasmine.createSpy('successSpy');
                 collection = target._newServerCollection('HasRoot');
                 collection.setAutoPageRefresh(true);
-                jasmine.Clock.useMock();
+                clock.install();
 
                 collection.$$list(undefined, {
                     success: successSpy
                 });
 
-                jasmine.Clock.tick(1);
+                clock.tick(1);
 
                 expect(successSpy.calls.count()).toBe(1);
             });

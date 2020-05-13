@@ -23,6 +23,15 @@
 
 describe('dx.core.data', function() {
     var SimpleModel = Backbone.Model.extend({});
+    var clock;
+
+    beforeEach(function() {
+        clock = jasmine.clock();
+    });
+
+    afterEach(function() {
+        clock.uninstall();
+    });
 
     describe('newClientModel()', function() {
         var client = {};
@@ -573,7 +582,7 @@ describe('dx.core.data', function() {
                 return new Result.ErrorResult(404);
             });
             var errorCallback = jasmine.createSpy('errorCallback');
-            jasmine.Clock.useMock();
+            clock.install()
 
             var singleton = client.getServerSingleton('SingletonType');
             singleton.on('error', errorCallback);
@@ -756,7 +765,7 @@ describe('dx.core.data', function() {
             describe('callbacks', function() {
                 it('passes callbacks on to underlying getServerModel routine', function() {
                     var callbacks = {};
-                    spyOn(client, 'getServerModel').andCallThrough();
+                    spyOn(client, 'getServerModel').and.callThrough();
 
                     client.getServerModelPromise('REF-1', 'AType', callbacks);
 
@@ -816,7 +825,7 @@ describe('dx.core.data', function() {
                 it('passes callbacks on to underlying getServerSingleton routine', function() {
                     var callbacks = {};
                     prepareServerSingleton();
-                    spyOn(client, 'getServerSingleton').andCallThrough();
+                    spyOn(client, 'getServerSingleton').and.callThrough();
 
                     client.getServerSingletonPromise('SingletonType', callbacks);
 

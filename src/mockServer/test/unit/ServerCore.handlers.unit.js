@@ -1194,7 +1194,7 @@ describe('ServerCore (handlers)', function() {
 
                 // The filter functions are tested separately in the filter module
                 it('uses a filter function for a list with query parameters', function() {
-                    spyOn(server._filters, 'Container').andCallThrough();
+                    spyOn(server._filters, 'Container').and.callThrough();
                     server.GET('/api/container',  {testParam: 'hi'});
 
                     expect(server._filters.Container).toHaveBeenCalled();
@@ -2096,7 +2096,7 @@ describe('ServerCore (handlers)', function() {
 
             server.POST('/api/container/CONTAINER-1/doObj');
 
-            expect(result).toEqual({
+            expect(Object.assign({}, result)).toEqual({
                 statusCode: 7734,
                 data: 'testValue'
             });
@@ -2133,7 +2133,7 @@ describe('ServerCore (handlers)', function() {
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 200,
                     data: {
                         type: 'ListResult',
@@ -2185,7 +2185,7 @@ describe('ServerCore (handlers)', function() {
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 200,
                     data: {
                         type: 'OKResult',
@@ -2227,7 +2227,7 @@ describe('ServerCore (handlers)', function() {
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 500,
                     data: {
                         type: 'ErrorResult',
@@ -2270,7 +2270,7 @@ describe('ServerCore (handlers)', function() {
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 404,
                     data: {
                         type: 'ErrorResult',

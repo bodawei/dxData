@@ -24,8 +24,10 @@
 describe('notification processor', function() {
     var server;
     var client;
+    var clock;
 
     beforeEach(function() {
+        clock = jasmine.clock();
         var schemas = _.extend({
             '/group.json': {
                 root: '/webapi/somewhere',
@@ -82,6 +84,7 @@ describe('notification processor', function() {
     afterEach(function() {
         client.notification.stop();
         server.stop();
+        clock.uninstall();
     });
 
     describe('_setupNotificationSystem()', function() {
@@ -297,7 +300,7 @@ describe('notification processor', function() {
         server.respond();
         dx.test.assert(groups.length).toBe(1);
 
-        spyOn(client._cache, 'getCachedModel').andCallThrough();
+        spyOn(client._cache, 'getCachedModel').and.callThrough();
         server.updateObjects([{
             name: 'UpdatedName',
             reference: 'GROUP-2'
@@ -496,20 +499,20 @@ describe('notification processor', function() {
             }, 'error', null);
         });
         var errorSpy = spyOn(dx, 'warn');
-        jasmine.Clock.useMock();
+        clock.install();
         client.notification.start();
 
         expect(ajaxSpy).toHaveBeenCalled();
         expect(errorSpy).toHaveBeenCalled();
 
-        jasmine.Clock.tick(client.notification._getRetryTimeout());
+        clock.tick(client.notification._getRetryTimeout());
         expect($.ajax.calls.count()).toEqual(2);
 
         client.notification.stop();
     });
 
     it('doesn\'t retry on error after stop() is called', function() {
-        jasmine.Clock.useMock();
+        clock.install();
         spyOn(dx, 'warn'); // suppress warning message
         server.createObjects({});
         var ajaxSpy = spyOn($, 'ajax').and.callFake(function(options) {
@@ -525,9 +528,8 @@ describe('notification processor', function() {
 
         expect(ajaxSpy).toHaveBeenCalled();
 
-        jasmine.Clock.tick(client.notification._getRetryTimeout());
+        clock.tick(client.notification._getRetryTimeout());
         expect($.ajax.calls.count()).toEqual(1);
-        jasmine.Clock.reset();
     });
 
     it('stops running when stop() is called', function() {
@@ -537,7 +539,7 @@ describe('notification processor', function() {
         client.notification.stop();
         server.respond();
 
-        spyOn($, 'ajax').andCallThrough();
+        spyOn($, 'ajax').and.callThrough();
         server.respond();
         expect($.ajax.calls.count()).toEqual(0);
     });
@@ -597,7 +599,7 @@ describe('notification processor', function() {
         groups.$$list();
         server.respond();
 
-        spyOn(client._cache, 'getCachedModel').andCallThrough();
+        spyOn(client._cache, 'getCachedModel').and.callThrough();
         client.notification.start();
         server.respond();
 
@@ -631,8 +633,8 @@ describe('notification processor', function() {
         groups.$$list();
         server.respond();
 
-        spyOn(client._cache, 'getCachedModel').andCallThrough();
-        spyOn(client._cache, 'deleteCachedModel').andCallThrough();
+        spyOn(client._cache, 'getCachedModel').and.callThrough();
+        spyOn(client._cache, 'deleteCachedModel').and.callThrough();
         client.notification.start();
         server.respond();
 
@@ -657,7 +659,7 @@ describe('notification processor', function() {
                 objectType: 'HappySingleton'
             }]
         });
-        spyOn(client._cache, 'getCachedSingleton').andCallThrough();
+        spyOn(client._cache, 'getCachedSingleton').and.callThrough();
 
         client.notification.start();
         server.respond();
@@ -769,7 +771,7 @@ describe('notification processor', function() {
     });
 
     it('reports a warning if the call to the notification system fails', function() {
-        jasmine.Clock.useMock();
+        clock.install();
         spyOn(dx, 'warn');
         var callback;
         spyOn($, 'ajax').and.callFake(function(options) {
@@ -786,7 +788,6 @@ describe('notification processor', function() {
 
         expect(dx.warn.calls.mostRecent().args[0]).toBe('Notification call failed.');
         client.notification.stop();
-        jasmine.Clock.reset();
     });
 
     it('reports no warning if the call to the notification system fails after the system was stopped', function() {

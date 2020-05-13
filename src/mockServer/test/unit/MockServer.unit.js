@@ -23,12 +23,17 @@
 
 describe('MockServer', function() {
     var jQueryAjax;
+    var clock;
 
     beforeEach(function() {
+        clock = undefined;
         jQueryAjax = $.ajax;
     });
 
     afterEach(function() {
+        if (clock) {
+            clock.uninstall();
+        }
         if ($.ajax !== jQueryAjax) {
             $.ajax = jQueryAjax;
             dx.fail('$.ajax was not cleaned up.');
@@ -140,7 +145,7 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                expect(successSpy.calls.mostRecent()[0]).toEqual({
+                expect(successSpy.calls.mostRecent().args[0]).toEqual({
                     type: 'OKResult',
                     result: {
                         type: 'Container',
@@ -159,7 +164,7 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                expect(successSpy.calls.mostRecent()[1]).toBe('success');
+                expect(successSpy.calls.mostRecent().args[1]).toBe('success');
             });
 
             it('is passed something like a jqXhr as the third argument', function() {
@@ -171,7 +176,7 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                var jqXhr = successSpy.calls.mostRecent()[2];
+                var jqXhr = successSpy.calls.mostRecent().args[2];
                 expect(jqXhr).toHaveProps({
                     readyState: 4,
                     status: 200,
@@ -230,7 +235,7 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                var jqXhr = errorSpy.calls.mostRecent()[0];
+                var jqXhr = errorSpy.calls.mostRecent().args[0];
                 expect(jqXhr).toHaveProps({
                     readyState: 4,
                     status: 404,
@@ -247,7 +252,7 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                expect(errorSpy.calls.mostRecent()[1]).toBe('error');
+                expect(errorSpy.calls.mostRecent().args[1]).toBe('error');
             });
 
             it('returns the http status text in the third argument', function() {
@@ -259,7 +264,7 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                expect(errorSpy.calls.mostRecent()[2]).toBe('Not Found');
+                expect(errorSpy.calls.mostRecent().args[2]).toBe('Not Found');
             });
 
         });
@@ -278,11 +283,11 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                expect(errorSpy.calls.mostRecent()[0]).toHaveProps({
+                expect(errorSpy.calls.mostRecent().args[0]).toHaveProps({
                     status: 404
                 });
-                expect(errorSpy.calls.mostRecent()[1]).toEqual('error');
-                expect(errorSpy.calls.mostRecent()[2]).toEqual('Not Found');
+                expect(errorSpy.calls.mostRecent().args[1]).toEqual('error');
+                expect(errorSpy.calls.mostRecent().args[2]).toEqual('Not Found');
             });
 
             it('is called on success with expected arguments', function() {
@@ -297,7 +302,7 @@ describe('MockServer', function() {
                 });
                 server.respond();
 
-                expect(successSpy.calls.mostRecent()[0]).toEqual({
+                expect(successSpy.calls.mostRecent().args[0]).toEqual({
                     type: 'OKResult',
                     result: {
                         type: 'Container',
@@ -305,8 +310,8 @@ describe('MockServer', function() {
                         reference: 'CONTAINER-1'
                     }
                 });
-                expect(successSpy.calls.mostRecent()[1]).toEqual('success');
-                expect(successSpy.calls.mostRecent()[2]).toHaveProps({
+                expect(successSpy.calls.mostRecent().args[1]).toEqual('success');
+                expect(successSpy.calls.mostRecent().args[2]).toHaveProps({
                     status: 200
                 });
             });
@@ -353,7 +358,7 @@ describe('MockServer', function() {
             });
             server.respond();
 
-            expect(successSpy.calls.mostRecent()[0]).toEqual({
+            expect(successSpy.calls.mostRecent().args[0]).toEqual({
                 type: 'OKResult',
                 result: {
                     type: 'Container',
@@ -403,7 +408,7 @@ describe('MockServer', function() {
 
             server.respond();
 
-            expect(errorSpy.calls.mostRecent()[0].status).toBe(404);
+            expect(errorSpy.calls.mostRecent().args[0].status).toBe(404);
         });
 
     });
@@ -630,7 +635,8 @@ describe('MockServer', function() {
             });
 
             it('can delay a response', function() {
-                jasmine.Clock.useMock();
+                clock = jasmine.clock();
+                clock.install();
                 $.ajax({
                     type: 'GET',
                     dataType: 'json',
@@ -643,7 +649,7 @@ describe('MockServer', function() {
                 });
                 dx.test.assert(successSpy).not.toHaveBeenCalled();
 
-                jasmine.Clock.tick(10);
+                clock.tick(10);
                 dx.test.assert(successSpy).not.toHaveBeenCalled();
                 server.respond();
 
@@ -730,9 +736,9 @@ describe('MockServer', function() {
             });
             server.respond();
 
-            var containerRef = createSuccessSpy.calls.mostRecent()[0].result;
+            var containerRef = createSuccessSpy.calls.mostRecent().args[0].result;
 
-            expect(successSpy.calls.mostRecent()[0]).toEqual({
+            expect(successSpy.calls.mostRecent().args[0]).toEqual({
                 type: 'ListResult',
                 result: [{
                     type: 'ObjectNotification',
@@ -799,7 +805,7 @@ describe('MockServer', function() {
                 success: createSuccessSpy
             });
             server.respond();
-            var containerRef = createSuccessSpy.calls.mostRecent()[0].result;
+            var containerRef = createSuccessSpy.calls.mostRecent().args[0].result;
 
             $.ajax({
                 type: 'GET',
@@ -809,7 +815,7 @@ describe('MockServer', function() {
             });
             server.respond();
 
-            expect(successSpy.calls.mostRecent()[0]).toEqual({
+            expect(successSpy.calls.mostRecent().args[0]).toEqual({
                 type: 'ListResult',
                 result: [{
                     type: 'ObjectNotification',
@@ -888,9 +894,9 @@ describe('MockServer', function() {
             });
             server.respond();
 
-            var containerRef = createSuccessSpy.calls.mostRecent()[0].result;
+            var containerRef = createSuccessSpy.calls.mostRecent().args[0].result;
 
-            expect(successSpy.calls.mostRecent()[0]).toEqual({
+            expect(successSpy.calls.mostRecent().args[0]).toEqual({
                 type: 'ListResult',
                 result: [{
                     type: 'ObjectNotification',
@@ -899,7 +905,7 @@ describe('MockServer', function() {
                     object: containerRef
                 }]
             });
-            expect(secondNotificationSpy.calls.mostRecent()[0]).toEqual({
+            expect(secondNotificationSpy.calls.mostRecent().args[0]).toEqual({
                 type: 'ListResult',
                 result: [{
                     type: 'ObjectNotification',
@@ -1001,7 +1007,8 @@ describe('MockServer', function() {
         var successSpy;
 
         beforeEach(function() {
-            jasmine.Clock.useMock();
+            clock = jasmine.clock();
+            clock.install()
             server = new dx.test.MockServer(_.extend({
                 '/container.json': {
                     root: '/webapi/container',
@@ -1037,7 +1044,7 @@ describe('MockServer', function() {
 
             server.reset();
 
-            expect(successSpy.calls.mostRecent()[0].result).toEqual([]);
+            expect(successSpy.calls.mostRecent().args[0].result).toEqual([]);
         });
 
         it('can create a new notification request across a reset', function() {
@@ -1109,7 +1116,7 @@ describe('MockServer', function() {
             });
 
             server.reset();
-            jasmine.Clock.tick(20000);
+            clock.tick(20000);
 
             expect(successSpy.calls.count()).toBe(1);
         });

@@ -56,12 +56,6 @@ function toDxFail(actual, expected) {
         pass: pass,
         message: "Actual and expected error messages do not match: " + actualMessage + " " + expectedMessage,
     }
-    // if (expected instanceof Error) {
-    //     return jasmine.matchers.toThrow.call(self, expected);
-    // } else {
-    //     console.log('expected2', expected)
-    //     return jasmine.matchers.toThrowError.call(self, expected);
-    // }
 }
 
  
@@ -81,10 +75,11 @@ function toDxFail(actual, expected) {
  *    expect(resultObject).toEqualProps({ a: true, b: 'six'});
  * Note: This does not at this time do this recursively.
  */
-function toHaveProps(expected) {
- var self = this;
- 
- return _.matches(expected)(self.actual);
+function toHaveProps(actual, expected) {
+    return {
+        pass: _.matches(expected)(actual),
+        message: "Object properties do not match: " + JSON.stringify(actual) + " " + JSON.stringify(expected),
+    }
 }
 
 /*
@@ -96,9 +91,12 @@ beforeEach(function() {
             return {
                 compare: toDxFail
             }
+        },
+        toHaveProps: function(util, customEqualityTesters) {
+            return {
+                compare: toHaveProps
+            }
         }
-            
-        // toHaveProps: toHaveProps
     });
 });
 

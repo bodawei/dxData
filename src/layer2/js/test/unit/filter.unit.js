@@ -94,22 +94,16 @@ describe('dx.core.data filters', function() {
             initDxData(schemas, target);
         });
 
-        it('will always include models for collections with no query parameters', function() {
+        it('will always include models for collections with no query parameters', function(done) {
             var collection = target._newServerCollection('NoParams');
             var model = target._newClientModel('NoParams');
 
             target._filters._uberFilter(collection, model, resultHandler);
-
-            waitsFor(function() {
-                return filterResult === target._filters.INCLUDE;
-            }, "filter result should change", 75);
-          
-            runs(function() {
-                expect(filterResult).toBe(target._filters.INCLUDE);
-            });
+            expect(filterResult).toBe(target._filters.INCLUDE);
+            done();
         });
 
-        it('will filter a rooted model', function() {
+        it('will filter a rooted model', function(done) {
             var collection = target._newServerCollection('RootedType');
             collection._queryParameters = {
                 canHandle: 'one'
@@ -117,15 +111,9 @@ describe('dx.core.data filters', function() {
             var model = target._newClientModel('RootedType');
             model.set('canHandle', 'one');
 
-            target._filters._uberFilter(collection, model, resultHandler);
-
-            waitsFor(function() {
-                return filterResult === target._filters.INCLUDE;
-            }, "filter result should change", 75);
-          
-            runs(function() {
-                expect(filterResult).toBe(target._filters.INCLUDE);
-            });
+            target._filters._uberFilter(collection, model, resultHandler)
+            expect(filterResult).toBe(target._filters.INCLUDE);
+            done();
         });
 
         it('will filter a child of a rooted model', function() {
@@ -933,7 +921,7 @@ describe('dx.core.data filters', function() {
                 });
             });
 
-            it('excludes an object when it occurs after the toDate', function() {
+            it('excludes an object when it occurs after the toDate', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -947,14 +935,11 @@ describe('dx.core.data filters', function() {
                     toDate: new Date(dateObj.getTime() - 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
+                const promise = target._filters._uberFilter(collection, model, resultHandler);
 
-                waitsFor(function() {
-                    return filterResult === target._filters.EXCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
+                promise.then(function() {
                     expect(filterResult).toBe(target._filters.EXCLUDE);
+                    done();
                 });
             });
 
