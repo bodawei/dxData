@@ -24,15 +24,6 @@
 describe('dx.core.data filters', function() {
     var collection;
     var model;
-    var filterResult;
-
-    beforeEach(() => {
-        filterResult = undefined;
-    })
-
-    function resultHandler(value) {
-        filterResult = value;
-    }
 
     function initDxData(schemas, target) {
         dx.core.data._initCache(target);
@@ -54,7 +45,6 @@ describe('dx.core.data filters', function() {
         var target;
 
         beforeEach(function() {
-            filterResult = 'unset';
             var s0 = {
                 name: 'NoParams',
                 root: '/noparams',
@@ -98,9 +88,10 @@ describe('dx.core.data filters', function() {
             var collection = target._newServerCollection('NoParams');
             var model = target._newClientModel('NoParams');
 
-            target._filters._uberFilter(collection, model, resultHandler);
-            expect(filterResult).toBe(target._filters.INCLUDE);
-            done();
+            target._filters._uberFilter(collection, model, function (result) {
+                expect(result).toBe(target._filters.INCLUDE);
+                done();
+            });
         });
 
         it('will filter a rooted model', function(done) {
@@ -111,12 +102,13 @@ describe('dx.core.data filters', function() {
             var model = target._newClientModel('RootedType');
             model.set('canHandle', 'one');
 
-            target._filters._uberFilter(collection, model, resultHandler)
-            expect(filterResult).toBe(target._filters.INCLUDE);
-            done();
+            target._filters._uberFilter(collection, model, function (result) {
+                expect(result).toBe(target._filters.INCLUDE);
+                done();
+            });
         });
 
-        it('will filter a child of a rooted model', function() {
+        it('will filter a child of a rooted model', function(done) {
             var collection = target._newServerCollection('RootedType');
             collection._queryParameters = {
                 canHandle: 'one'
@@ -124,14 +116,9 @@ describe('dx.core.data filters', function() {
             var model = target._newClientModel('ChildType');
             model.set('canHandle', 'one');
 
-            target._filters._uberFilter(collection, model, resultHandler);
-
-            waitsFor(function() {
-                return filterResult === target._filters.INCLUDE;
-            }, "filter result should change", 75);
-          
-            runs(function() {
-                expect(filterResult).toBe(target._filters.INCLUDE);
+            target._filters._uberFilter(collection, model, function (result) {
+                expect(result).toBe(target._filters.INCLUDE);
+                done();
             });
         });
 
@@ -140,7 +127,7 @@ describe('dx.core.data filters', function() {
             var model = target._newClientModel('Rootless');
 
             expect(function() {
-                target._filters._uberFilter(collection, model, resultHandler);
+                target._filters._uberFilter(collection, model, () => {});
             }).toDxFail('Trying to filter a type that has no root type.');
         });
 
@@ -154,7 +141,7 @@ describe('dx.core.data filters', function() {
             model._dxSchema.rootTypeName = 'Bogus';
 
             expect(function() {
-                target._filters._uberFilter(collection, model, resultHandler);
+                target._filters._uberFilter(collection, model, () => {});
             }).toDxFail('Malformed type. Root schema type not found.');
         });
 
@@ -199,11 +186,11 @@ describe('dx.core.data filters', function() {
                     };
 
                     expect(function() {
-                        target._filters._uberFilter(collection, model, resultHandler);
+                        target._filters._uberFilter(collection, model, () => {});
                     }).toDxFail('No mapsTo property found for query parameter someProp.');
                 });
 
-                it('includes an object when the values match', function() {
+                it('includes an object when the values match', function(done) {
                     initDxData(schemas, target);
                     collection = target._newServerCollection('TestType');
                     model = target._newClientModel('TestType');
@@ -213,18 +200,13 @@ describe('dx.core.data filters', function() {
                         someProp: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
-
-                    waitsFor(function() {
-                        return filterResult === target._filters.INCLUDE;
-                    }, "filter result should change", 75);
-                  
-                    runs(function() {
-                        expect(filterResult).toBe(target._filters.INCLUDE);
+                    target._filters._uberFilter(collection, model, function (result) {
+                        expect(result).toBe(target._filters.INCLUDE);
+                        done();
                     });
                 });
 
-                it('excludes an object when the values don\'t match', function() {
+                it('excludes an object when the values don\'t match', function(done) {
                     initDxData(schemas, target);
                     collection = target._newServerCollection('TestType');
                     model = target._newClientModel('TestType');
@@ -234,14 +216,9 @@ describe('dx.core.data filters', function() {
                         someProp: 'other'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
-
-                    waitsFor(function() {
-                        return filterResult === target._filters.EXCLUDE;
-                    }, "filter result should change", 75);
-                  
-                    runs(function() {
-                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    target._filters._uberFilter(collection, model, function (result) {
+                        expect(result).toBe(target._filters.EXCLUDE);
+                        done();
                     });
                 });
             });
@@ -270,7 +247,7 @@ describe('dx.core.data filters', function() {
                     schemas = dx.core.data._prepareSchemas({s: schema});
                 });
 
-                it('includes an object when the values match', function() {
+                it('includes an object when the values match', function(done) {
                     initDxData(schemas, target);
                     collection = target._newServerCollection('TestType');
                     model = target._newClientModel('TestType');
@@ -280,18 +257,13 @@ describe('dx.core.data filters', function() {
                         bProp: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
-
-                    waitsFor(function() {
-                        return filterResult === target._filters.INCLUDE;
-                    }, "filter result should change", 75);
-                  
-                    runs(function() {
-                        expect(filterResult).toBe(target._filters.INCLUDE);
+                    target._filters._uberFilter(collection, model, function (result) {
+                        expect(result).toBe(target._filters.INCLUDE);
+                        done();
                     });
                 });
 
-                it('excludes an object when the values don\'t match', function() {
+                it('excludes an object when the values don\'t match', function(done) {
                     initDxData(schemas, target);
                     collection = target._newServerCollection('TestType');
                     model = target._newClientModel('TestType');
@@ -301,14 +273,9 @@ describe('dx.core.data filters', function() {
                         bProp: 'other'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
-
-                    waitsFor(function() {
-                        return filterResult === target._filters.EXCLUDE;
-                    }, "filter result should change", 75);
-                  
-                    runs(function() {
-                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    target._filters._uberFilter(collection, model, function (result) {
+                        expect(result).toBe(target._filters.EXCLUDE);
+                        done();
                     });
                 });
             });
@@ -379,7 +346,7 @@ describe('dx.core.data filters', function() {
                     });
                 });
 
-                it('excludes a model if an object reference in the chain can\'t be resolved', function() {
+                it('excludes a model if an object reference in the chain can\'t be resolved', function(done) {
                     ajaxSpy.and.callFake(function(options) {
                         options.error({
                             status: 404
@@ -395,19 +362,14 @@ describe('dx.core.data filters', function() {
                         aParam: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
-                    dx.test.mockServer.respond();
-
-                    waitsFor(function() {
-                        return filterResult === target._filters.EXCLUDE;
-                    }, "filter result should change", 75);
-                  
-                    runs(function() {
-                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    target._filters._uberFilter(collection, model, function (result) {
+                        expect(result).toBe(target._filters.EXCLUDE);
+                        done();
                     });
+                    dx.test.mockServer.respond();
                 });
 
-                it('includes an object when the values match', function() {
+                it('includes an object when the values match', function(done) {
                     initDxData(schemas, target);
                     collection = target._newServerCollection('TestType');
                     model = target._newClientModel('TestType');
@@ -417,18 +379,13 @@ describe('dx.core.data filters', function() {
                         aParam: 'val'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
-
-                    waitsFor(function() {
-                        return filterResult === target._filters.INCLUDE;
-                    }, "filter result should change", 75);
-                  
-                    runs(function() {
-                        expect(filterResult).toBe(target._filters.INCLUDE);
+                    target._filters._uberFilter(collection, model, function (result) {
+                        expect(result).toBe(target._filters.INCLUDE);
+                        done();
                     });
                 });
 
-                it('excludes an object when the values don\'t match', function() {
+                it('excludes an object when the values don\'t match', function(done) {
                     initDxData(schemas, target);
                     collection = target._newServerCollection('TestType');
                     model = target._newClientModel('TestType');
@@ -438,14 +395,9 @@ describe('dx.core.data filters', function() {
                         aParam: 'wrong!'
                     };
 
-                    target._filters._uberFilter(collection, model, resultHandler);
-
-                    waitsFor(function() {
-                        return filterResult === target._filters.EXCLUDE;
-                    }, "filter result should change", 75);
-                  
-                    runs(function() {
-                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    target._filters._uberFilter(collection, model, function (result) {
+                        expect(result).toBe(target._filters.EXCLUDE);
+                        done();
                     });
                 });
             });
@@ -468,7 +420,7 @@ describe('dx.core.data filters', function() {
                 };
             });
 
-            it('ignores paging for notification listeners', function() {
+            it('ignores paging for notification listeners', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({ s: schema });
 
@@ -483,18 +435,13 @@ describe('dx.core.data filters', function() {
                 });
                 var model = target._newClientModel('WithPaging');
 
-                target._filters._uberFilter(notificationListener, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.INCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
                 });
             });
 
-            it('does not return UNKNOWN if the schema does not have paging-related query parameters', function() {
+            it('does not return UNKNOWN if the schema does not have paging-related query parameters', function(done) {
                 schema = {
                     name: 'WithoutPaging',
                     root: '/enemysgate',
@@ -523,18 +470,13 @@ describe('dx.core.data filters', function() {
                     otherParam: 'Some val'
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.INCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
                 });
             });
 
-            it('does not return UNKNOWN if pageSize is 0', function() {
+            it('does not return UNKNOWN if pageSize is 0', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({ s: schema });
 
@@ -547,12 +489,13 @@ describe('dx.core.data filters', function() {
                     pageOffset: 2
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
+                });
             });
 
-            it('returns UNKNOWN if pageSize is not 0', function() {
+            it('returns UNKNOWN if pageSize is not 0', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({ s: schema });
 
@@ -564,12 +507,13 @@ describe('dx.core.data filters', function() {
                     pageSize: 1
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                expect(filterResult).toBe(target._filters.UNKNOWN);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.UNKNOWN);
+                    done();
+                });
             });
 
-            it('returns UNKNOWN if pageSize is not defined', function() {
+            it('returns UNKNOWN if pageSize is not defined', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({ s: schema });
 
@@ -579,9 +523,10 @@ describe('dx.core.data filters', function() {
 
                 collection._queryParameters = {};
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                expect(filterResult).toBe(target._filters.UNKNOWN);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.UNKNOWN);
+                    done();
+                });
             });
         });
 
@@ -642,7 +587,7 @@ describe('dx.core.data filters', function() {
                 };
 
                 expect(function() {
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    target._filters._uberFilter(collection, model, () => {});
                 }).toDxFail('No mapsTo property found for query parameter fromDate.');
             });
 
@@ -660,11 +605,11 @@ describe('dx.core.data filters', function() {
                 };
 
                 expect(function() {
-                    target._filters._uberFilter(collection, model, resultHandler);
+                    target._filters._uberFilter(collection, model, () => {});
                 }).toDxFail('Date property "fromDate" missing "inequalityType" schema property');
             });
 
-            it('includes an object when it occurs on the fromDate and inequalityType is NON-STRICT', function() {
+            it('includes an object when it occurs on the fromDate and inequalityType is NON-STRICT', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -678,18 +623,13 @@ describe('dx.core.data filters', function() {
                     fromDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.INCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
                 });
             });
 
-            it('includes an object when it occurs on the toDate and inequalityType is NON-STRICT', function() {
+            it('includes an object when it occurs on the toDate and inequalityType is NON-STRICT', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -703,18 +643,13 @@ describe('dx.core.data filters', function() {
                     toDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.INCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
                 });
             });
 
-            it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
+            it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function(done) {
                 schema.list.parameters.fromDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
@@ -729,18 +664,13 @@ describe('dx.core.data filters', function() {
                     fromDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.EXCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.EXCLUDE);
+                    done();
                 });
             });
 
-            it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
+            it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function(done) {
                 schema.list.parameters.toDate.inequalityType = dx.core.constants.INEQUALITY_TYPES.STRICT;
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
@@ -754,19 +684,14 @@ describe('dx.core.data filters', function() {
                 collection._queryParameters = {
                     toDate: dateObj
                 };
-
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.EXCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+            
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.EXCLUDE);
+                    done();
                 });
             });
 
-            it('follows "mapsTo" chains to check the correct attribute on the object', function() {
+            it('follows "mapsTo" chains to check the correct attribute on the object', function(done) {
                 schema = {
                     name: 'TestType',
                     root: '/enemysgate',
@@ -832,19 +757,15 @@ describe('dx.core.data filters', function() {
                     toDate: new Date(dateObj.getTime() + 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-                model.trigger('ready');
-
-                waitsFor(function() {
-                    return filterResult === target._filters.INCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
                 });
+
+                model.trigger('ready');
             });
 
-            it('handles alternate names "startDate" and "endDate"', function() {
+            it('handles alternate names "startDate" and "endDate"', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -859,18 +780,13 @@ describe('dx.core.data filters', function() {
                     endDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.INCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
                 });
             });
 
-            it('includes an object when it occurs between the from and toDate', function() {
+            it('includes an object when it occurs between the from and toDate', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -885,18 +801,13 @@ describe('dx.core.data filters', function() {
                     fromDate: new Date(dateObj.getTime() - 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.INCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.INCLUDE);
+                    done();
                 });
             });
 
-            it('excludes an object when it occurs before the fromDate', function() {
+            it('excludes an object when it occurs before the fromDate', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -910,14 +821,9 @@ describe('dx.core.data filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.EXCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.EXCLUDE);
+                    done();
                 });
             });
 
@@ -935,15 +841,13 @@ describe('dx.core.data filters', function() {
                     toDate: new Date(dateObj.getTime() - 1)
                 };
 
-                const promise = target._filters._uberFilter(collection, model, resultHandler);
-
-                promise.then(function() {
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.EXCLUDE);
                     done();
                 });
-            });
+        });
 
-            it('excludes an object when the from and the to date are reversed', function() {
+            it('excludes an object when the from and the to date are reversed', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -958,18 +862,13 @@ describe('dx.core.data filters', function() {
                     fromDate: new Date(dateObj.getTime() + 1)
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.EXCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.EXCLUDE);
+                    done();
                 });
             });
 
-            it('excludes an object with no date', function() {
+            it('excludes an object with no date', function(done) {
                 var target = {};
                 var schemas = dx.core.data._prepareSchemas({s: schema});
 
@@ -983,14 +882,9 @@ describe('dx.core.data filters', function() {
                     fromDate: dateObj
                 };
 
-                target._filters._uberFilter(collection, model, resultHandler);
-
-                waitsFor(function() {
-                    return filterResult === target._filters.EXCLUDE;
-                }, "filter result should change", 75);
-              
-                runs(function() {
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                target._filters._uberFilter(collection, model, function (result) {
+                    expect(result).toBe(target._filters.EXCLUDE);
+                    done();
                 });
             });
         });
