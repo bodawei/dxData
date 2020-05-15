@@ -17,7 +17,7 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _, $ */
+/*global dx, Backbone, _, $ */
 
 'use strict';
 
@@ -96,7 +96,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 };
                 target = {};
-                ajaxSpy = spyOn(jQuery, 'ajax');
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
                 var schemas = dx.core.data._prepareSchemas({
                     t: schema,
                     c: childType,
@@ -355,7 +355,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 };
                 target = {};
-                ajaxSpy = spyOn(jQuery, 'ajax');
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
                 var schemas = dx.core.data._prepareSchemas({
                     t: schema,
                     c: childType,
@@ -1085,7 +1085,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                     }
                 };
                 target = {};
-                ajaxSpy = spyOn(jQuery, 'ajax');
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
                 var schemas = dx.core.data._prepareSchemas({
                     t: paramType,
                     two: secondParamType,
@@ -1275,7 +1275,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
+                expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
             });
 
             it('will not send non-required properties if they are null', function() {
@@ -1338,7 +1338,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.calls.mostRecent().args[0].data)
+                expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data)
                     .toEqual('{"createRequired":"one","embedded":{"createRequired":"eleven"}}');
             });
 
@@ -1402,7 +1402,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
                 target.rootOps.RootType.$$create(payload);
 
-                expect(jQuery.ajax.calls.mostRecent().args[0].data)
+                expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data)
                     .toEqual('{"createRequired":"one","createOptional":"second","embedded":' +
                     '{"createRequired":"eleven","createOptional":"twelve"}}');
             });

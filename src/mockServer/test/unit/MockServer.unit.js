@@ -22,21 +22,15 @@
 'use strict';
 
 describe('MockServer', function() {
-    var jQueryAjax;
     var clock;
 
     beforeEach(function() {
         clock = undefined;
-        jQueryAjax = $.ajax;
     });
 
     afterEach(function() {
         if (clock) {
             clock.uninstall();
-        }
-        if ($.ajax !== jQueryAjax) {
-            $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
         }
     });
 
@@ -99,7 +93,7 @@ describe('MockServer', function() {
         describe('success', function() {
 
             it('is called on a successful call', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-1',
                     dataType: 'json',
@@ -112,7 +106,7 @@ describe('MockServer', function() {
 
             it('will allow an array of callbacks', function() {
                 var successSpyTwo = jasmine.createSpy('successSpyTwo');
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-1',
                     dataType: 'json',
@@ -125,7 +119,7 @@ describe('MockServer', function() {
             });
 
             it('is not called on a failing call', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-BOGUS',
                     dataType: 'json',
@@ -137,7 +131,7 @@ describe('MockServer', function() {
             });
 
             it('is passed the json data in the first argument', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-1',
                     dataType: 'json',
@@ -156,7 +150,7 @@ describe('MockServer', function() {
             });
 
             it('is passed the word "success" as the second argument', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-1',
                     dataType: 'json',
@@ -168,7 +162,7 @@ describe('MockServer', function() {
             });
 
             it('is passed something like a jqXhr as the third argument', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-1',
                     dataType: 'json',
@@ -189,7 +183,7 @@ describe('MockServer', function() {
         describe('error', function() {
 
             it('is not called on a successful call', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-1',
                     dataType: 'json',
@@ -201,7 +195,7 @@ describe('MockServer', function() {
             });
 
             it('is called on a failing call', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-BOGUS',
                     dataType: 'json',
@@ -214,7 +208,7 @@ describe('MockServer', function() {
 
             it('will allow an array of callbacks', function() {
                 var errorSpyTwo = jasmine.createSpy('errorSpyTwo');
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-BOGUS',
                     dataType: 'json',
@@ -227,7 +221,7 @@ describe('MockServer', function() {
             });
 
             it('returns something like a jqXhr as the first argument', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-199',
                     dataType: 'json',
@@ -244,7 +238,7 @@ describe('MockServer', function() {
             });
 
             it('returns the word "error" as the second argument', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-99',
                     dataType: 'json',
@@ -256,7 +250,7 @@ describe('MockServer', function() {
             });
 
             it('returns the http status text in the third argument', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-99',
                     dataType: 'json',
@@ -273,7 +267,7 @@ describe('MockServer', function() {
 
             it('is called on error with expected arguments', function() {
                 var errorSpy = jasmine.createSpy('errorSpy');
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-BOGUS',
@@ -292,7 +286,7 @@ describe('MockServer', function() {
 
             it('is called on success with expected arguments', function() {
                 var successSpy = jasmine.createSpy('successSpy');
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -350,7 +344,7 @@ describe('MockServer', function() {
         });
 
         it('can issue a request', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -369,7 +363,7 @@ describe('MockServer', function() {
         });
 
         it('returns ajax results immediately', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
                 async: false,
@@ -381,7 +375,7 @@ describe('MockServer', function() {
 
         it('throws an error if trying to get a url for an operation which does not exist', function() {
             expect(function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'POST',
                     url : '/webapi/container'
                 });
@@ -390,7 +384,7 @@ describe('MockServer', function() {
 
         it('throws an error if trying to POST to a url which does not exist', function() {
             expect(function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'POST',
                     url : '/boguspie'
                 });
@@ -400,7 +394,7 @@ describe('MockServer', function() {
         it('returns a 404 if trying to access a url which does not exist', function() {
             var errorSpy = jasmine.createSpy('errorSpy');
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/neverland',
                 error: errorSpy
@@ -456,14 +450,14 @@ describe('MockServer', function() {
             var secondSuccess = jasmine.createSpy('secondSuccess');
             var firstSuccess = jasmine.createSpy('firstSuccess').and.callFake(secondCall);
             function secondCall() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
                     success: secondSuccess
                 });
             }
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -477,7 +471,7 @@ describe('MockServer', function() {
         });
 
         it('delivers ajaxComplete events after each call', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -493,7 +487,7 @@ describe('MockServer', function() {
         });
 
         it('delivers ajaxComplete events even if there are no callbacks', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'
@@ -530,7 +524,7 @@ describe('MockServer', function() {
             it('is called if there are no responses but there is something stashed', function() {
                 var filterFunction = jasmine.createSpy('filterFunctionSpy');
 
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -548,7 +542,7 @@ describe('MockServer', function() {
 
             it('provides access to the data to be delivered', function() {
                 var data;
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -571,7 +565,7 @@ describe('MockServer', function() {
             });
 
             it('throws an error if no decision is made about what to do with the response', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -584,7 +578,7 @@ describe('MockServer', function() {
             });
 
             it('throws an error if multiple decisions are made about the response', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -600,7 +594,7 @@ describe('MockServer', function() {
             });
 
             it('can deliver the response', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -615,7 +609,7 @@ describe('MockServer', function() {
             });
 
             it('can stash a response to be used subsequently', function() {
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -637,7 +631,7 @@ describe('MockServer', function() {
             it('can delay a response', function() {
                 clock = jasmine.clock();
                 clock.install();
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1',
@@ -658,12 +652,12 @@ describe('MockServer', function() {
 
             it('increments count on each response', function() {
                 var filterSpy = jasmine.createSpy('filterSpy');
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-1'
                 });
-                $.ajax({
+                dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
                     url: '/webapi/container/CONTAINER-2'
@@ -706,7 +700,7 @@ describe('MockServer', function() {
         });
 
         it('does not respond to a notification request immediately if no notifications', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
@@ -719,7 +713,7 @@ describe('MockServer', function() {
 
         it('will respond later if a notification is created', function() {
             var createSuccessSpy = jasmine.createSpy('createSuccessSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
@@ -727,7 +721,7 @@ describe('MockServer', function() {
             });
             server.respond();
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -750,14 +744,14 @@ describe('MockServer', function() {
         });
 
         it('removes notifications once they are returned', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
                 success: successSpy
             });
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -769,14 +763,14 @@ describe('MockServer', function() {
         });
 
         it('calls a notification callback only the first time it is triggered', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
                 success: successSpy
             });
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -784,7 +778,7 @@ describe('MockServer', function() {
             });
             server.respond();
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -797,7 +791,7 @@ describe('MockServer', function() {
 
         it('immediately returns notifications previously created', function() {
             var createSuccessSpy = jasmine.createSpy('createSuccessSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -807,7 +801,7 @@ describe('MockServer', function() {
             server.respond();
             var containerRef = createSuccessSpy.calls.mostRecent().args[0].result;
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
@@ -827,7 +821,7 @@ describe('MockServer', function() {
         });
 
         it('returns when an non-ajax function like createObjects() creates notifications', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
@@ -845,7 +839,7 @@ describe('MockServer', function() {
 
         it('returns notifications after other results', function() {
             var resultOrder = '';
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
@@ -854,7 +848,7 @@ describe('MockServer', function() {
                 }
             });
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -871,13 +865,13 @@ describe('MockServer', function() {
         it('responds to multiple outstanding notification calls with the same data', function() {
             var secondNotificationSpy = jasmine.createSpy('secondNotificationSpy');
             var createSuccessSpy = jasmine.createSpy('createSuccessSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
                 success: successSpy
             });
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
@@ -885,7 +879,7 @@ describe('MockServer', function() {
             });
             server.respond();
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -954,7 +948,7 @@ describe('MockServer', function() {
         });
 
         it('logs a message on successful respond', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -967,14 +961,14 @@ describe('MockServer', function() {
         });
 
         it('logs a message for delivered notifications (which are done second)', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
                 success: function() {}
             });
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -989,7 +983,7 @@ describe('MockServer', function() {
         });
 
         it('logs a message on successful respond but no callbacks', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'
@@ -1035,7 +1029,7 @@ describe('MockServer', function() {
         });
 
         it('delivers empty lists to any outstanding notification calls', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
@@ -1048,12 +1042,12 @@ describe('MockServer', function() {
         });
 
         it('can create a new notification request across a reset', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
                 success: function() {
-                    $.ajax({
+                    dx.core.ajax.ajaxCall({
                         type: 'GET',
                         dataType: 'json',
                         url: '/webapi/notification',
@@ -1073,7 +1067,7 @@ describe('MockServer', function() {
         });
 
         it('delivers any items in the stash', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -1089,7 +1083,7 @@ describe('MockServer', function() {
         });
 
         it('delivers any items in timeouts', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container',
@@ -1105,7 +1099,7 @@ describe('MockServer', function() {
         });
 
         it('will not multiply deliver delayed results multiple times (server removes them after delivery)', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container',

@@ -28,6 +28,7 @@ files = [
     'node_modules/underscore/underscore.js',
     'node_modules/backbone/backbone.js',
     'testSetup/jasmineSetup.js',
+    'src/test/**/*.js',
     'src/dxBasics.js',
     'src/layer1/**/*.js',
     'src/layer2/**/*.js',

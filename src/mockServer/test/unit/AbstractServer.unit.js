@@ -22,18 +22,6 @@
 'use strict';
 
 describe('AbstractServer', function() {
-    var jQueryAjax;
-
-    beforeEach(function() {
-        jQueryAjax = $.ajax;
-    });
-
-    afterEach(function() {
-        if ($.ajax !== jQueryAjax) {
-            $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
-        }
-    });
 
     describe('construction', function() {
 
@@ -76,11 +64,10 @@ describe('AbstractServer', function() {
             server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
         });
 
-        it('starting replaces the jQuery ajax function', function() {
-            var jQueryAjax = $.ajax;
+        it('starting adds itself to the handler queue', function() {
             server.start();
 
-            expect(jQueryAjax).not.toBe($.ajax);
+            expect(dx.core.ajax.hasAjaxHandler(server)).toEqual(true);
             server.stop();
         });
 
@@ -117,26 +104,14 @@ describe('AbstractServer', function() {
         });
 
         it('restores the jquery ajax function', function() {
-            var jQueryAjax = $.ajax;
             server.start();
 
             server.stop();
 
-            expect(jQueryAjax).toBe($.ajax);
+            expect(dx.core.ajax.hasAjaxHandler(server)).toEqual(false);
         });
 
-        it('restores the jquery ajax function even when our handler is spied upon', function() {
-            var jQueryAjax = $.ajax;
-            server.start();
-
-            spyOn($, 'ajax');
-
-            server.stop();
-
-            expect(jQueryAjax).toBe($.ajax);
-        });
-
-        it('restores the previous $.ajax', function() {
+        it('restores the previous dx.core.ajax.ajaxCall', function() {
             var server2 = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
 
             server.start();
@@ -152,18 +127,6 @@ describe('AbstractServer', function() {
             expect(function() {
                 newServer.stop();
             }).toDxFail('This server has not been started.');
-        });
-
-        it('will throw an error if one tries to stop it out of sequence', function() {
-            var newServer = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
-            server.start();
-            newServer.start();
-
-            expect(function() {
-                server.stop();
-            }).toDxFail('This server is not the active $.ajax handler, and so can not be stopped.');
-            newServer.stop();
-            server.stop();
         });
 
     });
@@ -198,7 +161,7 @@ describe('AbstractServer', function() {
         });
 
         it('calls handleResult with the result of the call', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'
@@ -210,7 +173,7 @@ describe('AbstractServer', function() {
 
         it('adds success handler to Result object', function() {
             var successSpy = jasmine.createSpy('successSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -222,7 +185,7 @@ describe('AbstractServer', function() {
 
         it('adds error handler to Result object', function() {
             var errorSpy = jasmine.createSpy('errorSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -234,7 +197,7 @@ describe('AbstractServer', function() {
 
         it('adds statusCode handler to Result object', function() {
             var successSpy = jasmine.createSpy('successSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -247,7 +210,7 @@ describe('AbstractServer', function() {
         });
 
         it('can issue a request even if type is lowercase', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'get',
                 url: '/webapi/container/CONTAINER-1'
             });
@@ -256,7 +219,7 @@ describe('AbstractServer', function() {
         });
 
         it('can issue a request with url as the first parameter', function() {
-            $.ajax('/webapi/container/CONTAINER-1', {
+            dx.core.ajax.ajaxCall('/webapi/container/CONTAINER-1', {
                 type: 'get'
             });
 
@@ -264,7 +227,7 @@ describe('AbstractServer', function() {
         });
 
         it('defaults to GET requests', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 url: '/webapi/container/CONTAINER-1'
             });
 
@@ -272,7 +235,7 @@ describe('AbstractServer', function() {
         });
 
         it('calls nothing if a notification call is made', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url : '/webapi/notification'
             });
@@ -282,7 +245,7 @@ describe('AbstractServer', function() {
         });
 
         it('calls _handleUnknownUrl if a call is made to an invalid URL', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 url : '/webapi/container'
             });
@@ -291,7 +254,7 @@ describe('AbstractServer', function() {
         });
 
         it('calls _handleUnknownUrl trying to post to a url which does not exist', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 url : '/boguspie'
             });
@@ -357,7 +320,7 @@ describe('AbstractServer', function() {
             server.createObjects([{
                 type: 'Container'
             }]);
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
@@ -372,12 +335,12 @@ describe('AbstractServer', function() {
             server.createObjects([{
                 type: 'Container'
             }]);
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
             });
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
@@ -393,7 +356,7 @@ describe('AbstractServer', function() {
                 type: 'Container'
             }]);
             dx.test.assert(server.getCollectionLength('Notification')).toEqual(1);
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
@@ -633,7 +596,7 @@ describe('AbstractServer', function() {
         it('logs no message if debug is not true', function() {
             server.debug = false;
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'
@@ -643,7 +606,7 @@ describe('AbstractServer', function() {
         });
 
         it('logs a received message on successful call', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'
@@ -655,14 +618,14 @@ describe('AbstractServer', function() {
 
         it('increments call count for each call', function() {
             server.debug = false;
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'
             });
 
             server.debug = true;
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'

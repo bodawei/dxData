@@ -17,7 +17,7 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _, $ */
+/*global dx, Backbone, _, $ */
 
 'use strict';
 
@@ -33,7 +33,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         var ajaxSpy;
         var model;
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
 
             target = {};
             var schema = {
@@ -671,7 +671,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
 
             target = {};
             var schema = {
@@ -832,9 +832,9 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             payload.set('value', 23);
             model.$payload(payload);
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].type).toBe('POST');
-            expect(jQuery.ajax.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/payload');
-            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"type":"OtherType","value":23}');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].type).toBe('POST');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/payload');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toEqual('{"type":"OtherType","value":23}');
         });
 
         it('will accept a call with a subtype', function() {
@@ -844,7 +844,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
             payload.set('value', 23);
             model.$payload(payload);
 
-            expect(jQuery.ajax).toHaveBeenCalled();
+            expect(dx.core.ajax.ajaxCall).toHaveBeenCalled();
         });
 
         it('will reject a call when a required parameter is missing', function() {
@@ -1077,7 +1077,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
 
             target = {};
             var schema = {
@@ -1217,7 +1217,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
 
             target = {};
             var schema = {
@@ -1323,9 +1323,9 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$parameters({ a: 'b', c: true});
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].type).toBe('GET');
-            expect(jQuery.ajax.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/parameters');
-            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual({ a: 'b', c: true});
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].type).toBe('GET');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/parameters');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toEqual({ a: 'b', c: true});
         });
 
         it('will throw an error if invoked without a reference', function() {
@@ -1363,8 +1363,8 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$parameters();
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/parameters');
-            expect(jQuery.ajax.calls.mostRecent().args[0].data).toBeUndefined();
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].url).toContain('somewhere/REF-1/parameters');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toBeUndefined();
         });
 
         it('throws an error if a required parameter is not included', function() {
@@ -1479,7 +1479,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 dateVal: newDate
             });
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].data)
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data)
                 .toEqual({ requiredStringVal: 'required', dateVal: '2013-12-11T10:09:08.765Z'});
         });
 
@@ -1583,7 +1583,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 name: 'ChildRequired'
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn(dx.core.ajax, 'ajaxCall');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1616,7 +1616,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn(dx.core.ajax, 'ajaxCall');
 
             var payload = target._newClientModel('RequiredParams');
             payload.set('first', 'hello');
@@ -1650,13 +1650,13 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn(dx.core.ajax, 'ajaxCall');
 
             var payload = target._newClientModel('RequiredParams');
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toEqual('{"first":null,"embedded":{"first":null}}');
         });
 
         it('will not send non-required properties if they are undefined', function() {
@@ -1697,7 +1697,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn(dx.core.ajax, 'ajaxCall');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1705,7 +1705,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"first":1,"embedded":{"first":11}}');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toEqual('{"first":1,"embedded":{"first":11}}');
         });
 
         it('will send required true and false props if they are non-null/non-undefined', function() {
@@ -1746,7 +1746,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn(dx.core.ajax, 'ajaxCall');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1763,7 +1763,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].data)
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data)
                 .toEqual('{"first":1,"second":2,"third":3,"embedded":{"first":11,"second":12,"third":13}}');
         });
 
@@ -1781,7 +1781,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn(dx.core.ajax, 'ajaxCall');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1789,7 +1789,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{"third":3}');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toEqual('{"third":3}');
         });
 
         it('will not send non-required properties if they are undefined', function() {
@@ -1806,7 +1806,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             });
             model.set('reference', 'REF-1');
-            spyOn(jQuery, 'ajax');
+            spyOn(dx.core.ajax, 'ajaxCall');
 
             var payload = target._newClientModel('RequiredParams');
 
@@ -1814,7 +1814,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$doit(payload);
 
-            expect(jQuery.ajax.calls.mostRecent().args[0].data).toEqual('{}');
+            expect(dx.core.ajax.ajaxCall.calls.mostRecent().args[0].data).toEqual('{}');
         });
     });
 
@@ -1823,7 +1823,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
         var model;
 
         beforeEach(function() {
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
 
             target = {};
             var schema = {
@@ -1974,7 +1974,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
                 }
             };
             target = {};
-            ajaxSpy = spyOn(jQuery, 'ajax');
+            ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
             var schemas = dx.core.data._prepareSchemas({t: schema, c: childType, ok: okResult,
                 call: dx.test.dataMocks.callResultSchema,
                 api: dx.test.dataMocks.apiErrorSchema,

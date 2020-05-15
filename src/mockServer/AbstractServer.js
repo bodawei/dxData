@@ -319,16 +319,12 @@ function reportDebug(server, callId, message, data) {
  */
 function startMockServer() {
     var self = this;
-    if ($.ajax === self._currentAjax) {
+    if (dx.core.ajax.hasAjaxHandler(self)) {
         dx.fail('This server is already started.');
     }
-    self._previousAjax = $.ajax;
 
     // create a unique function as our handler, and make sure it has ourself as its 'this'
-    $.ajax = replacementAjaxHandler.bind(self);
-
-    // Record which $.ajax function we're associated with
-    self._currentAjax = $.ajax;
+    dx.core.ajax.registerAjaxHandler(this, replacementAjaxHandler.bind(self));
 }
 
 /*
@@ -336,29 +332,11 @@ function startMockServer() {
  */
 function stopMockServer() {
     var self = this;
-    if (!self._previousAjax) {
+    if (!dx.core.ajax.hasAjaxHandler(self)) {
         dx.fail('This server has not been started.');
     }
-    // Check if $.ajax is our function, or is a jasmine spy on our function.
-    if ($.ajax !== self._currentAjax && $.ajax.originalValue !== self._currentAjax) {
-        dx.fail('This server is not the active $.ajax handler, and so can not be stopped.');
-    }
 
-    /*
-     * Ick ick ick ick.  If a test spys on ajax, and then this mock server is stopped, this will replace the original
-     * handler, and then when the test ends, Jasmine will return the "currentAjax" value back to $.ajax.  There is no
-     * way to avoid this using Jasmine except to always put a spy on $.ajax in jasmineSetup, and then having the mock
-     * servers work with that, which leads to other ugliness.  Instead, we just notice that there is a spy here, and
-     * replace the value it will restore at the end of the test.
-     */
-    if ($.ajax.originalValue === self._currentAjax) {
-        $.ajax.originalValue = self._previousAjax;
-    }
-
-    // undo our starting
-    $.ajax = self._previousAjax;
-    delete self._currentAjax;
-    delete self._previousAjax;
+    dx.core.ajax.removeAjaxHandler(self);
 }
 
 function AbstractServer(schemas) {

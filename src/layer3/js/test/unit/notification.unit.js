@@ -490,7 +490,7 @@ describe('notification processor', function() {
 
     it('retries on error', function() {
         server.createObjects({});
-        var ajaxSpy = spyOn($, 'ajax').and.callFake(function(options) {
+        var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             options.error({
                 readyState: 4,
                 status: 400,
@@ -506,7 +506,7 @@ describe('notification processor', function() {
         expect(errorSpy).toHaveBeenCalled();
 
         clock.tick(client.notification._getRetryTimeout());
-        expect($.ajax.calls.count()).toEqual(2);
+        expect(dx.core.ajax.ajaxCall.calls.count()).toEqual(2);
 
         client.notification.stop();
     });
@@ -515,7 +515,7 @@ describe('notification processor', function() {
         clock.install();
         spyOn(dx, 'warn'); // suppress warning message
         server.createObjects({});
-        var ajaxSpy = spyOn($, 'ajax').and.callFake(function(options) {
+        var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             options.error({
                 readyState: 4,
                 status: 400,
@@ -529,7 +529,7 @@ describe('notification processor', function() {
         expect(ajaxSpy).toHaveBeenCalled();
 
         clock.tick(client.notification._getRetryTimeout());
-        expect($.ajax.calls.count()).toEqual(1);
+        expect(dx.core.ajax.ajaxCall.calls.count()).toEqual(1);
     });
 
     it('stops running when stop() is called', function() {
@@ -539,9 +539,9 @@ describe('notification processor', function() {
         client.notification.stop();
         server.respond();
 
-        spyOn($, 'ajax').and.callThrough();
+        spyOn(dx.core.ajax, 'ajaxCall').and.callThrough();
         server.respond();
-        expect($.ajax.calls.count()).toEqual(0);
+        expect(dx.core.ajax.ajaxCall.calls.count()).toEqual(0);
     });
 
     it('fetches changes when a singleton object is updated', function() {
@@ -774,7 +774,7 @@ describe('notification processor', function() {
         clock.install();
         spyOn(dx, 'warn');
         var callback;
-        spyOn($, 'ajax').and.callFake(function(options) {
+        spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             callback = options;
         });
         client.notification.start();
@@ -793,7 +793,7 @@ describe('notification processor', function() {
     it('reports no warning if the call to the notification system fails after the system was stopped', function() {
         spyOn(dx, 'warn');
         var callback;
-        spyOn($, 'ajax').and.callFake(function(options) {
+        spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             callback = options;
         });
         client.notification.start();

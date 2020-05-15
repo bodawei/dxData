@@ -17,7 +17,7 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, jQuery */
+/*global dx */
 
 'use strict';
 
@@ -337,7 +337,7 @@ describe('dx.core.data filters', function() {
                         someProp: 'val'
                     };
 
-                    ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                    ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                         if (options.url === '/somethingclever/AnotherType-1') {
                             options.success(mockAnotherType);
                         } else {
@@ -736,7 +736,7 @@ describe('dx.core.data filters', function() {
                     dateProp: dateObj
                 };
 
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     if (options.url === '/somethingclever/AnotherType-1') {
                         options.success(mockAnotherType);
                     } else {

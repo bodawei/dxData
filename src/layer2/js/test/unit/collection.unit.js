@@ -17,7 +17,7 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _ */
+/*global dx, Backbone, _ */
 
 'use strict';
 
@@ -169,7 +169,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
     describe('clone()', function() {
         it('will create a copy of the collection with the same models', function() {
-            spyOn(jQuery, 'ajax').and.callFake(RETURN_EMPTY_LISTRESULTS);
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(RETURN_EMPTY_LISTRESULTS);
             collection.$$list();
             collection._dxAddOrRemove(target._newClientModel('HasRoot'));
 
@@ -342,7 +342,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('makes an ajax call when invoked with no parameters', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
 
             collection.$$list();
 
@@ -350,7 +350,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('can be called on a list that has no possible parameters', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
             collection = new target._collectionConstructors.NoParams();
 
             collection.$$list();
@@ -359,7 +359,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('makes an ajax call when invoked with a parameter', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
 
             collection.$$list({
                 param1: 'hi'
@@ -403,7 +403,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('does not reject a call when a non-required parameter is not passed', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
             collection = new target._collectionConstructors.RequiredParams();
 
             collection.$$list({
@@ -414,7 +414,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('validates all parameter types', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
             var newDate = new Date();
             newDate.setUTCFullYear(2013, 11, 11);
             newDate.setUTCHours(10, 9, 8, 765);
@@ -436,7 +436,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('adds returned models to the collection', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -455,7 +455,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('adds returned models to the collection, even if they are not cacheable', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -471,7 +471,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('updates whole collection on list, removing old and adding new', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -505,7 +505,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('marks models as being ready', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -524,7 +524,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('will call the success handler after doing a successful $$list()', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [
@@ -544,7 +544,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('will call the error handler after doing a failing $$list()', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.error({
                     type: 'ErrorResult'
                 });
@@ -614,7 +614,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             dx.core.data._generateCollectionConstructors(schemas, target);
             collection = new target._newServerCollection('ChildTypeWithList');
 
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -665,7 +665,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 dx.core.data._generateCollectionConstructors(schemas, target);
                 collection = new target._newServerCollection('NoRefProperty');
 
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'ListResult',
                         result: [{
@@ -720,7 +720,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         describe('filter function', function() {
             var ajaxSpy;
             beforeEach(function() {
-                ajaxSpy = spyOn(jQuery, 'ajax');
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
                 ajaxSpy.and.callFake(RETURN_EMPTY_LISTRESULTS);
                 var bogusType = {
                     name: 'BogusType',
@@ -816,7 +816,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
             beforeEach(function() {
                 addSpy = jasmine.createSpy('addSpy');
-                ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(GENERATE_INITIAL_RESULTS);
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(GENERATE_INITIAL_RESULTS);
             });
 
             it('does not trigger on the initial list', function() {
@@ -865,7 +865,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
             beforeEach(function() {
                 removeSpy = jasmine.createSpy('removeSpy');
-                ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(GENERATE_INITIAL_RESULTS);
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(GENERATE_INITIAL_RESULTS);
             });
 
             it('does not trigger on the initial list', function() {
@@ -914,7 +914,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
             beforeEach(function() {
                 resetSpy = jasmine.createSpy('resetSpy');
-                ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(GENERATE_INITIAL_RESULTS);
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(GENERATE_INITIAL_RESULTS);
             });
 
             it('triggers on the initial list', function() {
@@ -963,7 +963,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
             beforeEach(function() {
                 readySpy = jasmine.createSpy('readySpy');
-                ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(GENERATE_INITIAL_RESULTS);
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(GENERATE_INITIAL_RESULTS);
             });
 
             it('triggers on the initial list', function() {
@@ -1055,7 +1055,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('does not leave any pending error or ready event handlers on success', function() {
-            spyOn(jQuery, 'ajax').and.callFake(GENERATE_INITIAL_RESULTS);
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(GENERATE_INITIAL_RESULTS);
 
             collection.$$list();
 
@@ -1064,7 +1064,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
         it('does not trigger an "error" event on success', function() {
             var errorSpy = jasmine.createSpy('readySpy');
-            spyOn(jQuery, 'ajax').and.callFake(GENERATE_INITIAL_RESULTS);
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(GENERATE_INITIAL_RESULTS);
             collection.on('error', errorSpy);
 
             collection.$$list();
@@ -1073,7 +1073,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('reports a status200/ErrorResult as an error with the ErrorResult model', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1093,7 +1093,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 type: 'ErrorResult'
             };
             var ajaxOptions = [];
-            spyOn(jQuery, 'ajax').and.callFake(function(options) { ajaxOptions.push(options); });
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) { ajaxOptions.push(options); });
 
             var errorSpy = jasmine.createSpy('errorSpy');
             collection.on('error', errorSpy);
@@ -1113,7 +1113,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 type: 'ErrorResult'
             };
             var ajaxOptions = [];
-            spyOn(jQuery, 'ajax').and.callFake(function(options) { ajaxOptions.push(options); });
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) { ajaxOptions.push(options); });
 
             var errorSpy = jasmine.createSpy('errorSpy');
             collection.on('error', errorSpy);
@@ -1140,7 +1140,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 responseText: '{"type":"ErrorResult"}'
             };
             var ajaxOptions = [];
-            spyOn(jQuery, 'ajax').and.callFake(function(options) { ajaxOptions.push(options); });
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) { ajaxOptions.push(options); });
 
             var errorSpy = jasmine.createSpy('errorSpy');
             collection.on('error', errorSpy);
@@ -1163,7 +1163,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                 responseText: '{"type":"ErrorResult"}'
             };
             var ajaxOptions = [];
-            spyOn(jQuery, 'ajax').and.callFake(function(options) { ajaxOptions.push(options); });
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) { ajaxOptions.push(options); });
 
             var errorSpy = jasmine.createSpy('errorSpy');
             collection.on('error', errorSpy);
@@ -1182,7 +1182,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('triggers an error event when encountering a status200/ErrorResult', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1198,7 +1198,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('triggers an "error" event at any point after the error occurs', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1214,7 +1214,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('reports a status200/ErrorResult with no error handler calls global handler', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1227,7 +1227,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('triggers an error event when encountering status200/ErrorResult with no error handler', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ErrorResult'
                 });
@@ -1241,7 +1241,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('reports an status404/ErrorResult as an error with the ErrorResult model', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1260,7 +1260,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('reports a status404/non-ErrorResult as an error with an ErrorResult model', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1280,7 +1280,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('converts properties of a status404/non-ErrorResult into an ErrorResult', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1302,7 +1302,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('triggers an error event when encountering a status404/ErrorResult', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1322,7 +1322,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('triggers an error event when encountering a status404/non-ErrorResult', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1366,7 +1366,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             dx.core.data._generateModelConstructors(schemas, target);
             dx.core.data._generateCollectionConstructors(schemas, target);
             collection = new target._newServerCollection('NoRef');
-            var ajaxSpy = spyOn(jQuery, 'ajax');
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
             ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
@@ -1398,7 +1398,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             });
 
             it('is resolved on a successful list when the "ready" event is triggered', function() {
-                spyOn(jQuery, 'ajax').and.callFake(function() {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function() {
                     collection._dxIsReady = true;
                 });
 
@@ -1410,7 +1410,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             });
 
             it('is resolved with the collection as the value', function() {
-                spyOn(jQuery, 'ajax').and.callFake(function() {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function() {
                     collection._dxIsReady = true;
                 });
 
@@ -1421,7 +1421,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             });
 
             it('is rejected when the $$list triggers an "error" event', function() {
-                spyOn(jQuery, 'ajax').and.callFake(function() {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function() {
                     collection._dxIsErrored = true;
                 });
 
@@ -1442,7 +1442,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
                         }]
                 };
                 var ajaxOptions = [];
-                spyOn(jQuery, 'ajax').and.callFake(function(options) { ajaxOptions.push(options); });
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) { ajaxOptions.push(options); });
 
                 var promiseList = [
                     collection.$$list(),
@@ -1497,7 +1497,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('has a copy of the query parameters after doing a successful $$list()', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [
@@ -1515,7 +1515,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('does not have a copy of the query parameters after doing a failed $$list()', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.error({
                     status: 404,
                     getResponseHeader: function() {
@@ -1537,7 +1537,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
     describe('clear()', function() {
         beforeEach(function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -1737,7 +1737,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('is triggered after a $$list()', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -1758,7 +1758,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('is triggered even when assigned after having done a $$list()', function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -1779,7 +1779,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('is not triggered while a $$list() is being performed', function() {
-            var ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -1818,7 +1818,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
 
     describe('_dxEmpty()', function() {
         beforeEach(function() {
-            spyOn(jQuery, 'ajax').and.callFake(function(options) {
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                 options.success({
                     type: 'ListResult',
                     result: [ {
@@ -1864,7 +1864,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
         });
 
         it('will always add a model if there are no query parameters', function() {
-            spyOn(jQuery, 'ajax').and.callFake(RETURN_EMPTY_LISTRESULTS);
+            spyOn(dx.core.ajax, 'ajaxCall').and.callFake(RETURN_EMPTY_LISTRESULTS);
             collection.$$list();
             collection._dxAddOrRemove(target._newClientModel('HasRoot'));
             expect(collection.length).toBe(1);
@@ -1874,7 +1874,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             var successSpy;
 
             beforeEach(function() {
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'ListResult',
                         result: [ {
@@ -1903,7 +1903,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             var successSpy;
 
             beforeEach(function() {
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'ListResult',
                         result: [ {
@@ -1938,7 +1938,7 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             var successSpy;
 
             beforeEach(function() {
-                ajaxSpy = spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'ListResult',
                         result: [ {

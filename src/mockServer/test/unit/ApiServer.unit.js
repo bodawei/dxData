@@ -22,20 +22,14 @@
 'use strict';
 
 describe('ApiServer', function() {
-    var jQueryAjax;
     var clock
 
     beforeEach(function() {
         clock = jasmine.clock();
-        jQueryAjax = $.ajax;
     });
 
     afterEach(function() {
         clock.uninstall();
-        if ($.ajax !== jQueryAjax) {
-            $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
-        }
     });
 
     describe('construction', function() {
@@ -83,7 +77,7 @@ describe('ApiServer', function() {
             }]);
             server.start();
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
@@ -96,12 +90,13 @@ describe('ApiServer', function() {
         });
 
         it('calls the the real ajax function when the url is not known', function() {
-            var mockAjax = jasmine.createSpy('mockAjax');
-            $.ajax = mockAjax;
+            var jQueryAjax = dx.core.ajax.ajaxCall;
+            var mockAjax = jasmine.spyOn('mockAjax');
+            dx.core.ajax.ajaxCall = mockAjax;
             var server = new dx.test.ApiServer(dx.test.CORE_SCHEMAS);
             server.start();
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/some/wonderful/resource',
                 success: function() {}
@@ -109,7 +104,7 @@ describe('ApiServer', function() {
 
             expect(mockAjax.calls.mostRecent().args[0]).toEqual('/some/wonderful/resource');
             server.stop();
-            $.ajax = jQueryAjax;
+            dx.core.ajax.ajaxCall = jQueryAjax;
         });
 
     });
@@ -144,7 +139,7 @@ describe('ApiServer', function() {
             clock.install();
             var successSpy = jasmine.createSpy('successSpy');
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
@@ -158,7 +153,7 @@ describe('ApiServer', function() {
             clock.install();
             var successSpy = jasmine.createSpy('successSpy');
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
@@ -175,7 +170,7 @@ describe('ApiServer', function() {
             var firstSuccess = jasmine.createSpy('firstSuccess').and.callFake(secondCall);
             function secondCall() {
                 setTimeout(function() {
-                    $.ajax({
+                    dx.core.ajax.ajaxCall({
                         type: 'GET',
                         dataType: 'json',
                         url: '/webapi/container/CONTAINER-1',
@@ -184,7 +179,7 @@ describe('ApiServer', function() {
                 }, 2);
             }
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -229,7 +224,7 @@ describe('ApiServer', function() {
 
         it('is delivered from createObjects', function() {
             clock.install();
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
@@ -255,7 +250,7 @@ describe('ApiServer', function() {
             }], true);
 
             clock.install();
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
@@ -281,7 +276,7 @@ describe('ApiServer', function() {
             }], true);
 
             clock.install();
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',

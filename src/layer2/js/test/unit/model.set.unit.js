@@ -17,7 +17,7 @@
  */
 
 /*eslint-env jasmine */
-/*global dx, Backbone, jQuery, _, $ */
+/*global dx, Backbone, _, $ */
 
 'use strict';
 
@@ -826,7 +826,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             });
 
             it('is rejected if asked to change to an incompatible type', function() {
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -842,7 +842,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
 
             it('is rejected if trying to set its type to a supertype', function() {
                 var model = target._newServerModel('CType');
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -857,7 +857,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             });
 
             it('is allowed if the type hasn\'t been fully fetched yet and this is a server model', function() {
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {
@@ -875,7 +875,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             });
 
             it('is rejected if the model has been fetched', function() {
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {type: 'CType', age: 134}
@@ -925,7 +925,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 model = target._newServerModel('PType');
                 expect(model.$anOp).toBeUndefined();
 
-                spyOn(jQuery, 'ajax').and.callFake(function(options) {
+                spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
                     options.success({
                         type: 'OKResult',
                         result: {type: 'CType', reference: 'CHILD-1'}
@@ -1024,7 +1024,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
                 dx.core.data._initCache(target);
                 dx.core.data._generateModelConstructors(schemas, target);
                 model = target._newServerModel('PType');
-                ajaxSpy = spyOn(jQuery, 'ajax');
+                ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
             });
 
             it('changes a super type to a subtype', function() {
