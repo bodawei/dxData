@@ -218,14 +218,6 @@ describe('AbstractServer', function() {
             expect(server._handleResult.calls.mostRecent().args[0].statusCode).toEqual(200);
         });
 
-        it('can issue a request with url as the first parameter', function() {
-            dx.core.ajax.ajaxCall('/webapi/container/CONTAINER-1', {
-                type: 'get'
-            });
-
-            expect(server._handleResult.calls.mostRecent().args[0].statusCode).toEqual(200);
-        });
-
         it('defaults to GET requests', function() {
             dx.core.ajax.ajaxCall({
                 url: '/webapi/container/CONTAINER-1'

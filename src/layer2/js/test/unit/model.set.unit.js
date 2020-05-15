@@ -215,7 +215,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             expect(model.get('boolProp')).toEqual(true);
             expect(model.get('numProp')).toEqual(3.4);
             expect(model.get('intProp')).toEqual(12);
-            expect(model.get('nullProp')).toEqual(null);
+            expect(model.get('nullProp')).toEqual(undefined);
 
             model.set('numProp', 12);
             expect(model.get('numProp')).toEqual(12);
@@ -266,7 +266,7 @@ describe('dx.core.data.generateModelConstructors - set', function() {
             });
 
             model.set('stringProp', null);
-            expect(model.get('stringProp')).toEqual(null);
+            expect(model.get('stringProp')).toEqual(undefined);
         });
 
         it('accepts setting a primitive attribute to undefined', function() {

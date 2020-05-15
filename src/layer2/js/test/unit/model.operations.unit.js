@@ -912,7 +912,7 @@ describe('dx.core.data.generateModelConstructors - operations', function() {
 
             model.$optionalPayload();
 
-            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(null);
+            expect(ajaxSpy.calls.mostRecent().args[0].data).toEqual(undefined);
         });
 
         it('will accept a call with a payload when the schema says payload is not required', function() {

@@ -270,7 +270,7 @@ describe('dx.core.data.generateModelConstructors', function() {
 
         it('sets the specified default values for simple types (null, string, boolean, integer, number)', function() {
            expect(model.get('strDef')).toEqual('IAmDefault');
-           expect(model.get('nullDef')).toEqual(null);
+           expect(model.get('nullDef')).toEqual(undefined);
            expect(model.get('boolDef')).toEqual(true);
            expect(model.get('intDef')).toEqual(45);
            expect(model.get('numDef')).toEqual(84.5);
@@ -774,7 +774,7 @@ describe('dx.core.data.generateModelConstructors', function() {
 
             model.unset('sibling');
 
-            expect(model.get('sibling')).toEqual(null);
+            expect(model.get('sibling')).toEqual(undefined);
         });
 
         it('will unset a reference attribute when specified with $reference', function() {
@@ -783,7 +783,7 @@ describe('dx.core.data.generateModelConstructors', function() {
 
             model.unset('$sibling');
 
-            expect(model.get('sibling')).toEqual(null);
+            expect(model.get('sibling')).toEqual(undefined);
         });
     });
 
