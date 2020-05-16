@@ -156,12 +156,25 @@ dx.core.ajax = {
      * wins. in this regard, handlers act like a stack. However, any server can
      * remove itself from the stack at any time, even if it isn't the topmost.
      */
-    _handlers: [{
+    _handlers: [],
+    _baseHandlerForReset: {
         owner: 'dx.baseHandler',
         handler: function (config) {
             return $.ajax(config);
         }
-    }],
+    },
+    // Used by the ApiServer to be able to bypass any ajax handlers set in place
+    getAjaxBaseHandler: function (owner) {
+        return this._handlers[0];
+    },
+    // Allows one to replace the default base handler
+    setAjaxBaseHandler: function (owner, handler) {
+        this._baseHandlerForReset = {
+            owner,
+            handler
+        };
+        this._handlers[0] = this._baseHandlerForReset;
+    },
     hasAjaxHandler: function (owner) {
         var topIndex = this._handlers.length - 1;
 
@@ -196,12 +209,7 @@ dx.core.ajax = {
         throw new Error('That handler has not been registered.')
     },
     resetAjaxHandlers: function () {
-        this._handlers = [{
-            owner: 'dx.baseHandler',
-            handler: function (config) {
-                return $.ajax(config);
-            }
-        }];
+        this._handlers = [this._baseHandlerForReset];
     },
     // This is the main entrypoint to making ajax calls.  It will use
     // the topmost handler to actually do the call.
@@ -238,6 +246,7 @@ dx.core.ajax = {
     }
 };
 
+dx.core.ajax.resetAjaxHandlers();
 Backbone.ajax = function() {
     return dx.core.ajax.ajaxCall.apply(dx.core.ajax, arguments);
 }

@@ -435,7 +435,7 @@ describe('dx.core.data filters', function() {
                 });
                 var model = target._newClientModel('WithPaging');
 
-                target._filters._uberFilter(collection, model, function (result) {
+                target._filters._uberFilter(notificationListener, model, function (result) {
                     expect(result).toBe(target._filters.INCLUDE);
                     done();
                 });

@@ -116,7 +116,7 @@ describe('dx.core.data._cache', function() {
         };
         dx.core.data._generateModelConstructors(schemas, target);
         dx.core.data._generateCollectionConstructors(schemas, target);
-        ajaxSpy = spyOn($, 'ajax');
+        ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
     });
 
     describe('getCachedSingleton()', function() {

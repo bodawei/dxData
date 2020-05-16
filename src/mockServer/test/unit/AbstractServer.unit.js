@@ -591,7 +591,9 @@ describe('AbstractServer', function() {
             dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
             expect(dx.debug).not.toHaveBeenCalled();
@@ -601,7 +603,9 @@ describe('AbstractServer', function() {
             dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
             expect(dx.debug.calls.argsFor(0)[0])
@@ -613,14 +617,18 @@ describe('AbstractServer', function() {
             dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
             server.debug = true;
             dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
             expect(dx.debug.calls.argsFor(0)[0])

@@ -221,25 +221,22 @@ function deliverResult(server, result) {
 
 function invokeCallbacks(server, result, status, errorObject) {
     var xhr = new PseudoXhr(result);
-    var count = 0;
     var callbacks = [].concat(result.status);
     if (status === 'success') {
         _.each(callbacks.concat(result.success), function(cb) {
             if (cb) {
                 cb(result.data, 'success', xhr);
-                count++;
             }
         });
     } else {
         _.each(callbacks.concat(result.error), function(cb) {
             if (cb) {
                 cb(xhr, status, errorObject || xhr.statusText);
-                count++;
             }
         });
     }
 
-    server._reportDebug(result.callId, (count > 0) ? 'Deliver ' + status : 'No callbacks');
+    server._reportDebug(result.callId, 'Deliver ' + status);
 }
 
 /*

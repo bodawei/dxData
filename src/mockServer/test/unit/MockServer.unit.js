@@ -123,7 +123,8 @@ describe('MockServer', function() {
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-BOGUS',
                     dataType: 'json',
-                    success: successSpy
+                    success: successSpy,
+                    error: function() {},
                 });
                 server.respond();
 
@@ -187,7 +188,8 @@ describe('MockServer', function() {
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-1',
                     dataType: 'json',
-                    error: errorSpy
+                    error: errorSpy,
+                    success: function() {},
                 });
                 server.respond();
 
@@ -225,7 +227,8 @@ describe('MockServer', function() {
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-199',
                     dataType: 'json',
-                    error: errorSpy
+                    error: errorSpy,
+                    success: function() {},
                 });
                 server.respond();
 
@@ -242,7 +245,8 @@ describe('MockServer', function() {
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-99',
                     dataType: 'json',
-                    error: errorSpy
+                    error: errorSpy,
+                    success: function() {},
                 });
                 server.respond();
 
@@ -254,7 +258,8 @@ describe('MockServer', function() {
                     type: 'GET',
                     url: '/webapi/container/CONTAINER-99',
                     dataType: 'json',
-                    error: errorSpy
+                    error: errorSpy,
+                    success: function() {},
                 });
                 server.respond();
 
@@ -273,7 +278,9 @@ describe('MockServer', function() {
                     url: '/webapi/container/CONTAINER-BOGUS',
                     statusCode: {
                         404: errorSpy
-                    }
+                    },
+                    success: function() {},
+                    error: function() {},
                 });
                 server.respond();
 
@@ -292,7 +299,8 @@ describe('MockServer', function() {
                     url: '/webapi/container/CONTAINER-1',
                     statusCode: {
                         200: successSpy
-                    }
+                    },
+                    success: function() {},
                 });
                 server.respond();
 
@@ -377,7 +385,8 @@ describe('MockServer', function() {
             expect(function() {
                 dx.core.ajax.ajaxCall({
                     type: 'POST',
-                    url : '/webapi/container'
+                    url : '/webapi/container',
+                    success: function() {},
                 });
             }).toDxFail('The requested resource is not available: POST:/webapi/container');
         });
@@ -386,7 +395,8 @@ describe('MockServer', function() {
             expect(function() {
                 dx.core.ajax.ajaxCall({
                     type: 'POST',
-                    url : '/boguspie'
+                    url : '/boguspie',
+                    success: function() {},
                 });
             }).toDxFail('The requested resource is not available: POST:/boguspie');
         });
@@ -490,7 +500,8 @@ describe('MockServer', function() {
             dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: function() {},
             });
             var ajaxSpy = jasmine.createSpy('ajaxSpy');
 
@@ -655,12 +666,16 @@ describe('MockServer', function() {
                 dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
-                    url: '/webapi/container/CONTAINER-1'
+                    url: '/webapi/container/CONTAINER-1',
+                    success: function() {},
+                    error: function() {}
                 });
                 dx.core.ajax.ajaxCall({
                     type: 'GET',
                     dataType: 'json',
-                    url: '/webapi/container/CONTAINER-2'
+                    url: '/webapi/container/CONTAINER-2',
+                    success: function() {},
+                    error: function() {}
                 });
 
                 server.respond(filterSpy.and.callFake(function(response) {
@@ -704,7 +719,8 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
             server.respond();
 
@@ -717,7 +733,8 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
             server.respond();
 
@@ -726,7 +743,8 @@ describe('MockServer', function() {
                 dataType: 'json',
                 url: '/webapi/container',
                 data: '{"type":"Container","name":"newContainer"}',
-                success: createSuccessSpy
+                success: createSuccessSpy,
+                error: function() {}
             });
             server.respond();
 
@@ -748,14 +766,17 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
 
             dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
-                data: '{"type":"Container","name":"newContainer"}'
+                data: '{"type":"Container","name":"newContainer"}',
+                success: function() {},
+                error: function() {}
             });
             server.respond();
 
@@ -767,14 +788,17 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
 
             dx.core.ajax.ajaxCall({
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
-                data: '{"type":"Container","name":"newContainer"}'
+                data: '{"type":"Container","name":"newContainer"}',
+                success: function() {},
+                error: function() {}
             });
             server.respond();
 
@@ -782,7 +806,9 @@ describe('MockServer', function() {
                 type: 'POST',
                 dataType: 'json',
                 url: '/webapi/container',
-                data: '{"type":"Container","name":"another container"}'
+                data: '{"type":"Container","name":"another container"}',
+                success: function() {},
+                error: function() {}
             });
             server.respond();
 
@@ -796,7 +822,8 @@ describe('MockServer', function() {
                 dataType: 'json',
                 url: '/webapi/container',
                 data: '{"type":"Container","name":"newContainer"}',
-                success: createSuccessSpy
+                success: createSuccessSpy,
+                error: function() {}
             });
             server.respond();
             var containerRef = createSuccessSpy.calls.mostRecent().args[0].result;
@@ -805,7 +832,8 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
             server.respond();
 
@@ -825,7 +853,8 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
 
             server.createObjects([{
@@ -845,7 +874,8 @@ describe('MockServer', function() {
                 url: '/webapi/notification',
                 success: function() {
                     resultOrder += '1';
-                }
+                },
+                error: function() {}
             });
 
             dx.core.ajax.ajaxCall({
@@ -855,7 +885,8 @@ describe('MockServer', function() {
                 data: '{"type":"Container","name":"newContainer"}',
                 success: function() {
                     resultOrder += '2';
-                }
+                },
+                error: function() {}
             });
             server.respond();
 
@@ -869,13 +900,15 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
             dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: secondNotificationSpy
+                success: secondNotificationSpy,
+                error: function() {}
             });
             server.respond();
 
@@ -884,7 +917,8 @@ describe('MockServer', function() {
                 dataType: 'json',
                 url: '/webapi/container',
                 data: '{"type":"Container","name":"newContainer"}',
-                success: createSuccessSpy
+                success: createSuccessSpy,
+                error: function() {}
             });
             server.respond();
 
@@ -952,7 +986,8 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
-                success: function() {}
+                success: function() {},
+                error: function() {}
             });
 
             server.respond();
@@ -965,7 +1000,6 @@ describe('MockServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/notification',
-                success: function() {}
             });
 
             dx.core.ajax.ajaxCall({
@@ -973,25 +1007,12 @@ describe('MockServer', function() {
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
                 data: '{"name":"testName"}',
-                success: function() {}
             });
 
             server.respond();
 
-            expect(dx.debug.calls.argsFor(3)[0]).toEqual('Call 2: Deliver success');
-            expect(dx.debug.calls.argsFor(5)[0]).toEqual('Call 1: Deliver success');
-        });
-
-        it('logs a message on successful respond but no callbacks', function() {
-            dx.core.ajax.ajaxCall({
-                type: 'GET',
-                dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
-            });
-
-            server.respond();
-
-            expect(dx.debug.calls.argsFor(2)[0]).toEqual('Call 1: No callbacks');
+            expect(dx.debug.calls.argsFor(5)[0]).toEqual('Call 2: Deliver success');
+            expect(dx.debug.calls.argsFor(7)[0]).toEqual('Call 1: Deliver success');
         });
 
     });

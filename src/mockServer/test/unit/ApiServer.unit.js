@@ -81,7 +81,8 @@ describe('ApiServer', function() {
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
             clock.tick(1);
 
@@ -90,9 +91,8 @@ describe('ApiServer', function() {
         });
 
         it('calls the the real ajax function when the url is not known', function() {
-            var jQueryAjax = dx.core.ajax.ajaxCall;
-            var mockAjax = jasmine.spyOn('mockAjax');
-            dx.core.ajax.ajaxCall = mockAjax;
+            var baseHandler = dx.core.ajax.getAjaxBaseHandler();
+            var mockAjax = spyOn(baseHandler, 'handler');
             var server = new dx.test.ApiServer(dx.test.CORE_SCHEMAS);
             server.start();
 
@@ -102,9 +102,8 @@ describe('ApiServer', function() {
                 success: function() {}
             });
 
-            expect(mockAjax.calls.mostRecent().args[0]).toEqual('/some/wonderful/resource');
+            expect(mockAjax.calls.mostRecent().args[0].url).toEqual('/some/wonderful/resource');
             server.stop();
-            dx.core.ajax.ajaxCall = jQueryAjax;
         });
 
     });
@@ -143,7 +142,8 @@ describe('ApiServer', function() {
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             expect(successSpy).not.toHaveBeenCalled();
@@ -157,7 +157,8 @@ describe('ApiServer', function() {
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
             clock.tick(1);
 
@@ -174,7 +175,8 @@ describe('ApiServer', function() {
                         type: 'GET',
                         dataType: 'json',
                         url: '/webapi/container/CONTAINER-1',
-                        success: secondSuccess
+                        success: secondSuccess,
+                        error: function() {},
                     });
                 }, 2);
             }
@@ -183,7 +185,8 @@ describe('ApiServer', function() {
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
-                success: firstSuccess
+                success: firstSuccess,
+                error: function() {},
             });
 
             clock.tick(1);
@@ -191,7 +194,7 @@ describe('ApiServer', function() {
             expect(firstSuccess).toHaveBeenCalled();
             expect(secondSuccess).not.toHaveBeenCalled();
 
-            clock.tick(1);
+            clock.tick(2);
 
             expect(firstSuccess).toHaveBeenCalled();
             expect(secondSuccess).toHaveBeenCalled();
@@ -228,7 +231,8 @@ describe('ApiServer', function() {
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             server.createObjects([{
@@ -254,7 +258,8 @@ describe('ApiServer', function() {
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             server.updateObjects([{
@@ -280,7 +285,8 @@ describe('ApiServer', function() {
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             server.deleteObjects([{
