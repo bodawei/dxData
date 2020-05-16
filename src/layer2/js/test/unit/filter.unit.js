@@ -26,6 +26,10 @@ describe('dx.core.data filters', function() {
     var model;
     var filterResult;
 
+    beforeEach(() => {
+        filterResult = undefined;
+    })
+
     function resultHandler(value) {
         filterResult = value;
     }
@@ -96,7 +100,13 @@ describe('dx.core.data filters', function() {
 
             target._filters._uberFilter(collection, model, resultHandler);
 
-            expect(filterResult).toBe(target._filters.INCLUDE);
+            waitsFor(function() {
+                return filterResult === target._filters.INCLUDE;
+            }, "filter result should change", 75);
+          
+            runs(function() {
+                expect(filterResult).toBe(target._filters.INCLUDE);
+            });
         });
 
         it('will filter a rooted model', function() {
@@ -109,7 +119,13 @@ describe('dx.core.data filters', function() {
 
             target._filters._uberFilter(collection, model, resultHandler);
 
-            expect(filterResult).toBe(target._filters.INCLUDE);
+            waitsFor(function() {
+                return filterResult === target._filters.INCLUDE;
+            }, "filter result should change", 75);
+          
+            runs(function() {
+                expect(filterResult).toBe(target._filters.INCLUDE);
+            });
         });
 
         it('will filter a child of a rooted model', function() {
@@ -122,7 +138,13 @@ describe('dx.core.data filters', function() {
 
             target._filters._uberFilter(collection, model, resultHandler);
 
-            expect(filterResult).toBe(target._filters.INCLUDE);
+            waitsFor(function() {
+                return filterResult === target._filters.INCLUDE;
+            }, "filter result should change", 75);
+          
+            runs(function() {
+                expect(filterResult).toBe(target._filters.INCLUDE);
+            });
         });
 
         it('(whitebox) will throw an error if asked to filter an object that has no root', function() {
@@ -205,7 +227,13 @@ describe('dx.core.data filters', function() {
 
                     target._filters._uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                    waitsFor(function() {
+                        return filterResult === target._filters.INCLUDE;
+                    }, "filter result should change", 75);
+                  
+                    runs(function() {
+                        expect(filterResult).toBe(target._filters.INCLUDE);
+                    });
                 });
 
                 it('excludes an object when the values don\'t match', function() {
@@ -220,7 +248,13 @@ describe('dx.core.data filters', function() {
 
                     target._filters._uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    waitsFor(function() {
+                        return filterResult === target._filters.EXCLUDE;
+                    }, "filter result should change", 75);
+                  
+                    runs(function() {
+                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    });
                 });
             });
 
@@ -260,7 +294,13 @@ describe('dx.core.data filters', function() {
 
                     target._filters._uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                    waitsFor(function() {
+                        return filterResult === target._filters.INCLUDE;
+                    }, "filter result should change", 75);
+                  
+                    runs(function() {
+                        expect(filterResult).toBe(target._filters.INCLUDE);
+                    });
                 });
 
                 it('excludes an object when the values don\'t match', function() {
@@ -275,7 +315,13 @@ describe('dx.core.data filters', function() {
 
                     target._filters._uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    waitsFor(function() {
+                        return filterResult === target._filters.EXCLUDE;
+                    }, "filter result should change", 75);
+                  
+                    runs(function() {
+                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    });
                 });
             });
 
@@ -364,7 +410,13 @@ describe('dx.core.data filters', function() {
                     target._filters._uberFilter(collection, model, resultHandler);
                     dx.test.mockServer.respond();
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    waitsFor(function() {
+                        return filterResult === target._filters.EXCLUDE;
+                    }, "filter result should change", 75);
+                  
+                    runs(function() {
+                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    });
                 });
 
                 it('includes an object when the values match', function() {
@@ -379,7 +431,13 @@ describe('dx.core.data filters', function() {
 
                     target._filters._uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.INCLUDE);
+                    waitsFor(function() {
+                        return filterResult === target._filters.INCLUDE;
+                    }, "filter result should change", 75);
+                  
+                    runs(function() {
+                        expect(filterResult).toBe(target._filters.INCLUDE);
+                    });
                 });
 
                 it('excludes an object when the values don\'t match', function() {
@@ -394,7 +452,13 @@ describe('dx.core.data filters', function() {
 
                     target._filters._uberFilter(collection, model, resultHandler);
 
-                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                    waitsFor(function() {
+                        return filterResult === target._filters.EXCLUDE;
+                    }, "filter result should change", 75);
+                  
+                    runs(function() {
+                        expect(filterResult).toBe(target._filters.EXCLUDE);
+                    });
                 });
             });
         });
@@ -433,7 +497,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(notificationListener, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.INCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.INCLUDE);
+                });
             });
 
             it('does not return UNKNOWN if the schema does not have paging-related query parameters', function() {
@@ -467,7 +537,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.INCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.INCLUDE);
+                });
             });
 
             it('does not return UNKNOWN if pageSize is 0', function() {
@@ -616,7 +692,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.INCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.INCLUDE);
+                });
             });
 
             it('includes an object when it occurs on the toDate and inequalityType is NON-STRICT', function() {
@@ -635,7 +717,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.INCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.INCLUDE);
+                });
             });
 
             it('excludes an object when it occurs on the fromDate and inequalityType is STRICT', function() {
@@ -655,7 +743,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.EXCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                });
             });
 
             it('excludes an object when it occurs on the toDate and inequalityType is STRICT', function() {
@@ -675,7 +769,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.EXCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                });
             });
 
             it('follows "mapsTo" chains to check the correct attribute on the object', function() {
@@ -747,7 +847,13 @@ describe('dx.core.data filters', function() {
                 target._filters._uberFilter(collection, model, resultHandler);
                 model.trigger('ready');
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.INCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.INCLUDE);
+                });
             });
 
             it('handles alternate names "startDate" and "endDate"', function() {
@@ -767,7 +873,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.INCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.INCLUDE);
+                });
             });
 
             it('includes an object when it occurs between the from and toDate', function() {
@@ -787,7 +899,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.INCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.INCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.INCLUDE);
+                });
             });
 
             it('excludes an object when it occurs before the fromDate', function() {
@@ -806,7 +924,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.EXCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                });
             });
 
             it('excludes an object when it occurs after the toDate', function() {
@@ -825,7 +949,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.EXCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                });
             });
 
             it('excludes an object when the from and the to date are reversed', function() {
@@ -845,7 +975,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.EXCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                });
             });
 
             it('excludes an object with no date', function() {
@@ -864,7 +1000,13 @@ describe('dx.core.data filters', function() {
 
                 target._filters._uberFilter(collection, model, resultHandler);
 
-                expect(filterResult).toBe(target._filters.EXCLUDE);
+                waitsFor(function() {
+                    return filterResult === target._filters.EXCLUDE;
+                }, "filter result should change", 75);
+              
+                runs(function() {
+                    expect(filterResult).toBe(target._filters.EXCLUDE);
+                });
             });
         });
     });

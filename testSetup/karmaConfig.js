@@ -67,7 +67,7 @@ module.exports = function(config) {
         colors: true,               // enable / disable colors in the output (reporters and logs)
         logLevel: config.LOG_ERROR, // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
         autoWatch: false,           // enable / disable watching file and executing tests whenever any file changes
-        browsers: ['PhantomJS'],
+        browsers: ['Chrome'],
         captureTimeout: 20000,      // If browser does not capture in given timeout [ms], kill it
         // https://github.com/karma-runner/karma-ie-launcher/issues/8
         browserDisconnectTimeout: 10000,

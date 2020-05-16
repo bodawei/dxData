@@ -1918,9 +1918,18 @@ describe('dx.core.data._generateCollectionConstructors', function() {
             it('will add the model automatically because there are no query parameters possible', function() {
                 var client = target._newClientModel('WithMapsTo');
                 client.set('name', 'fred');
-                collection._dxAddOrRemove(client);
 
-                expect(collection.length).toBe(2);
+                runs(function() {
+                    collection._dxAddOrRemove(client);
+                });
+
+                waitsFor(function() {
+                    return collection.length > 1;
+                }, "the collection should be added to", 75);
+              
+                runs(function() {
+                    expect(collection.length).toBe(2);
+                });
             });
 
         });
