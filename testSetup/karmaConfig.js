@@ -74,7 +74,7 @@ module.exports = function(config) {
         browserDisconnectTimeout: 10000,
         browserDisconnectTolerance: 2,
         browserNoActivityTimeout: 10000,
-        singleRun: true,             // if true, it capture browsers, run tests and exit
+        singleRun: false,             // if true, it capture browsers, run tests and exit
     });
 };
 
