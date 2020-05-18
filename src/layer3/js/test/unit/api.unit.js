@@ -663,7 +663,7 @@ describe('dx.core.data', function() {
     });
 
     describe('Promised ServerModels', function() {
-        var serverModel, serverSingleton, successSpy, errorSpy;
+        var serverModel, successSpy, errorSpy;
         var client;
         var server;
 
@@ -837,6 +837,7 @@ describe('dx.core.data', function() {
 
                 it('cleans up "error" event handler in success case', function() {
                     var readySpy = jasmine.createSpy('readySpy');
+                    var serverSingleton;
                     prepareServerSingleton();
                     client.getServerSingletonPromise('SingletonType').done(function(result) {
                         serverSingleton = result;
@@ -850,13 +851,17 @@ describe('dx.core.data', function() {
                 });
 
                 it('cleans up event listeners in the error case', function() {
+                    var serverSingleton;
                     var rejectSpy = jasmine.createSpy('reject');
                     spyOn(dx, 'warn'); // suppress message from server
                     server.addStandardOpHandler('SingletonType', 'read', function(payload, Result) {
                         return new Result.ErrorResult(404);
                     });
 
-                    client.getServerSingletonPromise('SingletonType').fail(rejectSpy);
+                    client.getServerSingletonPromise('SingletonType').fail(function(result) {
+                        serverSingleton = result;
+                        rejectSpy();
+                    });
                     server.respond();
 
                     expect(rejectSpy).toHaveBeenCalled();

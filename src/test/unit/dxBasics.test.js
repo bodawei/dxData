@@ -6,6 +6,10 @@
 
 describe('dx.core.ajax.', function() {
 
+    beforeEach(function () {
+        dx.core.ajax.resetAjaxHandlers();
+    });
+
     afterEach(function () {
         dx.core.ajax.resetAjaxHandlers();
     });
@@ -75,7 +79,7 @@ describe('dx.core.ajax.', function() {
     describe('registerAjaxHandler()', function() {
 
         it('adds a handler to the top of the handler stack', function() {
-            var owner = 'Test';
+            var owner = 'top of stack';
             var handler = function() {};
 
             dx.core.ajax.registerAjaxHandler(owner, handler);
@@ -188,9 +192,7 @@ describe('dx.core.ajax.', function() {
 
         it('replaces the bottom ajax handler', function() {
             const temp = dx.core.ajax.getAjaxBaseHandler();
-            var handler = function(args) {
-                console.log('wtf', args)
-            };
+            var handler = function(args) {};
             dx.core.ajax.registerAjaxHandler(1, handler);
             dx.core.ajax.registerAjaxHandler(2, handler);
             dx.core.ajax.registerAjaxHandler(3, handler);
