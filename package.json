@@ -28,7 +28,7 @@
     "karma-junit-reporter": "^1.2.0",
     "karma-opera-launcher": "^1.0.0",
     "karma-phantomjs-launcher": "~0.1.2",
-    "karma-safari-launcher": "^1.0.0",
+    "karma-safari-launcher": "^1.0.0"
   },
   "repository": {
     "type": "git",
