@@ -6,7 +6,11 @@
   "copyright": "Copyright (c) 2012, 2015 by Delphix. All rights reserved.",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "karma start testSetup/karmaConfig.js "
+    "build": "npm run clean; npm run build:dxData; npm run build:mockServer",
+    "build:dxData": "browserify --debug src/dxBasics.js src/layer*/js/*.js | exorcist dist/dxData.js.map > dist/dxData.js",
+    "build:mockServer": "browserify --debug src/mockServer/*.js | exorcist dist/dxDataMockServer.js.map > dist/dxDataMockServer.js",
+    "clean": "rm -rf dist/*",
+    "test": "karma start testSetup/karmaConfig.js"
   },
   "dependencies": {
     "backbone": "1.1.2",
@@ -14,10 +18,7 @@
     "underscore": "^1.7.0"
   },
   "devDependencies": {
-    "grunt-browserify": "^4.0.0",
-    "grunt-cli": "^0.1.x",
-    "grunt-extract-sourcemap": "^0.1.16",
-    "grunt-karma": "0.9.0",
+    "exorcist": "^1.0.1",
     "jasmine-core": "^3.5.0",
     "karma": "^5.0.7",
     "karma-chrome-launcher": "^3.1.0",
