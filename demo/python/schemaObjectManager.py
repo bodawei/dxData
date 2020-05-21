@@ -29,6 +29,10 @@ import re
 def doSchemaObjectOperation(context, path, httpMode, payload):
     """ do something """
 
+    queryIndex = path.find("?")
+    if queryIndex is not -1:
+        path = path[:queryIndex]
+
     for key in rootMapping.keys():
         result = re.search('^' + key + '(/([^/]+))?(/([^/]+))?$', path)
         if result is not None:

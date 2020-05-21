@@ -28,14 +28,13 @@ showing up in their application.
 2. Read the source!
 
 ## How to run the demo
-1. Install [node.js](http://nodejs.org)
-2. Install [Python 2.7.x](https://www.python.org/downloads/)
-3. Run `npm install -g grunt-cli` to install [grunt-cli](http://gruntjs.com/getting-started)
+1. Install [node.js](http://nodejs.org) (version 10 or later)
+2. Install [Python 2.7.x](https://www.python.org/downloads/)  (it may already be installed for you)
 3. `cd demo`  (from the directory this README is in)
 4. `npm install`
-5. `grunt`
+5. `npm run build`
   * For Windows users, see [Does Grunt work on Windows](http://gruntjs.com/frequently-asked-questions) (short answer: yes, but you may want to avoid cygwin).
-5. `grunt server` to start the server
+5. `npm start` to start the server
 6. Visit http://localhost:8888 from one (or, preferably, multiple) browsers
 
 ## Using the demo
