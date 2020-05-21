@@ -147,6 +147,72 @@ dx.namespace('dx.core.ajax');
  *    config - $.ajax configuration object.
  */
 dx.core.ajax = {
+    /*
+     * We support the ability to replace what function is actually performing the
+     * necessary ajax calls.  This is only useful, in practice, for the mock servers
+     * so they can intercept outgoing calls and respond to them. We allow for multiple
+     * mock servers to be installed simultaneously, however only one can respond to
+     * a particular request, and the most recent server that took over the calls
+     * wins. in this regard, handlers act like a stack. However, any server can
+     * remove itself from the stack at any time, even if it isn't the topmost.
+     */
+    _handlers: [],
+    _baseHandlerForReset: {
+        owner: 'dx.baseHandler',
+        handler: function (config) {
+            return $.ajax(config);
+        }
+    },
+    // Used by the ApiServer to be able to bypass any ajax handlers set in place
+    getAjaxBaseHandler: function (owner) {
+        return this._handlers[0];
+    },
+    // Allows one to replace the default base handler
+    setAjaxBaseHandler: function (owner, handler) {
+        this._baseHandlerForReset = {
+            owner,
+            handler
+        };
+        this._handlers[0] = this._baseHandlerForReset;
+    },
+    hasAjaxHandler: function (owner) {
+        var topIndex = this._handlers.length - 1;
+
+        for (let index = topIndex; index > 0; index --) {
+            var item = this._handlers[index];
+
+            if (item.owner === owner) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+    registerAjaxHandler: function(owner, handler) {
+        this._handlers.push({
+            owner: owner,
+            handler: handler
+        });
+    },
+    removeAjaxHandler: function(owner) {
+        var topIndex = this._handlers.length - 1;
+
+        for (let index = topIndex; index > 0; index --) {
+            var item = this._handlers[index];
+
+            if (item.owner === owner) {
+                this._handlers.splice(index , 1);
+                return;
+            }
+        }
+
+        throw new Error('That handler has not been registered.')
+    },
+    resetAjaxHandlers: function () {
+        this._handlers = [this._baseHandlerForReset];
+    },
+    // This is the main entrypoint to making ajax calls.  It will use
+    // the topmost handler to actually do the call.
     ajaxCall: function(config) {
         if (config && config.url) {
             config.type = config.type || 'GET';
@@ -168,7 +234,9 @@ dx.core.ajax = {
             config.cache = config.cache || false;
 
             try {
-                $.ajax(config);
+                var topIndex = this._handlers.length - 1;
+                var handlerData = this._handlers[topIndex];
+                handlerData.handler(config);
             } catch (e) {
                 dx.fail(e.message);
             }
@@ -177,5 +245,10 @@ dx.core.ajax = {
         }
     }
 };
+
+dx.core.ajax.resetAjaxHandlers();
+Backbone.ajax = function() {
+    return dx.core.ajax.ajaxCall.apply(dx.core.ajax, arguments);
+}
 
 })();

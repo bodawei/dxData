@@ -28,6 +28,7 @@ files = [
     'node_modules/underscore/underscore.js',
     'node_modules/backbone/backbone.js',
     'testSetup/jasmineSetup.js',
+    'src/test/**/*.js',
     'src/dxBasics.js',
     'src/layer1/**/*.js',
     'src/layer2/**/*.js',
@@ -68,7 +69,7 @@ module.exports = function(config) {
         logLevel: config.LOG_ERROR, // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
         autoWatch: false,           // enable / disable watching file and executing tests whenever any file changes
         browsers: ['Chrome'],
-        captureTimeout: 20000,      // If browser does not capture in given timeout [ms], kill it
+        captureTimeout: 20000,      // If browser does not capture in given timeout [ms], kill itse
         // https://github.com/karma-runner/karma-ie-launcher/issues/8
         browserDisconnectTimeout: 10000,
         browserDisconnectTolerance: 2,

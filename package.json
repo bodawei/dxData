@@ -6,27 +6,30 @@
   "copyright": "Copyright (c) 2012, 2015 by Delphix. All rights reserved.",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "karma start testSetup/karmaConfig.js "
+    "build": "npm run clean; npm run build:dxData; npm run build:mockServer",
+    "build:dxData": "browserify --debug src/dxBasics.js src/layer*/js/*.js | exorcist dist/dxData.js.map > dist/dxData.js",
+    "build:mockServer": "browserify --debug src/mockServer/*.js | exorcist dist/dxDataMockServer.js.map > dist/dxDataMockServer.js",
+    "clean": "rm -rf dist/*",
+    "test": "karma start testSetup/karmaConfig.js"
   },
   "dependencies": {
-    "phantomjs": "~1.9.7-4",
-    "karma": "~0.12.16",
-    "karma-jasmine": "~0.1.5",
-    "karma-firefox-launcher": "~0.1.3",
-    "karma-safari-launcher": "~0.1.1",
-    "karma-opera-launcher": "~0.1.0",
-    "karma-phantomjs-launcher": "~0.1.2",
-    "karma-ie-launcher": "~0.1.5",
-    "karma-chrome-launcher": "~0.1.3",
-    "karma-coverage": "~0.2.1",
-    "karma-junit-reporter": "~0.2.2",
-    "grunt-browserify": "^4.0.0",
-    "grunt-extract-sourcemap": "^0.1.16",
-    "grunt-karma": "0.9.0",
-    "grunt-cli": "^0.1.x",
-    "underscore": "1.7.0",
+    "backbone": "1.1.2",
     "jquery": "3.5.1",
-    "backbone": "1.1.2"
+    "underscore": "^1.7.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.1",
+    "exorcist": "^1.0.1",
+    "jasmine-core": "^3.5.0",
+    "karma": "^5.0.8",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-coverage": "^2.0.2",
+    "karma-firefox-launcher": "^1.3.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-jasmine": "^3.1.1",
+    "karma-junit-reporter": "^2.0.1",
+    "karma-opera-launcher": "^1.0.0",
+    "karma-safari-launcher": "^1.0.0"
   },
   "repository": {
     "type": "git",

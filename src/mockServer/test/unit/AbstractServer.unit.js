@@ -22,18 +22,6 @@
 'use strict';
 
 describe('AbstractServer', function() {
-    var jQueryAjax;
-
-    beforeEach(function() {
-        jQueryAjax = $.ajax;
-    });
-
-    afterEach(function() {
-        if ($.ajax !== jQueryAjax) {
-            $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
-        }
-    });
 
     describe('construction', function() {
 
@@ -76,11 +64,10 @@ describe('AbstractServer', function() {
             server = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
         });
 
-        it('starting replaces the jQuery ajax function', function() {
-            var jQueryAjax = $.ajax;
+        it('starting adds itself to the handler queue', function() {
             server.start();
 
-            expect(jQueryAjax).not.toBe($.ajax);
+            expect(dx.core.ajax.hasAjaxHandler(server)).toEqual(true);
             server.stop();
         });
 
@@ -117,26 +104,14 @@ describe('AbstractServer', function() {
         });
 
         it('restores the jquery ajax function', function() {
-            var jQueryAjax = $.ajax;
             server.start();
 
             server.stop();
 
-            expect(jQueryAjax).toBe($.ajax);
+            expect(dx.core.ajax.hasAjaxHandler(server)).toEqual(false);
         });
 
-        it('restores the jquery ajax function even when our handler is spied upon', function() {
-            var jQueryAjax = $.ajax;
-            server.start();
-
-            spyOn($, 'ajax');
-
-            server.stop();
-
-            expect(jQueryAjax).toBe($.ajax);
-        });
-
-        it('restores the previous $.ajax', function() {
+        it('restores the previous dx.core.ajax.ajaxCall', function() {
             var server2 = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
 
             server.start();
@@ -152,18 +127,6 @@ describe('AbstractServer', function() {
             expect(function() {
                 newServer.stop();
             }).toDxFail('This server has not been started.');
-        });
-
-        it('will throw an error if one tries to stop it out of sequence', function() {
-            var newServer = new dx.test.AbstractServer(dx.test.CORE_SCHEMAS);
-            server.start();
-            newServer.start();
-
-            expect(function() {
-                server.stop();
-            }).toDxFail('This server is not the active $.ajax handler, and so can not be stopped.');
-            newServer.stop();
-            server.stop();
         });
 
     });
@@ -198,43 +161,43 @@ describe('AbstractServer', function() {
         });
 
         it('calls handleResult with the result of the call', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1'
             });
 
-            expect(server._handleResult.mostRecentCall.args[0].statusCode).toEqual(200);
-            expect(server._handleResult.mostRecentCall.args[0].data.result.type).toEqual('Container');
+            expect(server._handleResult.calls.mostRecent().args[0].statusCode).toEqual(200);
+            expect(server._handleResult.calls.mostRecent().args[0].data.result.type).toEqual('Container');
         });
 
         it('adds success handler to Result object', function() {
             var successSpy = jasmine.createSpy('successSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
                 success: successSpy
             });
 
-            expect(server._handleResult.mostRecentCall.args[0].success).toEqual(successSpy);
+            expect(server._handleResult.calls.mostRecent().args[0].success).toEqual(successSpy);
         });
 
         it('adds error handler to Result object', function() {
             var errorSpy = jasmine.createSpy('errorSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
                 error: errorSpy
             });
 
-            expect(server._handleResult.mostRecentCall.args[0].error).toEqual(errorSpy);
+            expect(server._handleResult.calls.mostRecent().args[0].error).toEqual(errorSpy);
         });
 
         it('adds statusCode handler to Result object', function() {
             var successSpy = jasmine.createSpy('successSpy');
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
@@ -243,36 +206,28 @@ describe('AbstractServer', function() {
                 }
             });
 
-            expect(server._handleResult.mostRecentCall.args[0].status).toEqual(successSpy);
+            expect(server._handleResult.calls.mostRecent().args[0].status).toEqual(successSpy);
         });
 
         it('can issue a request even if type is lowercase', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'get',
                 url: '/webapi/container/CONTAINER-1'
             });
 
-            expect(server._handleResult.mostRecentCall.args[0].statusCode).toEqual(200);
-        });
-
-        it('can issue a request with url as the first parameter', function() {
-            $.ajax('/webapi/container/CONTAINER-1', {
-                type: 'get'
-            });
-
-            expect(server._handleResult.mostRecentCall.args[0].statusCode).toEqual(200);
+            expect(server._handleResult.calls.mostRecent().args[0].statusCode).toEqual(200);
         });
 
         it('defaults to GET requests', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 url: '/webapi/container/CONTAINER-1'
             });
 
-            expect(server._handleResult.mostRecentCall.args[0].statusCode).toEqual(200);
+            expect(server._handleResult.calls.mostRecent().args[0].statusCode).toEqual(200);
         });
 
         it('calls nothing if a notification call is made', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url : '/webapi/notification'
             });
@@ -282,7 +237,7 @@ describe('AbstractServer', function() {
         });
 
         it('calls _handleUnknownUrl if a call is made to an invalid URL', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 url : '/webapi/container'
             });
@@ -291,7 +246,7 @@ describe('AbstractServer', function() {
         });
 
         it('calls _handleUnknownUrl trying to post to a url which does not exist', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'POST',
                 url : '/boguspie'
             });
@@ -357,7 +312,7 @@ describe('AbstractServer', function() {
             server.createObjects([{
                 type: 'Container'
             }]);
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
@@ -365,19 +320,19 @@ describe('AbstractServer', function() {
 
             server._processNotifications();
 
-            expect(server._handleResult.mostRecentCall.args[0].statusCode).toEqual(200);
+            expect(server._handleResult.calls.mostRecent().args[0].statusCode).toEqual(200);
         });
 
         it('will respond to all notification calls', function() {
             server.createObjects([{
                 type: 'Container'
             }]);
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
             });
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
@@ -385,7 +340,7 @@ describe('AbstractServer', function() {
 
             server._processNotifications();
 
-            expect(server._handleResult.callCount).toEqual(2);
+            expect(server._handleResult.calls.count()).toEqual(2);
         });
 
         it('clears the notifications when processed', function() {
@@ -393,7 +348,7 @@ describe('AbstractServer', function() {
                 type: 'Container'
             }]);
             dx.test.assert(server.getCollectionLength('Notification')).toEqual(1);
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json'
@@ -419,7 +374,7 @@ describe('AbstractServer', function() {
         it('calls success handler on a 210 status', function() {
             server._deliverResult(result);
 
-            expect(result.success.mostRecentCall.args[1]).toEqual('success');
+            expect(result.success.calls.mostRecent().args[1]).toEqual('success');
         });
 
         it('calls success handler on a 304 status', function() {
@@ -427,7 +382,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.success.mostRecentCall.args[1]).toEqual('success');
+            expect(result.success.calls.mostRecent().args[1]).toEqual('success');
         });
 
         it('calls error handler on a 100 status', function() {
@@ -435,7 +390,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.error.mostRecentCall.args[1]).toEqual('error');
+            expect(result.error.calls.mostRecent().args[1]).toEqual('error');
         });
 
         it('calls error handler on a 300 status', function() {
@@ -443,14 +398,14 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.error.mostRecentCall.args[1]).toEqual('error');
+            expect(result.error.calls.mostRecent().args[1]).toEqual('error');
         });
 
         it('calls status code handler on a 200 status', function() {
             result.status = jasmine.createSpy('200StatusSpy');
             server._deliverResult(result);
 
-            expect(result.status.mostRecentCall.args[1]).toEqual('success');
+            expect(result.status.calls.mostRecent().args[1]).toEqual('success');
         });
 
         it('parses a JSON result if dataType is JSON and return value is a string', function() {
@@ -459,7 +414,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.success.mostRecentCall.args[0]).toEqual({
+            expect(result.success.calls.mostRecent().args[0]).toEqual({
                 one: 1
             });
         });
@@ -470,7 +425,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.success.mostRecentCall.args[2].responseText).toEqual('{ "one": 1 }');
+            expect(result.success.calls.mostRecent().args[2].responseText).toEqual('{ "one": 1 }');
         });
 
         it('calls error handler if ask for JSON data and it can not be parsed', function() {
@@ -479,7 +434,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.error.mostRecentCall.args[1]).toEqual('parsererror');
+            expect(result.error.calls.mostRecent().args[1]).toEqual('parsererror');
         });
 
         it('still calls the 200 status code handler on parse failure', function() {
@@ -489,7 +444,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.status.mostRecentCall.args[1]).toEqual('parsererror');
+            expect(result.status.calls.mostRecent().args[1]).toEqual('parsererror');
         });
 
         it('evals a script if dataType is script', function() {
@@ -508,7 +463,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(result.success.mostRecentCall.args[0]).toEqual('dx._testValue = 1;');
+            expect(result.success.calls.mostRecent().args[0]).toEqual('dx._testValue = 1;');
             delete dx._testValue;
         });
 
@@ -520,7 +475,7 @@ describe('AbstractServer', function() {
 
         //     server._deliverResult(result);
 
-        //     expect(result.error.mostRecentCall.args[1]).toEqual('parsererror');
+        //     expect(result.error.calls.mostRecent().args[1]).toEqual('parsererror');
         // });
 
         // it('does not call success handler if script can not be parsed', function() {
@@ -539,7 +494,7 @@ describe('AbstractServer', function() {
 
                 server._deliverResult(result);
 
-                expect(result.success.mostRecentCall.args[2].responseText)
+                expect(result.success.calls.mostRecent().args[2].responseText)
                     .toEqual('{"one":1}');
             });
 
@@ -553,7 +508,7 @@ describe('AbstractServer', function() {
 
                 server._deliverResult(result);
 
-                expect(result.success.mostRecentCall.args[2].getResponseHeader('Content-Type'))
+                expect(result.success.calls.mostRecent().args[2].getResponseHeader('Content-Type'))
                     .toEqual('application/json');
             });
 
@@ -562,7 +517,7 @@ describe('AbstractServer', function() {
 
                 server._deliverResult(result);
 
-                expect(result.success.mostRecentCall.args[2].getResponseHeader('Content-Type'))
+                expect(result.success.calls.mostRecent().args[2].getResponseHeader('Content-Type'))
                     .toEqual('application/json');
             });
 
@@ -571,7 +526,7 @@ describe('AbstractServer', function() {
 
                 server._deliverResult(result);
 
-                expect(result.success.mostRecentCall.args[2].getResponseHeader('Content-Type')).toEqual('text/plain');
+                expect(result.success.calls.mostRecent().args[2].getResponseHeader('Content-Type')).toEqual('text/plain');
             });
 
             it('returns nothing for other headers', function() {
@@ -579,7 +534,7 @@ describe('AbstractServer', function() {
 
                 server._deliverResult(result);
 
-                expect(result.success.mostRecentCall.args[2].getResponseHeader('Content-Length')).toEqual('');
+                expect(result.success.calls.mostRecent().args[2].getResponseHeader('Content-Length')).toEqual('');
             });
 
         });
@@ -633,42 +588,50 @@ describe('AbstractServer', function() {
         it('logs no message if debug is not true', function() {
             server.debug = false;
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
             expect(dx.debug).not.toHaveBeenCalled();
         });
 
         it('logs a received message on successful call', function() {
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
-            expect(dx.debug.calls[0].args[0])
+            expect(dx.debug.calls.argsFor(0)[0])
                 .toEqual('Call 1: Receive GET:/webapi/container/CONTAINER-1');
         });
 
         it('increments call count for each call', function() {
             server.debug = false;
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
             server.debug = true;
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
-                url: '/webapi/container/CONTAINER-1'
+                url: '/webapi/container/CONTAINER-1',
+                success: () => {},
+                error: () => {},
             });
 
-            expect(dx.debug.calls[0].args[0])
+            expect(dx.debug.calls.argsFor(0)[0])
                 .toEqual('Call 2: Receive GET:/webapi/container/CONTAINER-1');
         });
 
@@ -677,7 +640,7 @@ describe('AbstractServer', function() {
             result.success = jasmine.createSpy('successCallback');
             server._deliverResult(result);
 
-            expect(dx.debug.calls[0].args[0]).toEqual('Call 5: Deliver success');
+            expect(dx.debug.calls.argsFor(0)[0]).toEqual('Call 5: Deliver success');
         });
 
         it('logs a message for error results', function() {
@@ -687,7 +650,7 @@ describe('AbstractServer', function() {
 
             server._deliverResult(result);
 
-            expect(dx.debug.calls[0].args[0]).toEqual('Call 5: Deliver error');
+            expect(dx.debug.calls.argsFor(0)[0]).toEqual('Call 5: Deliver error');
         });
 
         it('truncates long data', function() {
@@ -696,7 +659,7 @@ describe('AbstractServer', function() {
             server._reportDebug(1, 'AMessage', '_________1_________2_________3_________4_________5_________6' +
                 '_________7_________8_________9_________A');
 
-            expect(dx.debug.calls[0].args[0]).toEqual('Call 1: AMessage "_________1_________2_________3_________4' +
+            expect(dx.debug.calls.argsFor(0)[0]).toEqual('Call 1: AMessage "_________1_________2_________3_________4' +
                 '_________5_________6_________7_________8_________9________...');
         });
 

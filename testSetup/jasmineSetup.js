@@ -22,18 +22,40 @@
 
 (function() {
  
+function getMessage(stringOrError) {
+    if (stringOrError instanceof Error) {
+        return stringOrError.message;
+    }
+
+    return stringOrError
+}
+
 /*
  * An alternative to jasmine's toThrow() matcher that makes handling our dx.fail() routine more graceful.
  * dx.fail() will throw an exception and log a message to the console.  When testing, we want the exception to
  * be thrown, but we don't want the message to get written to the console, so we spy on the call to the
  * console and then pass on the behavior to the ordinary toThrow matcher.
  */
-function toDxFail(expected) {
-    var self = this;
+function toDxFail(actual, expected) {
     if (!jasmine.isSpy(console.error)) {
         spyOn(console, 'error');
     }
-    return jasmine.Matchers.prototype.toThrow.call(self, expected);
+
+    var actualMessage;
+    var expectedMessage = getMessage(expected);
+
+    try {
+        actual();
+    } catch (e) {
+        actualMessage = e.message;
+    }
+
+    var pass = expected ? actualMessage === expectedMessage : !!actualMessage
+
+    return {
+        pass: pass,
+        message: "Actual and expected error messages do not match: " + actualMessage + " " + expectedMessage,
+    }
 }
 
  
@@ -53,19 +75,28 @@ function toDxFail(expected) {
  *    expect(resultObject).toEqualProps({ a: true, b: 'six'});
  * Note: This does not at this time do this recursively.
  */
-function toHaveProps(expected) {
- var self = this;
- 
- return _.matches(expected)(self.actual);
+function toHaveProps(actual, expected) {
+    return {
+        pass: _.matches(expected)(actual),
+        message: "Object properties do not match: " + JSON.stringify(actual) + " " + JSON.stringify(expected),
+    }
 }
 
 /*
  * Delphix custom jasmine setup.
  */
 beforeEach(function() {
-    this.addMatchers({
-        toDxFail: toDxFail,
-        toHaveProps: toHaveProps
+    jasmine.addMatchers({
+        toDxFail: function(util, customEqualityTesters) {
+            return {
+                compare: toDxFail
+            }
+        },
+        toHaveProps: function(util, customEqualityTesters) {
+            return {
+                compare: toHaveProps
+            }
+        }
     });
 });
 

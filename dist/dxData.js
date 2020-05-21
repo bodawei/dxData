@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,6 +148,72 @@ dx.namespace('dx.core.ajax');
  *    config - $.ajax configuration object.
  */
 dx.core.ajax = {
+    /*
+     * We support the ability to replace what function is actually performing the
+     * necessary ajax calls.  This is only useful, in practice, for the mock servers
+     * so they can intercept outgoing calls and respond to them. We allow for multiple
+     * mock servers to be installed simultaneously, however only one can respond to
+     * a particular request, and the most recent server that took over the calls
+     * wins. in this regard, handlers act like a stack. However, any server can
+     * remove itself from the stack at any time, even if it isn't the topmost.
+     */
+    _handlers: [],
+    _baseHandlerForReset: {
+        owner: 'dx.baseHandler',
+        handler: function (config) {
+            return $.ajax(config);
+        }
+    },
+    // Used by the ApiServer to be able to bypass any ajax handlers set in place
+    getAjaxBaseHandler: function (owner) {
+        return this._handlers[0];
+    },
+    // Allows one to replace the default base handler
+    setAjaxBaseHandler: function (owner, handler) {
+        this._baseHandlerForReset = {
+            owner,
+            handler
+        };
+        this._handlers[0] = this._baseHandlerForReset;
+    },
+    hasAjaxHandler: function (owner) {
+        var topIndex = this._handlers.length - 1;
+
+        for (let index = topIndex; index > 0; index --) {
+            var item = this._handlers[index];
+
+            if (item.owner === owner) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+    registerAjaxHandler: function(owner, handler) {
+        this._handlers.push({
+            owner: owner,
+            handler: handler
+        });
+    },
+    removeAjaxHandler: function(owner) {
+        var topIndex = this._handlers.length - 1;
+
+        for (let index = topIndex; index > 0; index --) {
+            var item = this._handlers[index];
+
+            if (item.owner === owner) {
+                this._handlers.splice(index , 1);
+                return;
+            }
+        }
+
+        throw new Error('That handler has not been registered.')
+    },
+    resetAjaxHandlers: function () {
+        this._handlers = [this._baseHandlerForReset];
+    },
+    // This is the main entrypoint to making ajax calls.  It will use
+    // the topmost handler to actually do the call.
     ajaxCall: function(config) {
         if (config && config.url) {
             config.type = config.type || 'GET';
@@ -169,7 +235,9 @@ dx.core.ajax = {
             config.cache = config.cache || false;
 
             try {
-                $.ajax(config);
+                var topIndex = this._handlers.length - 1;
+                var handlerData = this._handlers[topIndex];
+                handlerData.handler(config);
             } catch (e) {
                 dx.fail(e.message);
             }
@@ -178,6 +246,11 @@ dx.core.ajax = {
         }
     }
 };
+
+dx.core.ajax.resetAjaxHandlers();
+Backbone.ajax = function() {
+    return dx.core.ajax.ajaxCall.apply(dx.core.ajax, arguments);
+}
 
 })();
 },{}],2:[function(require,module,exports){
@@ -2535,7 +2608,7 @@ dx.core.data._initFilters = function(context) {
          * UNKNOWN (paging and params we can't handle) are dealt with earlier. Therefore we know each of these promises
          * is either resolved with INCLUDE or rejected with EXCLUDE.
          */
-        $.when.apply(undefined, promises)
+        return $.when.apply(undefined, promises)
             .then(function() {
                 resultHandler(INCLUDE);
             })

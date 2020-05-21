@@ -341,7 +341,7 @@ describe('ServerCore (handlers)', function() {
 
         it('will register a function that can be called', function() {
             var readSpy = jasmine.createSpy('SystemInfo.readSpy')
-                .andCallFake(function(payload, Result) {
+                .and.callFake(function(payload, Result) {
                     return new Result(200, null);
                 });
 
@@ -377,7 +377,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('will register a function that can be called', function() {
-            var doObjOperation = jasmine.createSpy('export').andCallFake(rootOpHandler);
+            var doObjOperation = jasmine.createSpy('export').and.callFake(rootOpHandler);
 
             server.addRootOpHandlers({
                 Container: {
@@ -390,7 +390,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('will set root operations for schemas without a name using the schemaKey', function() {
-            var rootOpSpy = jasmine.createSpy('rootOpSpy').andCallFake(rootOpHandler);
+            var rootOpSpy = jasmine.createSpy('rootOpSpy').and.callFake(rootOpHandler);
 
             server.addRootOpHandlers({
                 nameless_type: {
@@ -403,7 +403,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('doesn\'t change existing operations', function() {
-            var rootOperation = jasmine.createSpy('doRootSpy').andCallFake(rootOpHandler);
+            var rootOperation = jasmine.createSpy('doRootSpy').and.callFake(rootOpHandler);
             var otherOperation = jasmine.createSpy('doOtherRootSpy');
 
             server.addRootOpHandler('Container', 'doRoot', rootOperation);
@@ -415,7 +415,7 @@ describe('ServerCore (handlers)', function() {
 
         it('overrides root operations', function() {
             var rootOperation = jasmine.createSpy('export');
-            var newRootOperation = jasmine.createSpy('newExportOperation').andCallFake(rootOpHandler);
+            var newRootOperation = jasmine.createSpy('newExportOperation').and.callFake(rootOpHandler);
 
             server.addRootOpHandlers({
                 Container: {
@@ -473,7 +473,7 @@ describe('ServerCore (handlers)', function() {
 
         it('will register a function that can be called', function() {
             var doRootSpy = jasmine.createSpy('Container.doRootSpy')
-                .andCallFake(function(payload, Result) {
+                .and.callFake(function(payload, Result) {
                     return new Result(200, null);
                 });
 
@@ -569,7 +569,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('doesn\'t change existing operations', function() {
-            var doObjOperation = jasmine.createSpy('doObjSpy').andCallFake(objectOpHandler);
+            var doObjOperation = jasmine.createSpy('doObjSpy').and.callFake(objectOpHandler);
             var otherOperation = jasmine.createSpy('otherOpSpy');
 
             server.createObjects(STANDARD_CONTAINER);
@@ -592,7 +592,7 @@ describe('ServerCore (handlers)', function() {
 
         it('overrides object operations', function() {
             var doObjOperation = jasmine.createSpy('doObj');
-            var newSyncOperation = jasmine.createSpy('newSync').andCallFake(objectOpHandler);
+            var newSyncOperation = jasmine.createSpy('newSync').and.callFake(objectOpHandler);
 
             server.createObjects(STANDARD_CONTAINER);
 
@@ -655,7 +655,7 @@ describe('ServerCore (handlers)', function() {
         it('will register a function that can be called', function() {
             server.createObjects(STANDARD_CONTAINER);
             var doObjSpy = jasmine.createSpy('Container.doObjSpy')
-                .andCallFake(function(reference, payload, Result) {
+                .and.callFake(function(reference, payload, Result) {
                     return new Result(200, null);
                 });
             server.addObjectOpHandler('Container', 'doObj', doObjSpy);
@@ -1194,7 +1194,7 @@ describe('ServerCore (handlers)', function() {
 
                 // The filter functions are tested separately in the filter module
                 it('uses a filter function for a list with query parameters', function() {
-                    spyOn(server._filters, 'Container').andCallThrough();
+                    spyOn(server._filters, 'Container').and.callThrough();
                     server.GET('/api/container',  {testParam: 'hi'});
 
                     expect(server._filters.Container).toHaveBeenCalled();
@@ -1220,11 +1220,11 @@ describe('ServerCore (handlers)', function() {
                 return new Result(200, null);
             };
 
-            listSpy = jasmine.createSpy('list').andCallFake(staticMockHandler);
-            createSpy = jasmine.createSpy('create').andCallFake(staticMockHandler);
-            readSpy = jasmine.createSpy('read').andCallFake(objectMockHandler);
-            updateSpy = jasmine.createSpy('update').andCallFake(objectMockHandler);
-            deleteSpy = jasmine.createSpy('delete').andCallFake(objectMockHandler);
+            listSpy = jasmine.createSpy('list').and.callFake(staticMockHandler);
+            createSpy = jasmine.createSpy('create').and.callFake(staticMockHandler);
+            readSpy = jasmine.createSpy('read').and.callFake(objectMockHandler);
+            updateSpy = jasmine.createSpy('update').and.callFake(objectMockHandler);
+            deleteSpy = jasmine.createSpy('delete').and.callFake(objectMockHandler);
 
             server.addStandardOpHandlers({
                 Container: {
@@ -1256,7 +1256,7 @@ describe('ServerCore (handlers)', function() {
         describe('create', function() {
 
             it('can create a singleton object through custom handler', function() {
-                createSpy.andCallFake(function(payload, Result) {
+                createSpy.and.callFake(function(payload, Result) {
                     server.createObjects([{
                         type: 'CreatableSingleton',
                         productType: payload.newType
@@ -1273,7 +1273,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('can create a collection object through a custom handler', function() {
-                createSpy.andCallFake(function(payload, Result) {
+                createSpy.and.callFake(function(payload, Result) {
                     server.createObjects([_.extend({
                         type: 'Container',
                         reference: 'CONTAINER-TEST'
@@ -1299,16 +1299,16 @@ describe('ServerCore (handlers)', function() {
                     productType: 'testValue'
                 });
 
-                expect(createSpy.mostRecentCall.args[0]).toEqual({
+                expect(createSpy.calls.mostRecent().args[0]).toEqual({
                     type: 'CreatableSingleton',
                     productType: 'testValue'
                 });
-                expect(_.isFunction(createSpy.mostRecentCall.args[1])).toEqual(true);
-                expect(createSpy.mostRecentCall.args[2]).toBe(server);
+                expect(_.isFunction(createSpy.calls.mostRecent().args[1])).toEqual(true);
+                expect(createSpy.calls.mostRecent().args[2]).toBe(server);
             });
 
             it('returns a Result object when creating a singleton', function() {
-                createSpy.andCallFake(function(payload, Result) {
+                createSpy.and.callFake(function(payload, Result) {
                     return new Result.OkResult(null);
                 });
 
@@ -1324,7 +1324,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('returns a result object when creating a collection object', function() {
-                createSpy.andCallFake(function(payload, Result) {
+                createSpy.and.callFake(function(payload, Result) {
                     return new Result.OkResult('CONTAINER-TEST');
                 });
 
@@ -1346,17 +1346,17 @@ describe('ServerCore (handlers)', function() {
                     name: 'testValue'
                 });
 
-                expect(createSpy.mostRecentCall.args[0]).toEqual({
+                expect(createSpy.calls.mostRecent().args[0]).toEqual({
                     type: 'Container',
                     reference: 'CONTAINER-TEST',
                     name: 'testValue'
                 });
-                expect(_.isFunction(createSpy.mostRecentCall.args[1])).toEqual(true);
-                expect(createSpy.mostRecentCall.args[2]).toBe(server);
+                expect(_.isFunction(createSpy.calls.mostRecent().args[1])).toEqual(true);
+                expect(createSpy.calls.mostRecent().args[2]).toBe(server);
             });
 
             it('ultimately returns 200/null Result object when the object handler returns undefined', function() {
-                createSpy.andReturn(undefined);
+                createSpy.and.returnValue(undefined);
 
                 var result = server.POST('/api/container');
 
@@ -1370,7 +1370,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('ultimately returns 200/null Result object when the singleton handler returns undefined', function() {
-                createSpy.andReturn(undefined);
+                createSpy.and.returnValue(undefined);
 
                 var result = server.POST('/api/creatablesingleton');
 
@@ -1384,7 +1384,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps return value in an OKResult if the singleton create return is not a Result', function() {
-                createSpy.andReturn('CreatableType');
+                createSpy.and.returnValue('CreatableType');
 
                 var result = server.POST('/api/creatablesingleton', {
                     type: 'CreatableParams',
@@ -1401,7 +1401,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps return value from custom collection object create handler if it isn not a Result', function() {
-                createSpy.andReturn('REFERENCE-1');
+                createSpy.and.returnValue('REFERENCE-1');
 
                 var result = server.POST('/api/container', {
                     type: 'Container',
@@ -1423,7 +1423,7 @@ describe('ServerCore (handlers)', function() {
 
             it('can update a singleton update through custom handler', function() {
                 var newHostname = 'new hostname';
-                updateSpy.andCallFake(function(payload, Result) {
+                updateSpy.and.callFake(function(payload, Result) {
                     var existingSingleton = server.getSingleton('SystemInfo');
                     _.extend(existingSingleton, payload);
                     server.updateObjects([existingSingleton]);
@@ -1438,7 +1438,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('can update a collection object through a custom handler', function() {
-                updateSpy.andCallFake(function(reference, payload, Result) {
+                updateSpy.and.callFake(function(reference, payload, Result) {
                     var existing = server.getObject(reference);
                     _.extend(existing, payload);
                     server.updateObjects([existing]);
@@ -1453,38 +1453,38 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('calls the custom singleton update handler with expected arguments', function() {
-                updateSpy.andCallFake(staticMockHandler);
+                updateSpy.and.callFake(staticMockHandler);
                 var newHostname = 'new hostname';
 
                 server.POST('/api/systeminfo', {
                     hostname: newHostname
                 });
 
-                expect(updateSpy.mostRecentCall.args[0]).toEqual({
+                expect(updateSpy.calls.mostRecent().args[0]).toEqual({
                     type: 'SystemInfo',
                     hostname: newHostname
                 });
-                expect(_.isFunction(updateSpy.mostRecentCall.args[1])).toEqual(true);
-                expect(updateSpy.mostRecentCall.args[2]).toBe(server);
+                expect(_.isFunction(updateSpy.calls.mostRecent().args[1])).toEqual(true);
+                expect(updateSpy.calls.mostRecent().args[2]).toBe(server);
             });
 
             it('calls the custom collection object update handler with expected arguments', function() {
-                updateSpy.andCallFake(objectMockHandler);
+                updateSpy.and.callFake(objectMockHandler);
 
                 server.POST('/api/container/CONTAINER-1', {
                     name: 'newName'
                 });
 
-                expect(updateSpy.mostRecentCall.args[0]).toEqual('CONTAINER-1');
-                expect(updateSpy.mostRecentCall.args[1]).toEqual({
+                expect(updateSpy.calls.mostRecent().args[0]).toEqual('CONTAINER-1');
+                expect(updateSpy.calls.mostRecent().args[1]).toEqual({
                     name: 'newName'
                 });
-                expect(_.isFunction(updateSpy.mostRecentCall.args[2])).toEqual(true);
-                expect(updateSpy.mostRecentCall.args[3]).toBe(server);
+                expect(_.isFunction(updateSpy.calls.mostRecent().args[2])).toEqual(true);
+                expect(updateSpy.calls.mostRecent().args[3]).toBe(server);
             });
 
             it('returns a Result object when updating a singleton', function() {
-                updateSpy.andCallFake(function(payload, Result) {
+                updateSpy.and.callFake(function(payload, Result) {
                     return new Result.OkResult(null);
                 });
 
@@ -1500,7 +1500,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('can update a collection object through a custom handler', function() {
-                updateSpy.andCallFake(function(reference, payload, Result) {
+                updateSpy.and.callFake(function(reference, payload, Result) {
                     return new Result.OkResult(null);
                 });
 
@@ -1516,7 +1516,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('ultimately returns a 200/OKResult Result object when singleton handler returns undefined', function() {
-                updateSpy.andReturn(undefined);
+                updateSpy.and.returnValue(undefined);
 
                 var result = server.POST('/api/systeminfo');
 
@@ -1530,7 +1530,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('ultimately returns a 200/OKResult Result object when the object handler returns undefined', function() {
-                updateSpy.andReturn(undefined);
+                updateSpy.and.returnValue(undefined);
 
                 var result = server.POST('/api/container/CONTAINER-1');
 
@@ -1544,7 +1544,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps result in OKResult if custom singleton update handler does not return a Result', function() {
-                updateSpy.andReturn('CreatableType');
+                updateSpy.and.returnValue('CreatableType');
 
                 var result = server.POST('/api/systeminfo', {
                     newType: 'testValue'
@@ -1560,7 +1560,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps result in OKResult if custom collection object create handler not return a Result', function() {
-                updateSpy.andReturn('REFERENCE-1');
+                updateSpy.and.returnValue('REFERENCE-1');
 
                 var result = server.POST('/api/container/CONTAINER-1', {
                     type: 'Container',
@@ -1581,7 +1581,7 @@ describe('ServerCore (handlers)', function() {
         describe('delete', function() {
 
             it('can delete a collection object through a custom handler', function() {
-                deleteSpy.andCallFake(function(reference, payload, Result) {
+                deleteSpy.and.callFake(function(reference, payload, Result) {
                     server.deleteObjects([reference]);
                     return new Result.OkResult(null);
                 });
@@ -1592,22 +1592,22 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('calls the custom collection object delete handler with expected arguments', function() {
-                deleteSpy.andCallFake(objectMockHandler);
+                deleteSpy.and.callFake(objectMockHandler);
 
                 server.DELETE('/api/container/CONTAINER-23', {
                     name: 'somePayload'
                 });
 
-                expect(deleteSpy.mostRecentCall.args[0]).toEqual('CONTAINER-23');
-                expect(deleteSpy.mostRecentCall.args[1]).toEqual({
+                expect(deleteSpy.calls.mostRecent().args[0]).toEqual('CONTAINER-23');
+                expect(deleteSpy.calls.mostRecent().args[1]).toEqual({
                     name: 'somePayload'
                 });
-                expect(_.isFunction(deleteSpy.mostRecentCall.args[2])).toEqual(true);
-                expect(deleteSpy.mostRecentCall.args[3]).toBe(server);
+                expect(_.isFunction(deleteSpy.calls.mostRecent().args[2])).toEqual(true);
+                expect(deleteSpy.calls.mostRecent().args[3]).toBe(server);
             });
 
             it('returns a Result object', function() {
-                deleteSpy.andCallFake(function(reference, payload, Result) {
+                deleteSpy.and.callFake(function(reference, payload, Result) {
                     return new Result.OkResult({
                         deleteWorked: true
                     });
@@ -1627,7 +1627,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('returns a 200/OKResult Result object if the handler returns undefined', function() {
-                deleteSpy.andReturn(undefined);
+                deleteSpy.and.returnValue(undefined);
 
                 var result = server.DELETE('/api/container/CONTAINER-1');
 
@@ -1641,7 +1641,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps in OKResult if custom collection object delete handler does not return a Result', function() {
-                deleteSpy.andReturn('REFERENCE-1');
+                deleteSpy.and.returnValue('REFERENCE-1');
 
                 var result = server.DELETE('/api/container/CONTAINER-1');
 
@@ -1659,7 +1659,7 @@ describe('ServerCore (handlers)', function() {
         describe('read', function() {
 
             it('can return a singleton through custom handler', function() {
-                readSpy.andCallFake(function(payload, Result) {
+                readSpy.and.callFake(function(payload, Result) {
                     return new Result.OkResult({
                         type: 'SystemInfo',
                         productType: 'testRead'
@@ -1681,7 +1681,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('can read a collection object through a custom handler', function() {
-                readSpy.andCallFake(function(reference, payload, Result) {
+                readSpy.and.callFake(function(reference, payload, Result) {
                     return new Result.OkResult({
                         type: 'Container',
                         reference: reference
@@ -1703,36 +1703,36 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('calls the custom singleton read handler with expected arguments', function() {
-                readSpy.andCallFake(staticMockHandler);
+                readSpy.and.callFake(staticMockHandler);
 
                 server.GET('/api/systeminfo', {
                     somePayload: true
                 });
 
-                expect(readSpy.mostRecentCall.args[0]).toEqual({
+                expect(readSpy.calls.mostRecent().args[0]).toEqual({
                     somePayload: true
                 });
-                expect(_.isFunction(readSpy.mostRecentCall.args[1])).toEqual(true);
-                expect(readSpy.mostRecentCall.args[2]).toBe(server);
+                expect(_.isFunction(readSpy.calls.mostRecent().args[1])).toEqual(true);
+                expect(readSpy.calls.mostRecent().args[2]).toBe(server);
             });
 
             it('calls the custom collection object read handler with expected arguments', function() {
-                readSpy.andCallFake(objectMockHandler);
+                readSpy.and.callFake(objectMockHandler);
 
                 server.GET('/api/container/CONTAINER-23', {
                     name: 'somePayload'
                 });
 
-                expect(readSpy.mostRecentCall.args[0]).toEqual('CONTAINER-23');
-                expect(readSpy.mostRecentCall.args[1]).toEqual({
+                expect(readSpy.calls.mostRecent().args[0]).toEqual('CONTAINER-23');
+                expect(readSpy.calls.mostRecent().args[1]).toEqual({
                     name: 'somePayload'
                 });
-                expect(_.isFunction(readSpy.mostRecentCall.args[2])).toEqual(true);
-                expect(readSpy.mostRecentCall.args[3]).toBe(server);
+                expect(_.isFunction(readSpy.calls.mostRecent().args[2])).toEqual(true);
+                expect(readSpy.calls.mostRecent().args[3]).toBe(server);
             });
 
             it('returns a 200/OKResult Result with {} when custom singleton handler returns undefined', function() {
-                readSpy.andReturn(undefined);
+                readSpy.and.returnValue(undefined);
 
                 var result = server.GET('/api/systeminfo');
 
@@ -1746,7 +1746,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('returns a 200/OKResult Result with {} when custom object handler returns undefined', function() {
-                readSpy.andReturn(undefined);
+                readSpy.and.returnValue(undefined);
 
                 var result = server.GET('/api/container/CONTAINER-23');
 
@@ -1760,7 +1760,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps in OKResult if custom singleton read handler does not return a Result', function() {
-                readSpy.andReturn({ name: 'hi' });
+                readSpy.and.returnValue({ name: 'hi' });
 
                 var result = server.GET('/api/systeminfo');
 
@@ -1774,7 +1774,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps in OKResult if custom collection object read handler does not return a Result', function() {
-                readSpy.andReturn('REFERENCE-1');
+                readSpy.and.returnValue('REFERENCE-1');
 
                 var result = server.GET('/api/container/CONTAINER-1');
 
@@ -1792,7 +1792,7 @@ describe('ServerCore (handlers)', function() {
         describe('list', function() {
 
             it('ultimately returns what the custom handler returns', function() {
-                listSpy.andCallFake(function(payload, Result) {
+                listSpy.and.callFake(function(payload, Result) {
                     return new Result.ListResult([{
                         type: 'Container',
                         name: 'one',
@@ -1824,19 +1824,19 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('calls the custom collection list handler with expected arguments', function() {
-                listSpy.andCallFake(staticMockHandler);
+                listSpy.and.callFake(staticMockHandler);
 
                 server.GET('/api/container', {queryParam: 'one'});
 
-                expect(listSpy.mostRecentCall.args[0]).toEqual({
+                expect(listSpy.calls.mostRecent().args[0]).toEqual({
                     queryParam: 'one'
                 });
-                expect(_.isFunction(listSpy.mostRecentCall.args[1])).toEqual(true);
-                expect(listSpy.mostRecentCall.args[2]).toBe(server);
+                expect(_.isFunction(listSpy.calls.mostRecent().args[1])).toEqual(true);
+                expect(listSpy.calls.mostRecent().args[2]).toBe(server);
             });
 
             it('ultimately returns a 200/[] Result when custom handler returns undefined', function() {
-                listSpy.andReturn(undefined);
+                listSpy.and.returnValue(undefined);
 
                 var result = server.GET('/api/container', { queryParam: 'one' });
 
@@ -1850,7 +1850,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('wraps return in a ListResult if custom collection list handler does not return a Result', function() {
-                listSpy.andReturn([]);
+                listSpy.and.returnValue([]);
 
                 var result = server.GET('/api/container');
 
@@ -1876,7 +1876,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('ultimately returns the Result returned by the handler', function() {
-            doRootSpy.andCallFake(function(payload, Result) {
+            doRootSpy.and.callFake(function(payload, Result) {
                 return new Result.OkResult({ name : 'rootOperationResult'});
             });
 
@@ -1898,11 +1898,11 @@ describe('ServerCore (handlers)', function() {
                 name: 'testName'
             });
 
-            expect(doRootSpy.mostRecentCall.args[0]).toEqual({
+            expect(doRootSpy.calls.mostRecent().args[0]).toEqual({
                 name: 'testName'
             });
-            expect(_.isFunction(doRootSpy.mostRecentCall.args[1])).toBe(true);
-            expect(doRootSpy.mostRecentCall.args[2]).toBe(server);
+            expect(_.isFunction(doRootSpy.calls.mostRecent().args[1])).toBe(true);
+            expect(doRootSpy.calls.mostRecent().args[2]).toBe(server);
         });
 
         it('is called with expected arguments when called with GET', function() {
@@ -1910,15 +1910,15 @@ describe('ServerCore (handlers)', function() {
             server.addRootOpHandler('Container', 'doRootParams', doRootParamsSpy);
             server.GET('/api/container/doRootParams', { param1: 'foo'});
 
-            expect(doRootParamsSpy.mostRecentCall.args[0]).toEqual({
+            expect(doRootParamsSpy.calls.mostRecent().args[0]).toEqual({
                 param1: 'foo'
             });
-            expect(_.isFunction(doRootParamsSpy.mostRecentCall.args[1])).toBe(true);
-            expect(doRootParamsSpy.mostRecentCall.args[2]).toBe(server);
+            expect(_.isFunction(doRootParamsSpy.calls.mostRecent().args[1])).toBe(true);
+            expect(doRootParamsSpy.calls.mostRecent().args[2]).toBe(server);
         });
 
         it('it ultimately returns a 200/null Result object if it returns undefined', function() {
-            doRootSpy.andReturn(undefined);
+            doRootSpy.and.returnValue(undefined);
 
             var result = server.POST('/api/container/doRoot');
 
@@ -1951,7 +1951,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('wraps a non-Result in an OkResult', function() {
-            doRootSpy.andReturn('testString');
+            doRootSpy.and.returnValue('testString');
 
             var result = server.POST('/api/container/doRoot');
             expect(result).toEqual({
@@ -1979,12 +1979,12 @@ describe('ServerCore (handlers)', function() {
                 name: 'testName'
             });
 
-            expect(doObjSpy.mostRecentCall.args[0]).toEqual('CONTAINER-1');
-            expect(doObjSpy.mostRecentCall.args[1]).toEqual({
+            expect(doObjSpy.calls.mostRecent().args[0]).toEqual('CONTAINER-1');
+            expect(doObjSpy.calls.mostRecent().args[1]).toEqual({
                 name: 'testName'
             });
-            expect(_.isFunction(doObjSpy.mostRecentCall.args[2])).toBe(true);
-            expect(doObjSpy.mostRecentCall.args[3]).toBe(server);
+            expect(_.isFunction(doObjSpy.calls.mostRecent().args[2])).toBe(true);
+            expect(doObjSpy.calls.mostRecent().args[3]).toBe(server);
         });
 
         it('is called with expected parameters arguments', function() {
@@ -1993,16 +1993,16 @@ describe('ServerCore (handlers)', function() {
 
             server.GET('/api/container/CONTAINER-1/doParamOp', { param1: 'foo'});
 
-            expect(doParamObjSpy.mostRecentCall.args[0]).toEqual('CONTAINER-1');
-            expect(doParamObjSpy.mostRecentCall.args[1]).toEqual({
+            expect(doParamObjSpy.calls.mostRecent().args[0]).toEqual('CONTAINER-1');
+            expect(doParamObjSpy.calls.mostRecent().args[1]).toEqual({
                 param1: 'foo'
             });
-            expect(_.isFunction(doParamObjSpy.mostRecentCall.args[2])).toBe(true);
-            expect(doParamObjSpy.mostRecentCall.args[3]).toBe(server);
+            expect(_.isFunction(doParamObjSpy.calls.mostRecent().args[2])).toBe(true);
+            expect(doParamObjSpy.calls.mostRecent().args[3]).toBe(server);
         });
 
         it('ultimately returns a 200/OKResult/null Result if it returns undefined', function() {
-            doObjSpy.andReturn(undefined);
+            doObjSpy.and.returnValue(undefined);
 
             var result = server.POST('/api/container/CONTAINER-1/doObj');
 
@@ -2016,7 +2016,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('wraps return in OKResult if handler does not return a Result (or undefined)', function() {
-            doObjSpy.andReturn({});
+            doObjSpy.and.returnValue({});
 
             var result = server.POST('/api/container/CONTAINER-1/doObj');
 
@@ -2049,7 +2049,7 @@ describe('ServerCore (handlers)', function() {
         });
 
         it('ultimately returns the Result returned by the handler', function() {
-            doObjSpy.andCallFake(function(reference, payload, Result) {
+            doObjSpy.and.callFake(function(reference, payload, Result) {
                 return new Result.OkResult({ name : 'objectOperationResult'});
             });
 
@@ -2079,7 +2079,7 @@ describe('ServerCore (handlers)', function() {
 
         it('Result() returns an object of type Result', function() {
             var result;
-            doObjSpy.andCallFake(function(reference, payload, Result) {
+            doObjSpy.and.callFake(function(reference, payload, Result) {
                 result = new Result() instanceof Result;
             });
 
@@ -2090,20 +2090,20 @@ describe('ServerCore (handlers)', function() {
 
         it('Result() returns an object with the statusCode and data fields', function() {
             var result;
-            doObjSpy.andCallFake(function(reference, payload, Result) {
+            doObjSpy.and.callFake(function(reference, payload, Result) {
                 result = new Result(7734, 'testValue');
             });
 
             server.POST('/api/container/CONTAINER-1/doObj');
 
-            expect(result).toEqual({
+            expect(Object.assign({}, result)).toEqual({
                 statusCode: 7734,
                 data: 'testValue'
             });
         });
 
         it('Result() throws an exception if not called with new', function() {
-            doObjSpy.andCallFake(function(reference, payload, Result) {
+            doObjSpy.and.callFake(function(reference, payload, Result) {
                 Result(200, 4);
             });
 
@@ -2116,7 +2116,7 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object of type Result', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.ListResult([5]) instanceof Result;
                 });
 
@@ -2127,13 +2127,13 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object with the defined fields', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.ListResult([5]);
                 });
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 200,
                     data: {
                         type: 'ListResult',
@@ -2143,7 +2143,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('throws an exception if not called with an array', function() {
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     new Result.ListResult(200, 4);
                 });
 
@@ -2153,7 +2153,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('throws an exception if not called with new', function() {
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     Result.ListResult([5]);
                 });
 
@@ -2168,7 +2168,7 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object of type Result', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.OkResult(5) instanceof Result;
                 });
 
@@ -2179,13 +2179,13 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object with the defined fields', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.OkResult(5);
                 });
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 200,
                     data: {
                         type: 'OKResult',
@@ -2195,7 +2195,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('throws an exception if not called with new', function() {
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     Result.OkResult(5);
                 });
 
@@ -2210,7 +2210,7 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object of type Result', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.ErrorResult(5, {}) instanceof Result;
                 });
 
@@ -2221,13 +2221,13 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object with the defined fields', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.ErrorResult(500, {});
                 });
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 500,
                     data: {
                         type: 'ErrorResult',
@@ -2238,7 +2238,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('throws an exception if not called with new', function() {
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     Result.ErrorResult(666, 5);
                 });
 
@@ -2253,7 +2253,7 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object of type Result', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.MissingObjResult('a', 'b', 'c') instanceof Result;
                 });
 
@@ -2264,13 +2264,13 @@ describe('ServerCore (handlers)', function() {
 
             it('returns an object with the defined fields', function() {
                 var result;
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     result = new Result.MissingObjResult('a', 'b', 'c');
                 });
 
                 server.POST('/api/container/CONTAINER-1/doObj');
 
-                expect(result).toEqual({
+                expect(Object.assign({}, result)).toEqual({
                     statusCode: 404,
                     data: {
                         type: 'ErrorResult',
@@ -2285,7 +2285,7 @@ describe('ServerCore (handlers)', function() {
             });
 
             it('throws an exception if not called with new', function() {
-                doObjSpy.andCallFake(function(reference, payload, Result) {
+                doObjSpy.and.callFake(function(reference, payload, Result) {
                     Result.MissingObjResult(666, 5);
                 });
 

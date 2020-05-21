@@ -23,6 +23,15 @@
 
 describe('dx.core.data', function() {
     var SimpleModel = Backbone.Model.extend({});
+    var clock;
+
+    beforeEach(function() {
+        clock = jasmine.clock();
+    });
+
+    afterEach(function() {
+        clock.uninstall();
+    });
 
     describe('newClientModel()', function() {
         var client = {};
@@ -573,7 +582,7 @@ describe('dx.core.data', function() {
                 return new Result.ErrorResult(404);
             });
             var errorCallback = jasmine.createSpy('errorCallback');
-            jasmine.Clock.useMock();
+            clock.install()
 
             var singleton = client.getServerSingleton('SingletonType');
             singleton.on('error', errorCallback);
@@ -654,7 +663,7 @@ describe('dx.core.data', function() {
     });
 
     describe('Promised ServerModels', function() {
-        var serverModel, serverSingleton, successSpy, errorSpy;
+        var serverModel, successSpy, errorSpy;
         var client;
         var server;
 
@@ -738,7 +747,7 @@ describe('dx.core.data', function() {
                 client.getServerModelPromise('REF-2', 'AType').done(successSpy);
                 server.respond();
 
-                expect(successSpy.mostRecentCall.args[0]).toEqual(serverModel);
+                expect(successSpy.calls.mostRecent().args[0]).toEqual(serverModel);
             });
 
             it('is rejected when the model\'s "error" event is triggered', function() {
@@ -756,11 +765,11 @@ describe('dx.core.data', function() {
             describe('callbacks', function() {
                 it('passes callbacks on to underlying getServerModel routine', function() {
                     var callbacks = {};
-                    spyOn(client, 'getServerModel').andCallThrough();
+                    spyOn(client, 'getServerModel').and.callThrough();
 
                     client.getServerModelPromise('REF-1', 'AType', callbacks);
 
-                    expect(client.getServerModel.mostRecentCall.args[2]).toBe(callbacks);
+                    expect(client.getServerModel.calls.mostRecent().args[2]).toBe(callbacks);
                 });
             });
         });
@@ -796,7 +805,7 @@ describe('dx.core.data', function() {
                 client.getServerSingletonPromise('SingletonType').done(successSpy);
                 server.respond();
 
-                expect(successSpy.mostRecentCall.args[0].get('type')).toEqual('SingletonType');
+                expect(successSpy.calls.mostRecent().args[0].get('type')).toEqual('SingletonType');
             });
 
             it('is rejected when the model\'s "error" event is triggered', function() {
@@ -816,11 +825,11 @@ describe('dx.core.data', function() {
                 it('passes callbacks on to underlying getServerSingleton routine', function() {
                     var callbacks = {};
                     prepareServerSingleton();
-                    spyOn(client, 'getServerSingleton').andCallThrough();
+                    spyOn(client, 'getServerSingleton').and.callThrough();
 
                     client.getServerSingletonPromise('SingletonType', callbacks);
 
-                    expect(client.getServerSingleton.mostRecentCall.args[1]).toBe(callbacks);
+                    expect(client.getServerSingleton.calls.mostRecent().args[1]).toBe(callbacks);
                 });
             });
 
@@ -828,6 +837,7 @@ describe('dx.core.data', function() {
 
                 it('cleans up "error" event handler in success case', function() {
                     var readySpy = jasmine.createSpy('readySpy');
+                    var serverSingleton;
                     prepareServerSingleton();
                     client.getServerSingletonPromise('SingletonType').done(function(result) {
                         serverSingleton = result;
@@ -841,13 +851,17 @@ describe('dx.core.data', function() {
                 });
 
                 it('cleans up event listeners in the error case', function() {
+                    var serverSingleton;
                     var rejectSpy = jasmine.createSpy('reject');
                     spyOn(dx, 'warn'); // suppress message from server
                     server.addStandardOpHandler('SingletonType', 'read', function(payload, Result) {
                         return new Result.ErrorResult(404);
                     });
 
-                    client.getServerSingletonPromise('SingletonType').fail(rejectSpy);
+                    client.getServerSingletonPromise('SingletonType').fail(function(result) {
+                        serverSingleton = result;
+                        rejectSpy();
+                    });
                     server.respond();
 
                     expect(rejectSpy).toHaveBeenCalled();

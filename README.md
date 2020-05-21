@@ -48,6 +48,11 @@ seen by all other Buzzr users.
 
 Note: None of the data is persistent. So when you kill the server, all your messages will go away!
 
+## How to build the main project
+* Needs node.js 10 or later
+* `npm test` will run the unit tests
+* `npm build` will build the `dist/` directory
+
 ## What comes next?
 There is a lot more to be said here, and we expect to add more documentation and information to this project soon.
 In the mean time, try this out, send us questions and comments.

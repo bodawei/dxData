@@ -23,7 +23,7 @@
 dx.namespace('dx.test');
 
 /*
- * Defines a MockServer which responds to $.ajax calls, and then stores results until a caller/test calls respond().
+ * Defines a MockServer which responds to ajax calls, and then stores results until a caller/test calls respond().
  * This allows tests to make use of asynchronous behavior without actually creating asynchronous tests.
  *
  * An example use is:

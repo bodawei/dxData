@@ -228,7 +228,7 @@ dx.core.data._initFilters = function(context) {
          * UNKNOWN (paging and params we can't handle) are dealt with earlier. Therefore we know each of these promises
          * is either resolved with INCLUDE or rejected with EXCLUDE.
          */
-        $.when.apply(undefined, promises)
+        return $.when.apply(undefined, promises)
             .then(function() {
                 resultHandler(INCLUDE);
             })
