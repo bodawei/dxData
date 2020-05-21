@@ -37,7 +37,7 @@ describe('dx.core.data._cache', function() {
 
     function makeReadyCollection() {
         var collection = target._newServerCollection('Simple');
-        ajaxSpy.andCallFake(function(options) {
+        ajaxSpy.and.callFake(function(options) {
             options.success({
                 type: 'ListResult',
                 result: [{
@@ -116,7 +116,7 @@ describe('dx.core.data._cache', function() {
         };
         dx.core.data._generateModelConstructors(schemas, target);
         dx.core.data._generateCollectionConstructors(schemas, target);
-        ajaxSpy = spyOn($, 'ajax');
+        ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall');
     });
 
     describe('getCachedSingleton()', function() {
@@ -150,11 +150,11 @@ describe('dx.core.data._cache', function() {
         it('will fetch the contents the first time the model is created', function() {
             target._cache.getCachedSingleton('SingletonType');
 
-            expect(ajaxSpy.calls.length).toBe(1);
+            expect(ajaxSpy.calls.count()).toBe(1);
         });
 
         it('will not fetch the contents the the second time the model is asked for', function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult'
                 });
@@ -162,11 +162,11 @@ describe('dx.core.data._cache', function() {
             target._cache.getCachedSingleton('SingletonType');
             target._cache.getCachedSingleton('SingletonType');
 
-            expect(ajaxSpy.calls.length).toBe(1);
+            expect(ajaxSpy.calls.count()).toBe(1);
         });
 
         it('will fetch a second time if the update parameter is true', function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult'
                 });
@@ -174,11 +174,11 @@ describe('dx.core.data._cache', function() {
             target._cache.getCachedSingleton('SingletonType');
             target._cache.getCachedSingleton('SingletonType', { update: true});
 
-            expect(ajaxSpy.calls.length).toBe(2);
+            expect(ajaxSpy.calls.count()).toBe(2);
         });
 
         it('will not cache the singleton if an error occurrs while fetching it', function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 402
                 });
@@ -189,7 +189,7 @@ describe('dx.core.data._cache', function() {
         });
 
         it('will report nothing if asked to suppress error handler when an error in fetching happens', function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 402
                 });
@@ -205,7 +205,7 @@ describe('dx.core.data._cache', function() {
         describe('callbacks', function() {
             it('will call success handler when a the singleton is fetched', function() {
                 var succssSpy = jasmine.createSpy('succesSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'SingletonType'
                     });
@@ -217,7 +217,7 @@ describe('dx.core.data._cache', function() {
 
             it('will call success handler when a an already present singleton is fetched', function() {
                 var succssSpy = jasmine.createSpy('succesSpy');
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     options.success({
                         type: 'SingletonType'
                     });
@@ -231,7 +231,7 @@ describe('dx.core.data._cache', function() {
             it('will call error handler when an error occurrs during fetching', function() {
                 var errorSpy = jasmine.createSpy('errorSpy');
                 var delayedOptions;
-                ajaxSpy.andCallFake(function(options) {
+                ajaxSpy.and.callFake(function(options) {
                     delayedOptions = options;
                 });
                 target._cache.getCachedSingleton('SingletonType', {error: errorSpy});
@@ -363,7 +363,7 @@ describe('dx.core.data._cache', function() {
             expect(target._cache.containsCachedModel('MODEL-1', 'Simple')).toBe(true);
             expect(collection.at(0)).toBe(model);
 
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 404
                 });
@@ -375,7 +375,7 @@ describe('dx.core.data._cache', function() {
         });
 
         it('will not cache the model if a non-404 error is returned while initially fetching', function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 402
                 });
@@ -386,7 +386,7 @@ describe('dx.core.data._cache', function() {
         });
 
         it('will call the global error handler if an error occurs when fetching', function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 402
                 });
@@ -408,7 +408,7 @@ describe('dx.core.data._cache', function() {
             var model = target._cache.getCachedModelFromProperties(SIMPLE_MODEL);
             model.trigger('change');
 
-            expect(callbackSpy.callCount).toBe(1);
+            expect(callbackSpy.calls.count()).toBe(1);
         });
     });
 
@@ -455,7 +455,7 @@ describe('dx.core.data._cache', function() {
         });
 
         it('will remove the model from the cache on creation if the fetch delivers a badReference', function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.error({
                     status: 404
                 });
@@ -468,7 +468,7 @@ describe('dx.core.data._cache', function() {
         it('will add the new model to a collection once it has been fetched', function() {
             var collection = makeReadyCollection();
             target._modelSubscribersStore.add(collection);
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'Simple',
                     reference: 'MODEL-1'
@@ -488,7 +488,7 @@ describe('dx.core.data._cache', function() {
         it('will cache the model if the cacheOnlyIfNeeded option is set, and there is a collection', function() {
             var collection = makeReadyCollection();
             target._modelSubscribersStore.add(collection);
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'Simple',
                     reference: 'MODEL-1'
@@ -513,16 +513,16 @@ describe('dx.core.data._cache', function() {
                         }
                     }
                 };
-                spyOn(target, '_newServerModel').andReturn(modelSpy);
+                spyOn(target, '_newServerModel').and.returnValue(modelSpy);
                 target._cache.getCachedModel('MODEL-1', 'Simple');
 
-                expect(modelSpy._dxFetch.argsForCall[0][0].suppressDefaultErrorHandler).toBe(undefined);
+                expect(modelSpy._dxFetch.calls.argsFor(0)[0].suppressDefaultErrorHandler).toBe(undefined);
             });
 
             it('passes the suppressDefaultHandlerByDefault options to dxFetch', function() {
                 spyOn(target, 'reportErrorResult');
                 var modelSpy = {
-                    _dxFetch: jasmine.createSpy().andCallFake(function(options) {
+                    _dxFetch: jasmine.createSpy().and.callFake(function(options) {
                         options.error({});
                     }),
                     _dxSet: jasmine.createSpy(),
@@ -536,7 +536,7 @@ describe('dx.core.data._cache', function() {
                         }
                     }
                 };
-                spyOn(target, '_newServerModel').andReturn(modelSpy);
+                spyOn(target, '_newServerModel').and.returnValue(modelSpy);
                 target._cache.getCachedModel('MODEL-1', 'Simple', {
                     suppressDefaultErrorHandler: true
                 });
@@ -594,7 +594,7 @@ describe('dx.core.data._cache', function() {
             target._modelSubscribersStore.add(collection);
             var model = target._cache.getCachedModelFromProperties(SIMPLE_MODEL);
             model.on('delete', deleteSpy);
-            deleteSpy.andCallFake(function() {
+            deleteSpy.and.callFake(function() {
                hasModel = (collection.length === 0);
             });
 
@@ -714,17 +714,17 @@ describe('dx.core.data._cache', function() {
 
             target._cache.dump();
 
-            expect(dx.info.calls[0].args[0]).toEqual('SUBSCRIBERS');
-            expect(dx.info.calls[1].args[0]).toEqual('===========');
-            expect(dx.info.calls[2].args[0]).toEqual({});
-            expect(dx.info.calls[3].args[0]).toEqual('');
-            expect(dx.info.calls[4].args[0]).toEqual('SINGLETONS');
-            expect(dx.info.calls[5].args[0]).toEqual('==========');
-            expect(dx.info.calls[6].args[0]).toEqual({});
-            expect(dx.info.calls[3].args[0]).toEqual('');
-            expect(dx.info.calls[8].args[0]).toEqual('SERVER MODELS');
-            expect(dx.info.calls[9].args[0]).toEqual('=============');
-            expect(dx.info.calls[10].args[0]).toEqual({});
+            expect(dx.info.calls.argsFor(0)[0]).toEqual('SUBSCRIBERS');
+            expect(dx.info.calls.argsFor(1)[0]).toEqual('===========');
+            expect(dx.info.calls.argsFor(2)[0]).toEqual({});
+            expect(dx.info.calls.argsFor(3)[0]).toEqual('');
+            expect(dx.info.calls.argsFor(4)[0]).toEqual('SINGLETONS');
+            expect(dx.info.calls.argsFor(5)[0]).toEqual('==========');
+            expect(dx.info.calls.argsFor(6)[0]).toEqual({});
+            expect(dx.info.calls.argsFor(7)[0]).toEqual('');
+            expect(dx.info.calls.argsFor(8)[0]).toEqual('SERVER MODELS');
+            expect(dx.info.calls.argsFor(9)[0]).toEqual('=============');
+            expect(dx.info.calls.argsFor(10)[0]).toEqual({});
         });
 
         it('reports the contents of the cache when called', function() {
@@ -734,19 +734,19 @@ describe('dx.core.data._cache', function() {
 
             target._cache.dump();
 
-            expect(dx.info.calls[0].args[0]).toEqual('SUBSCRIBERS');
-            expect(dx.info.calls[1].args[0]).toEqual('===========');
-            expect(dx.info.calls[2].args[0]).toEqual({});
-            expect(dx.info.calls[3].args[0]).toEqual('');
-            expect(dx.info.calls[4].args[0]).toEqual('SINGLETONS');
-            expect(dx.info.calls[5].args[0]).toEqual('==========');
-            expect(dx.info.calls[6].args[0]).toEqual({
+            expect(dx.info.calls.argsFor(0)[0]).toEqual('SUBSCRIBERS');
+            expect(dx.info.calls.argsFor(1)[0]).toEqual('===========');
+            expect(dx.info.calls.argsFor(2)[0]).toEqual({});
+            expect(dx.info.calls.argsFor(3)[0]).toEqual('');
+            expect(dx.info.calls.argsFor(4)[0]).toEqual('SINGLETONS');
+            expect(dx.info.calls.argsFor(5)[0]).toEqual('==========');
+            expect(dx.info.calls.argsFor(6)[0]).toEqual({
                 SingletonType: singleton
             });
-            expect(dx.info.calls[7].args[0]).toEqual('');
-            expect(dx.info.calls[8].args[0]).toEqual('SERVER MODELS');
-            expect(dx.info.calls[9].args[0]).toEqual('=============');
-            expect(dx.info.calls[10].args[0]).toEqual({
+            expect(dx.info.calls.argsFor(7)[0]).toEqual('');
+            expect(dx.info.calls.argsFor(8)[0]).toEqual('SERVER MODELS');
+            expect(dx.info.calls.argsFor(9)[0]).toEqual('=============');
+            expect(dx.info.calls.argsFor(10)[0]).toEqual({
                 Simple: {
                     'MODEL-1': model
                 }
@@ -757,7 +757,7 @@ describe('dx.core.data._cache', function() {
     describe('dumpText()', function() {
         it('reports nothing is in the cache if there is nothing in it', function() {
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dx, 'info').and.callFake(function(line) {
                 lines = lines + line + '\n';
             });
 
@@ -769,7 +769,7 @@ describe('dx.core.data._cache', function() {
 
         it('reports a creation listener is in the cache if it is', function() {
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dx, 'info').and.callFake(function(line) {
                 lines = lines + line + '\n';
             });
             var creationListener = makeCreationListener();
@@ -783,7 +783,7 @@ describe('dx.core.data._cache', function() {
 
         it('reports a creation listener is in the cache with query parameters if it is', function() {
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dx, 'info').and.callFake(function(line) {
                 lines = lines + line + '\n';
             });
             var creationListener = new dx.core.data.CreationListener({
@@ -806,7 +806,7 @@ describe('dx.core.data._cache', function() {
             target._cache.getCachedModelFromProperties(SIMPLE_MODEL);
             target._cache.getCachedSingleton('SingletonType');
             var lines = '';
-            spyOn(dx, 'info').andCallFake(function(line) {
+            spyOn(dx, 'info').and.callFake(function(line) {
                 lines = lines + line + '\n';
             });
 
@@ -836,17 +836,17 @@ describe('dx.core.data._cache', function() {
     describe('isEmpty()', function() {
 
         it('returns true if all stores are empty (whitebox)', function() {
-            spyOn(target._modelSubscribersStore, 'isEmpty').andReturn(true);
-            spyOn(target._singletonStore, 'isEmpty').andReturn(true);
-            spyOn(target._modelStore, 'isEmpty').andReturn(true);
+            spyOn(target._modelSubscribersStore, 'isEmpty').and.returnValue(true);
+            spyOn(target._singletonStore, 'isEmpty').and.returnValue(true);
+            spyOn(target._modelStore, 'isEmpty').and.returnValue(true);
 
             expect(target._cache.isEmpty()).toBe(true);
         });
 
         it('returns false if any stores is not empty (whitebox)', function() {
-            spyOn(target._modelSubscribersStore, 'isEmpty').andReturn(true);
-            spyOn(target._singletonStore, 'isEmpty').andReturn(false);
-            spyOn(target._modelStore, 'isEmpty').andReturn(true);
+            spyOn(target._modelSubscribersStore, 'isEmpty').and.returnValue(true);
+            spyOn(target._singletonStore, 'isEmpty').and.returnValue(false);
+            spyOn(target._modelStore, 'isEmpty').and.returnValue(true);
 
             expect(target._cache.isEmpty()).toBe(false);
         });
@@ -1032,7 +1032,7 @@ describe('dx.core.data._cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dx, 'info').and.callFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1051,7 +1051,7 @@ describe('dx.core.data._cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dx, 'info').and.callFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1097,7 +1097,7 @@ describe('dx.core.data._cache', function() {
         var singleton;
 
         beforeEach(function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'SingletonType'
                 });
@@ -1218,7 +1218,7 @@ describe('dx.core.data._cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dx, 'info').and.callFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1237,7 +1237,7 @@ describe('dx.core.data._cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dx, 'info').and.callFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1269,7 +1269,7 @@ describe('dx.core.data._cache', function() {
         var model2;
 
         beforeEach(function() {
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult',
                     result: SIMPLE_MODEL
@@ -1279,7 +1279,7 @@ describe('dx.core.data._cache', function() {
             model1 = target._newServerModel('Simple');
             model1._dxFetch();
 
-            ajaxSpy.andCallFake(function(options) {
+            ajaxSpy.and.callFake(function(options) {
                 options.success({
                     type: 'OKResult',
                     result: SIMPLE_MODEL2
@@ -1460,7 +1460,7 @@ describe('dx.core.data._cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dx, 'info').and.callFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });
@@ -1479,7 +1479,7 @@ describe('dx.core.data._cache', function() {
 
             beforeEach(function() {
                 lines = '';
-                spyOn(dx, 'info').andCallFake(function(line) {
+                spyOn(dx, 'info').and.callFake(function(line) {
                     lines = lines + line + '\n';
                 });
             });

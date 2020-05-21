@@ -22,17 +22,14 @@
 'use strict';
 
 describe('ApiServer', function() {
-    var jQueryAjax;
+    var clock
 
     beforeEach(function() {
-        jQueryAjax = $.ajax;
+        clock = jasmine.clock();
     });
 
     afterEach(function() {
-        if ($.ajax !== jQueryAjax) {
-            $.ajax = jQueryAjax;
-            dx.fail('$.ajax was not cleaned up.');
-        }
+        clock.uninstall();
     });
 
     describe('construction', function() {
@@ -61,7 +58,7 @@ describe('ApiServer', function() {
     describe('ajax calls', function() {
 
         it('calls the mock server when the url is known', function() {
-            jasmine.Clock.useMock();
+            clock.install();
             var successSpy = jasmine.createSpy('successSpy');
             var server = new dx.test.ApiServer(_.extend({
                 '/container.json': {
@@ -80,33 +77,33 @@ describe('ApiServer', function() {
             }]);
             server.start();
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
-            jasmine.Clock.tick(1);
+            clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result.name).toEqual('testObject');
+            expect(successSpy.calls.mostRecent().args[0].result.name).toEqual('testObject');
             server.stop();
         });
 
         it('calls the the real ajax function when the url is not known', function() {
-            var mockAjax = jasmine.createSpy('mockAjax');
-            $.ajax = mockAjax;
+            var baseHandler = dx.core.ajax.getAjaxBaseHandler();
+            var mockAjax = spyOn(baseHandler, 'handler');
             var server = new dx.test.ApiServer(dx.test.CORE_SCHEMAS);
             server.start();
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/some/wonderful/resource',
                 success: function() {}
             });
 
-            expect(mockAjax.mostRecentCall.args[0]).toEqual('/some/wonderful/resource');
+            expect(mockAjax.calls.mostRecent().args[0].url).toEqual('/some/wonderful/resource');
             server.stop();
-            $.ajax = jQueryAjax;
         });
 
     });
@@ -138,63 +135,66 @@ describe('ApiServer', function() {
         });
 
         it('is not delivered immediately', function() {
-            jasmine.Clock.useMock();
+            clock.install();
             var successSpy = jasmine.createSpy('successSpy');
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             expect(successSpy).not.toHaveBeenCalled();
-            jasmine.Clock.reset();
         });
 
         it('is delivered after a timeout', function() {
-            jasmine.Clock.useMock();
+            clock.install();
             var successSpy = jasmine.createSpy('successSpy');
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/container/CONTAINER-1',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {}
             });
-            jasmine.Clock.tick(1);
+            clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result.name).toEqual('testObject');
+            expect(successSpy.calls.mostRecent().args[0].result.name).toEqual('testObject');
         });
 
         it('is delivered after a timeout, even when it happens during a previous call', function() {
-            jasmine.Clock.useMock();
+            clock.install();
             var secondSuccess = jasmine.createSpy('secondSuccess');
-            var firstSuccess = jasmine.createSpy('firstSuccess').andCallFake(secondCall);
+            var firstSuccess = jasmine.createSpy('firstSuccess').and.callFake(secondCall);
             function secondCall() {
                 setTimeout(function() {
-                    $.ajax({
+                    dx.core.ajax.ajaxCall({
                         type: 'GET',
                         dataType: 'json',
                         url: '/webapi/container/CONTAINER-1',
-                        success: secondSuccess
+                        success: secondSuccess,
+                        error: function() {},
                     });
                 }, 2);
             }
 
-            $.ajax({
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 dataType: 'json',
                 url: '/webapi/container/CONTAINER-1',
-                success: firstSuccess
+                success: firstSuccess,
+                error: function() {},
             });
 
-            jasmine.Clock.tick(1);
+            clock.tick(1);
 
             expect(firstSuccess).toHaveBeenCalled();
             expect(secondSuccess).not.toHaveBeenCalled();
 
-            jasmine.Clock.tick(1);
+            clock.tick(2);
 
             expect(firstSuccess).toHaveBeenCalled();
             expect(secondSuccess).toHaveBeenCalled();
@@ -226,12 +226,13 @@ describe('ApiServer', function() {
         });
 
         it('is delivered from createObjects', function() {
-            jasmine.Clock.useMock();
-            $.ajax({
+            clock.install();
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             server.createObjects([{
@@ -240,9 +241,9 @@ describe('ApiServer', function() {
                 reference: 'CONTAINER-1'
             }]);
 
-            jasmine.Clock.tick(1);
+            clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result[0].eventType).toEqual('CREATE');
+            expect(successSpy.calls.mostRecent().args[0].result[0].eventType).toEqual('CREATE');
         });
 
         it('is delivered from updateObjects', function() {
@@ -252,12 +253,13 @@ describe('ApiServer', function() {
                 reference: 'CONTAINER-1'
             }], true);
 
-            jasmine.Clock.useMock();
-            $.ajax({
+            clock.install();
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             server.updateObjects([{
@@ -266,9 +268,9 @@ describe('ApiServer', function() {
                 reference: 'CONTAINER-1'
             }]);
 
-            jasmine.Clock.tick(1);
+            clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result[0].eventType).toEqual('UPDATE');
+            expect(successSpy.calls.mostRecent().args[0].result[0].eventType).toEqual('UPDATE');
         });
 
         it('is delivered from deleteObjects', function() {
@@ -278,21 +280,22 @@ describe('ApiServer', function() {
                 reference: 'CONTAINER-1'
             }], true);
 
-            jasmine.Clock.useMock();
-            $.ajax({
+            clock.install();
+            dx.core.ajax.ajaxCall({
                 type: 'GET',
                 url: '/webapi/notification',
                 dataType: 'json',
-                success: successSpy
+                success: successSpy,
+                error: function() {},
             });
 
             server.deleteObjects([{
                 reference: 'CONTAINER-1'
             }]);
 
-            jasmine.Clock.tick(1);
+            clock.tick(1);
 
-            expect(successSpy.mostRecentCall.args[0].result[0].eventType).toEqual('DELETE');
+            expect(successSpy.calls.mostRecent().args[0].result[0].eventType).toEqual('DELETE');
         });
 
     });

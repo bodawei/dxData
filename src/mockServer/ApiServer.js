@@ -43,8 +43,12 @@ dx.namespace('dx.test');
  * If the MockServer can't figure out what to do with this call, hand it off to the real server.
  */
 function handleUnknownUrl(server, method, url, settings) {
-    var self = this;
-    self._previousAjax(url, settings);
+    var config = Object.assign({
+        url: url,
+        method: method
+    }, settings)
+    var baseHandler = dx.core.ajax.getAjaxBaseHandler();
+    baseHandler.handler(config);
 }
 
 /*

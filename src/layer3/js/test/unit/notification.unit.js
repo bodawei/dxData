@@ -24,8 +24,10 @@
 describe('notification processor', function() {
     var server;
     var client;
+    var clock;
 
     beforeEach(function() {
+        clock = jasmine.clock();
         var schemas = _.extend({
             '/group.json': {
                 root: '/webapi/somewhere',
@@ -82,6 +84,7 @@ describe('notification processor', function() {
     afterEach(function() {
         client.notification.stop();
         server.stop();
+        clock.uninstall();
     });
 
     describe('_setupNotificationSystem()', function() {
@@ -297,7 +300,7 @@ describe('notification processor', function() {
         server.respond();
         dx.test.assert(groups.length).toBe(1);
 
-        spyOn(client._cache, 'getCachedModel').andCallThrough();
+        spyOn(client._cache, 'getCachedModel').and.callThrough();
         server.updateObjects([{
             name: 'UpdatedName',
             reference: 'GROUP-2'
@@ -329,7 +332,7 @@ describe('notification processor', function() {
             }]
         });
 
-        spyOn(dx, 'fail').andCallFake(function() {
+        spyOn(dx, 'fail').and.callFake(function() {
             throw new Error('placeholder exception');
         });
         var warnSpy = spyOn(dx, 'warn');
@@ -487,7 +490,7 @@ describe('notification processor', function() {
 
     it('retries on error', function() {
         server.createObjects({});
-        var ajaxSpy = spyOn($, 'ajax').andCallFake(function(options) {
+        var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             options.error({
                 readyState: 4,
                 status: 400,
@@ -496,23 +499,23 @@ describe('notification processor', function() {
             }, 'error', null);
         });
         var errorSpy = spyOn(dx, 'warn');
-        jasmine.Clock.useMock();
+        clock.install();
         client.notification.start();
 
         expect(ajaxSpy).toHaveBeenCalled();
         expect(errorSpy).toHaveBeenCalled();
 
-        jasmine.Clock.tick(client.notification._getRetryTimeout());
-        expect($.ajax.callCount).toEqual(2);
+        clock.tick(client.notification._getRetryTimeout());
+        expect(dx.core.ajax.ajaxCall.calls.count()).toEqual(2);
 
         client.notification.stop();
     });
 
     it('doesn\'t retry on error after stop() is called', function() {
-        jasmine.Clock.useMock();
+        clock.install();
         spyOn(dx, 'warn'); // suppress warning message
         server.createObjects({});
-        var ajaxSpy = spyOn($, 'ajax').andCallFake(function(options) {
+        var ajaxSpy = spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             options.error({
                 readyState: 4,
                 status: 400,
@@ -525,9 +528,8 @@ describe('notification processor', function() {
 
         expect(ajaxSpy).toHaveBeenCalled();
 
-        jasmine.Clock.tick(client.notification._getRetryTimeout());
-        expect($.ajax.callCount).toEqual(1);
-        jasmine.Clock.reset();
+        clock.tick(client.notification._getRetryTimeout());
+        expect(dx.core.ajax.ajaxCall.calls.count()).toEqual(1);
     });
 
     it('stops running when stop() is called', function() {
@@ -537,9 +539,9 @@ describe('notification processor', function() {
         client.notification.stop();
         server.respond();
 
-        spyOn($, 'ajax').andCallThrough();
+        spyOn(dx.core.ajax, 'ajaxCall').and.callThrough();
         server.respond();
-        expect($.ajax.callCount).toEqual(0);
+        expect(dx.core.ajax.ajaxCall.calls.count()).toEqual(0);
     });
 
     it('fetches changes when a singleton object is updated', function() {
@@ -597,11 +599,11 @@ describe('notification processor', function() {
         groups.$$list();
         server.respond();
 
-        spyOn(client._cache, 'getCachedModel').andCallThrough();
+        spyOn(client._cache, 'getCachedModel').and.callThrough();
         client.notification.start();
         server.respond();
 
-        expect(client._cache.getCachedModel.callCount).toBe(1);
+        expect(client._cache.getCachedModel.calls.count()).toBe(1);
         client.notification.stop();
     });
 
@@ -631,13 +633,13 @@ describe('notification processor', function() {
         groups.$$list();
         server.respond();
 
-        spyOn(client._cache, 'getCachedModel').andCallThrough();
-        spyOn(client._cache, 'deleteCachedModel').andCallThrough();
+        spyOn(client._cache, 'getCachedModel').and.callThrough();
+        spyOn(client._cache, 'deleteCachedModel').and.callThrough();
         client.notification.start();
         server.respond();
 
-        expect(client._cache.getCachedModel.callCount).toBe(0);
-        expect(client._cache.deleteCachedModel.callCount).toBe(1);
+        expect(client._cache.getCachedModel.calls.count()).toBe(0);
+        expect(client._cache.deleteCachedModel.calls.count()).toBe(1);
         client.notification.stop();
     });
 
@@ -657,12 +659,12 @@ describe('notification processor', function() {
                 objectType: 'HappySingleton'
             }]
         });
-        spyOn(client._cache, 'getCachedSingleton').andCallThrough();
+        spyOn(client._cache, 'getCachedSingleton').and.callThrough();
 
         client.notification.start();
         server.respond();
 
-        expect(client._cache.getCachedSingleton.callCount).toBe(1);
+        expect(client._cache.getCachedSingleton.calls.count()).toBe(1);
         client.notification.stop();
     });
 
@@ -736,13 +738,13 @@ describe('notification processor', function() {
          * so the next layer of code above will react correctly (notification has a try catch)
          */
         spyOn(dx, 'warn');
-        spyOn(dx, 'fail').andCallFake(function(message) {throw new Error(message); });
+        spyOn(dx, 'fail').and.callFake(function(message) {throw new Error(message); });
 
         client.notification.start();
         server.respond();
         client.notification.stop();
 
-        expect(dx.warn.mostRecentCall.args[0]).toBe('notification processing failed: Fish is not a known type name.');
+        expect(dx.warn.calls.mostRecent().args[0]).toBe('notification processing failed: Fish is not a known type name.');
     });
 
     it('will reload the browser page if it receives an object dropped notification', function() {
@@ -769,10 +771,10 @@ describe('notification processor', function() {
     });
 
     it('reports a warning if the call to the notification system fails', function() {
-        jasmine.Clock.useMock();
+        clock.install();
         spyOn(dx, 'warn');
         var callback;
-        spyOn($, 'ajax').andCallFake(function(options) {
+        spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             callback = options;
         });
         client.notification.start();
@@ -784,15 +786,14 @@ describe('notification processor', function() {
             responseText: null
         }, 'error', null);
 
-        expect(dx.warn.mostRecentCall.args[0]).toBe('Notification call failed.');
+        expect(dx.warn.calls.mostRecent().args[0]).toBe('Notification call failed.');
         client.notification.stop();
-        jasmine.Clock.reset();
     });
 
     it('reports no warning if the call to the notification system fails after the system was stopped', function() {
         spyOn(dx, 'warn');
         var callback;
-        spyOn($, 'ajax').andCallFake(function(options) {
+        spyOn(dx.core.ajax, 'ajaxCall').and.callFake(function(options) {
             callback = options;
         });
         client.notification.start();
@@ -805,6 +806,6 @@ describe('notification processor', function() {
             responseText: null
         }, 'error', null);
 
-        expect(dx.warn.calls.length).toBe(0);
+        expect(dx.warn.calls.count()).toBe(0);
     });
 });
