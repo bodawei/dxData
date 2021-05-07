@@ -15,7 +15,7 @@
   "dependencies": {
     "backbone": "1.1.2",
     "jquery": "3.5.1",
-    "underscore": "^1.7.0"
+    "underscore": "^1.12.1"
   },
   "devDependencies": {
     "browserify": "^16.5.1",
